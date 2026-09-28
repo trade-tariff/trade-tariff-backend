@@ -159,6 +159,57 @@ RSpec.describe Api::Admin::TariffKnowledgeSyntheticAtarsController do
     end
   end
 
+  describe '#bulk_import' do
+    let(:header) { 'Chapter,Real user search,Full product description,Commodity code (10 digits),Status' }
+
+    def post_import(csv)
+      post '/uk/admin/tariff_knowledge_synthetic_atars/bulk_import.json',
+           params: { data: { type: 'tariff_knowledge_synthetic_atar_bulk_import', attributes: { csv: } } },
+           headers: headers.merge('X-Whodunnit' => 'user-123'),
+           as: :json
+    end
+
+    it 'imports finished rows, skips unfinished ones and reports the counts' do
+      csv = <<~CSV
+        #{header}
+        39,lunch box,Plastic lunch box with a lid.,3924100000,Done
+        39,bucket,Plastic bucket.,3923100000,Not started
+      CSV
+
+      expect { post_import(csv) }.to change(TariffKnowledge::SyntheticAtar, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+      json = JSON.parse(response.body)
+      expect(json.dig('data', 'type')).to eq('tariff_knowledge_synthetic_atar_bulk_import')
+      expect(json.dig('data', 'attributes')).to eq('created' => 1, 'updated' => 0, 'unchanged' => 0, 'skipped' => 1, 'total' => 1)
+      expect(TariffKnowledge::SyntheticAtar.first.versions.map(&:whodunnit)).to eq(%w[user-123])
+    end
+
+    it 'returns the errors with line numbers and imports nothing when a row is invalid' do
+      csv = <<~CSV
+        #{header}
+        39,lunch box,Plastic lunch box with a lid.,3924100000,Done
+        01,live pony,A live pony.,101210000,Done
+      CSV
+
+      expect { post_import(csv) }.not_to change(TariffKnowledge::SyntheticAtar, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      json = JSON.parse(response.body)
+      expect(json['errors'].map { |error| error['detail'] }).to eq(
+        ['Line 3: Commodity code must be exactly 10 digits (check that a leading zero has not been dropped)'],
+      )
+    end
+
+    it 'returns a summary error when a required column is missing' do
+      post_import("Chapter,Status\n39,Done\n")
+
+      expect(response).to have_http_status(:unprocessable_content)
+      json = JSON.parse(response.body)
+      expect(json['errors'].first['detail']).to start_with('The file is missing these columns')
+    end
+  end
+
   describe '#versions' do
     let!(:synthetic_atar) { create(:tariff_knowledge_synthetic_atar) }
 

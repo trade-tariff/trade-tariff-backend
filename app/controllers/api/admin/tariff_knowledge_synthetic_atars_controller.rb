@@ -48,6 +48,16 @@ module Api
         head :no_content
       end
 
+      def bulk_import
+        result = TariffKnowledge::SyntheticAtarImporter.new(csv_content: bulk_import_params[:csv]).call
+
+        if result.success?
+          render json: serialize_bulk_import(result), status: :created
+        else
+          render json: { errors: result.summary_errors + result.row_errors }, status: :unprocessable_content
+        end
+      end
+
       def versions
         versions = synthetic_atar.versions.all
         Version.preload_predecessors(versions)
@@ -106,6 +116,25 @@ module Api
 
       def synthetic_atar_params
         params.require(:data).require(:attributes).permit(*PERMITTED_ATTRIBUTES).to_h.symbolize_keys
+      end
+
+      def bulk_import_params
+        params.require(:data).require(:attributes).permit(:csv)
+      end
+
+      def serialize_bulk_import(result)
+        {
+          data: {
+            type: 'tariff_knowledge_synthetic_atar_bulk_import',
+            attributes: {
+              created: result.created_count,
+              updated: result.updated_count,
+              unchanged: result.unchanged_count,
+              skipped: result.skipped_count,
+              total: result.total_count,
+            },
+          },
+        }
       end
     end
   end

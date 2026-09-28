@@ -145,6 +145,10 @@ AdminApi.routes.draw do
           end
         end
         resources :tariff_knowledge_synthetic_atars, only: %i[index show create update destroy] do
+          collection do
+            post :bulk_import
+          end
+
           member do
             get :versions
           end
