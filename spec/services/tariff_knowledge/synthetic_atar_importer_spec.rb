@@ -134,6 +134,28 @@ RSpec.describe TariffKnowledge::SyntheticAtarImporter do
       expect(Version.where(item_type: 'TariffKnowledge::SyntheticAtar').count).to eq(versions_before)
     end
 
+    it 'reports a row as unchanged when it is imported again with a chapter that needs padding' do
+      file = csv_for(sheet_row(search: 'live pony', chapter: '1', code: '0101210000'))
+      described_class.new(csv_content: file).call
+      versions_before = Version.where(item_type: 'TariffKnowledge::SyntheticAtar').count
+
+      result = described_class.new(csv_content: file).call
+
+      expect(result).to have_attributes(created_count: 0, updated_count: 0, unchanged_count: 1)
+      expect(Version.where(item_type: 'TariffKnowledge::SyntheticAtar').count).to eq(versions_before)
+    end
+
+    it 'reports a row as unchanged when the search has extra internal spaces on every import' do
+      file = csv_for(sheet_row(search: 'lunch   box'))
+      described_class.new(csv_content: file).call
+      versions_before = Version.where(item_type: 'TariffKnowledge::SyntheticAtar').count
+
+      result = described_class.new(csv_content: file).call
+
+      expect(result).to have_attributes(created_count: 0, updated_count: 0, unchanged_count: 1)
+      expect(Version.where(item_type: 'TariffKnowledge::SyntheticAtar').count).to eq(versions_before)
+    end
+
     it 'leaves stored values alone for columns that are not in the file' do
       existing = create(:tariff_knowledge_synthetic_atar, real_user_search: 'lunch box', completed_by: 'ZZ', notes: 'Keep me')
       file = minimal_csv(['39', 'lunch box', 'A new description of the lunch box.', '3924100000', 'Done'])

@@ -29,6 +29,30 @@ module TariffKnowledge
       define_method(:"#{column}=") { |value| super(value.presence) }
     end
 
+    # Normalising these three at assignment time, rather than in before_validation, matters
+    # for the same reason as the optional columns above. Sequel marks a column "changed" the
+    # moment a new value differs from what is already stored, and that mark survives a later
+    # reassignment even if the later value ends up matching the stored one again. If chapter
+    # normalisation happened in before_validation, assigning "1" against a stored "01" would
+    # mark :chapter changed immediately; by the time before_validation padded it back to "01"
+    # the record would already be "modified", and re-importing the same row (or saving it
+    # again from the Admin API) would wrongly report it as updated and write an empty version.
+    # Normalising in the setter means the value Sequel compares against the stored one is
+    # already normalised, so a logically-unchanged value is recognised as unchanged.
+    def real_user_search=(value)
+      super(value.is_a?(String) ? value.squish : value)
+    end
+
+    def chapter=(value)
+      value = value.strip if value.is_a?(String)
+      value = value.rjust(2, '0') if value.is_a?(String) && value.match?(/\A\d\z/)
+      super(value)
+    end
+
+    def goods_nomenclature_item_id=(value)
+      super(value.is_a?(String) ? value.strip : value)
+    end
+
     dataset_module do
       def search(query)
         return self if query.blank?
@@ -48,14 +72,6 @@ module TariffKnowledge
       def by_real_user_search(value)
         where(Sequel.function(:lower, :real_user_search) => value.to_s.squish.downcase)
       end
-    end
-
-    def before_validation
-      self.real_user_search = real_user_search.squish if real_user_search
-      self.chapter = chapter.strip.rjust(2, '0') if chapter&.strip&.match?(/\A\d\z/)
-      self.goods_nomenclature_item_id = goods_nomenclature_item_id.strip if goods_nomenclature_item_id
-
-      super
     end
 
     def validate
