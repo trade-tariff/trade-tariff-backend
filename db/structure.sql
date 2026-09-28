@@ -576,54 +576,18 @@ CREATE MATERIALIZED VIEW uk.search_analytics_source_revisions AS
   WITH NO DATA;
 
 --
--- Name: search_analytics_classic_outcome_rows; Type: VIEW; Schema: uk; Owner: -
---
-
-CREATE VIEW uk.search_analytics_classic_outcome_rows AS
- SELECT r.service,
-    r.reporting_date,
-    decode(
-        CASE
-            WHEN ((j."row" ->> 'journey_key'::text) ~ '^[0-9a-f]{64}$'::text) THEN (j."row" ->> 'journey_key'::text)
-            ELSE 'invalid journey key'::text
-        END, 'hex'::text) AS journey_key,
-    ((j."row" ->> 'observed_at'::text))::timestamp with time zone AS observed_at,
-    ((j."row" ->> 'result_count'::text))::bigint AS result_count
-   FROM (uk.search_analytics_query_results r
-     CROSS JOIN LATERAL jsonb_array_elements(r.rows) j("row"))
-  WHERE ((r.name = 'classic_outcomes'::text) AND ((j."row" ->> 'journey_key'::text) ~ '^[0-9a-f]{64}$'::text) AND ((j."row" ->> 'observed_at'::text) IS NOT NULL) AND ((j."row" ->> 'result_count'::text) ~ '^[0-9]+$'::text) AND (((j."row" ->> 'result_count'::text))::bigint >= 0));
-
-
---
 -- Name: search_analytics_classic_outcome_counts; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
 CREATE MATERIALIZED VIEW uk.search_analytics_classic_outcome_counts AS
- SELECT service,
-    reporting_date,
-    outcome,
-    sum(searches) AS searches
-   FROM ( SELECT r.service,
-            r.reporting_date,
-            (j."row" ->> 'outcome'::text) AS outcome,
-            ((j."row" ->> 'searches'::text))::bigint AS searches
-           FROM (uk.search_analytics_query_results r
-             CROSS JOIN LATERAL jsonb_array_elements(r.rows) j("row"))
-          WHERE ((r.name = 'classic_outcomes'::text) AND ((j."row" ->> 'outcome'::text) = ANY (ARRAY['results'::text, 'no_results'::text])) AND ((j."row" ->> 'searches'::text) ~ '^[0-9]+$'::text))
-        UNION ALL
-         SELECT classified.service,
-            classified.reporting_date,
-                CASE
-                    WHEN (classified.result_count = 0) THEN 'no_results'::text
-                    ELSE 'results'::text
-                END AS outcome,
-            1 AS searches
-           FROM ( SELECT DISTINCT ON (search_analytics_classic_outcome_rows.service, search_analytics_classic_outcome_rows.reporting_date, search_analytics_classic_outcome_rows.journey_key) search_analytics_classic_outcome_rows.service,
-                    search_analytics_classic_outcome_rows.reporting_date,
-                    search_analytics_classic_outcome_rows.result_count
-                   FROM uk.search_analytics_classic_outcome_rows
-                  ORDER BY search_analytics_classic_outcome_rows.service, search_analytics_classic_outcome_rows.reporting_date, search_analytics_classic_outcome_rows.journey_key, search_analytics_classic_outcome_rows.observed_at DESC) classified) combined
-  GROUP BY service, reporting_date, outcome
+ SELECT r.service,
+    r.reporting_date,
+    (j."row" ->> 'outcome'::text) AS outcome,
+    sum(((j."row" ->> 'searches'::text))::bigint) AS searches
+   FROM (uk.search_analytics_query_results r
+     CROSS JOIN LATERAL jsonb_array_elements(r.rows) j("row"))
+  WHERE ((r.name = 'classic_outcomes'::text) AND ((j."row" ->> 'outcome'::text) = ANY (ARRAY['results'::text, 'no_results'::text])) AND ((j."row" ->> 'searches'::text) ~ '^[0-9]+$'::text))
+  GROUP BY r.service, r.reporting_date, (j."row" ->> 'outcome'::text)
   WITH NO DATA;
 
 
@@ -15554,3 +15518,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260915110000_create_sear
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260918070000_create_search_analytics_materialized_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260924130000_drop_tariff_update_presence_errors.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260925120000_create_search_analytics_outcome_rate_views.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260928170000_drop_classic_outcome_row_reader.rb');

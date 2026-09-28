@@ -52,8 +52,11 @@ RSpec.describe SearchAnalytics::OutcomeRates, :truncation do
     }.compact
   end
 
-  def classic(journey, result_count, at, **extra)
-    { 'journey_key' => key(journey), 'result_count' => result_count.to_s, 'observed_at' => at, 'event_count' => '1' }.merge(extra.stringify_keys)
+  def classic_counts(results: 0, no_results: 0)
+    [
+      { 'outcome' => 'results', 'searches' => results.to_s, 'event_count' => results.to_s },
+      { 'outcome' => 'no_results', 'searches' => no_results.to_s, 'event_count' => no_results.to_s },
+    ]
   end
 
   def refresh!
@@ -131,7 +134,7 @@ RSpec.describe SearchAnalytics::OutcomeRates, :truncation do
 
   it 'keeps a missing day out of the abandonment count and excludes a stale definition' do
     store(date, 'frontend_events', [frontend('one', 'initial_submitted', '2026-09-14T09:00:00Z', event: 'start')])
-    store(date, 'classic_outcomes', [classic('search', 0, '2026-09-14T09:00:00Z', commodity_result_count: '4')])
+    store(date, 'classic_outcomes', classic_counts(no_results: 1))
     refresh!
     SearchAnalyticsQueryResult.where(reporting_date: date, name: 'frontend_events').update(fingerprint: 'obsolete')
 
@@ -144,15 +147,11 @@ RSpec.describe SearchAnalytics::OutcomeRates, :truncation do
     expect(payload.dig('outcome_rates', 'classic', 'percentages')).to eq('results' => 0.0, 'no_results' => 100.0)
   end
 
-  it 'classifies classic searches by total result count and the latest completion' do
-    store(date, 'classic_outcomes', [
-      classic('empty', 0, '2026-09-14T09:00:00Z', commodity_result_count: '5'),
-      classic('heading', 2, '2026-09-14T09:00:00Z', commodity_result_count: '0'),
-      classic('changed', 0, '2026-09-14T09:00:00Z'),
-      classic('changed', 3, '2026-09-14T10:00:00Z'),
-      classic('invalid', 'nope', '2026-09-14T09:00:00Z'),
+  it 'sums stored classic counts and ignores per-search rows' do
+    store(date, 'classic_outcomes', classic_counts(results: 2, no_results: 1) + [
+      { 'journey_key' => key('empty'), 'result_count' => '0', 'observed_at' => '2026-09-14T09:00:00Z', 'event_count' => '1' },
     ])
-    store(date, 'classic_outcomes', [classic('other-service', 0, '2026-09-14T09:00:00Z')], service: 'xi')
+    store(date, 'classic_outcomes', classic_counts(no_results: 1), service: 'xi')
     store(date, 'frontend_events', [])
     refresh!
 
