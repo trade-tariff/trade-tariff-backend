@@ -23,6 +23,8 @@ module SearchAnalytics
     # Keep the latest completion per search, then store only the two daily counts.
     # The CloudWatch rows are not persisted.
     def self.collapse(rows)
+      return [] if rows.empty?
+
       latest = {}
       rows.each do |row|
         key = row['journey_key']
