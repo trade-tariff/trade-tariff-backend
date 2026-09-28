@@ -23,8 +23,10 @@ RSpec.describe SearchAnalyticsRefreshViewsWorker do
   it 'uses the same wait and skip flags as collection' do
     allow(SearchAnalyticsQueryWorker).to receive(:refresh_views!).and_call_original
     allow(SearchAnalytics::MaterializedViews).to receive(:refresh!).and_return(true)
+    allow(SearchAnalytics::OutcomeRatesViews).to receive(:refresh!).and_return(true)
     described_class.new.perform(service, 'old-token')
     expect(SearchAnalytics::MaterializedViews).to have_received(:refresh!).with(wait: true, only_if_populated: true)
+    expect(SearchAnalytics::OutcomeRatesViews).to have_received(:refresh!).with(wait: true, only_if_populated: true)
   end
 
   it 'does not schedule a followup when refresh fails' do
