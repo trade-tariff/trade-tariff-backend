@@ -15,6 +15,7 @@ RSpec.describe 'Search analytics backfill', type: :worker do
   before do
     allow(Aws::CloudWatchLogs::Client).to receive(:new).and_raise('Backfill enqueue must not call AWS')
     allow(SearchAnalytics::MaterializedViews).to receive(:refresh!).and_return(true)
+    allow(SearchAnalytics::OutcomeRatesViews).to receive(:refresh!).and_return(true)
   end
 
   def enqueue(**options) = SearchAnalyticsQueryWorker.enqueue_backfill(**scope, now:, **options)
