@@ -71,8 +71,9 @@ module SearchAnalytics
         'search_journeys' => JourneyQueries.new(source:, log_stream_filter:).journeys,
       }
       # Guided frontend events have no service field and are emitted for UK only.
-      definitions['frontend_events'] = FrontendEventsQuery.call(source:) if @service == 'uk'
+      definitions['frontend_events'] = FrontendEventsQuery.call(source:, service: @service) if @service == 'uk'
       definitions['journey_outcomes'] = JourneyOutcomesQuery.call(source:, log_stream_filter:, zero_result_condition:)
+      definitions['classic_outcomes'] = ClassicOutcomesQuery.call(source:, log_stream_filter:)
       definitions
     end
 
@@ -100,20 +101,45 @@ module SearchAnalytics
 
           row.except('request_ids', 'journey_count').merge('journey_keys' => ids.map { |id| Digest::SHA256.hexdigest(id) })
         end
-      elsif name.start_with?('ai_cost_') || name == 'frontend_events'
-        rows.map do |row|
-          id = row.fetch('request_id')
-          raise QueryError, 'Missing request identifier' if id.blank?
-
-          session = row['browser_session_id']
-          hashed = row.except('request_id', 'browser_session_id').merge('journey_key' => Digest::SHA256.hexdigest(id))
-          next hashed unless session.to_s.match?(/\Av1:[0-9a-f]{64}\z/)
-
-          hashed.merge('session_key' => Digest::SHA256.hexdigest(session))
-        end
+      elsif name.start_with?('ai_cost_')
+        rows.map { |row| hashed_request_row(row) }
+      elsif name == 'frontend_events'
+        rows.map { |row| hashed_request_row(row, identifier_keys: %w[event_id question_id], observed: true) }
+      elsif name == 'classic_outcomes'
+        rows.map { |row| hashed_request_row(row, observed: true) }
       else
         rows
       end
+    end
+
+    def hashed_request_row(row, identifier_keys: [], observed: false)
+      id = row.fetch('request_id')
+      raise QueryError, 'Missing request identifier' if id.blank?
+
+      hashed = row.except('request_id', 'browser_session_id', 'submission_id', *identifier_keys).merge('journey_key' => Digest::SHA256.hexdigest(id))
+      identifier_keys.each do |key|
+        digest = identifier_digest(row[key])
+        hashed["#{key.delete_suffix('_id')}_key"] = digest if digest
+      end
+      session = row['browser_session_id']
+      hashed['session_key'] = Digest::SHA256.hexdigest(session) if session.to_s.match?(/\Av1:[0-9a-f]{64}\z/)
+      hashed['observed_at'] = normalise_observed_at(row) if observed
+      hashed
+    end
+
+    def identifier_digest(value)
+      text = value.to_s
+      return if text.blank? || !text.match?(/\A[a-zA-Z0-9-]{1,64}\z/)
+
+      Digest::SHA256.hexdigest(text)
+    end
+
+    def normalise_observed_at(row)
+      raw = row['observed_at'].presence || row['@timestamp']
+      time = Time.find_zone!('UTC').parse(raw.to_s)
+      raise QueryError, 'Missing event time' unless time
+
+      time.utc.iso8601(6)
     end
 
     def partition(name, sql, start_at, end_at)
@@ -122,7 +148,7 @@ module SearchAnalytics
 
       rows, matched = execute_window(sql, start_at, end_at)
       complete = rows.size < ROW_LIMIT
-      if %w[search_journeys frontend_events journey_outcomes].include?(name)
+      if %w[search_journeys frontend_events journey_outcomes classic_outcomes].include?(name)
         raise QueryError, 'Missing journey completeness statistics' if matched.nil?
 
         count_field = name == 'search_journeys' ? 'started_events' : 'event_count'

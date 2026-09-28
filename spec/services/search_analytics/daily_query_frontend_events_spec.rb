@@ -25,7 +25,19 @@ RSpec.describe SearchAnalytics::DailyQuery do
     expect(sql).to include('ecs/frontend/', "event = 'guided_search.journey'", 'schema_version = 1', '2026-09-14 00:00:00', '2026-09-15 00:00:00')
     expect(sql).not_to include('backend-uk/', 'worker-uk/', 'search_degraded')
     expect(sql).to include("GET_JSON_OBJECT(REGEXP_EXTRACT(`@message`, '([{].*[}])', 1), '$.request_id')", "'$.schema_version'", "'$.browser_session_id'", "'$.result_rank'", "'$.confidence'")
-    expect(sql).to include("GROUP BY request_id, DATE_TRUNC('HOUR', `@timestamp`), outcome, COALESCE(destination, ''), result_rank, confidence, browser_session_id")
+    expect(sql).to include('GROUP BY request_id', 'event_id', 'question_id', 'response_source', 'MIN(`@timestamp`) AS observed_at')
+    expect(sql).to include("'initial_submitted'", "'answer_accepted'", "service = 'uk'")
+    expect(sql).not_to include('answer_submitted', 'submission_id')
+  end
+
+  it 'hashes event and question identifiers and keeps the original occurrence time' do
+    client.stub_responses(:get_query_results, response([row.merge('event_id' => 'event-1', 'question_id' => 'a' * 64, 'response_source' => 'server_accepted', 'submission_id' => 'submission-1', 'observed_at' => '2026-09-14 10:00:00')]))
+    result = collect.fetch('frontend_events').first
+    expect(result).to include('event_key' => Digest::SHA256.hexdigest('event-1'), 'question_key' => Digest::SHA256.hexdigest('a' * 64), 'observed_at' => '2026-09-14T10:00:00.000000Z')
+    expect(result).not_to have_key('event_id')
+    expect(result).not_to have_key('question_id')
+    expect(result).not_to have_key('submission_id')
+    expect(SearchAnalyticsQueryResult.first.rows.to_json).not_to include('event-1', 'submission-1')
   end
 
   it 'hashes browser session identifiers before storing them' do
@@ -54,7 +66,7 @@ RSpec.describe SearchAnalytics::DailyQuery do
   it 'does not offer UK-only guided events to XI collection' do
     allow(TradeTariffBackend).to receive(:service).and_return('xi')
     expect { collect }.to raise_error(ArgumentError, /known daily query/)
-    expect(described_class.new(**options.except(:queries)).query_definitions.size).to eq(9)
+    expect(described_class.new(**options.except(:queries)).query_definitions.size).to eq(10)
     expect(starts).to be_empty
   end
 

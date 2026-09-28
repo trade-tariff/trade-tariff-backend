@@ -54,6 +54,11 @@ class SearchAnalyticsQueryWorker
 
   def self.refresh_views!
     SearchAnalytics::MaterializedViews.refresh!(wait: true, only_if_populated: true)
+    refresh_outcome_views!
+  end
+
+  def self.refresh_outcome_views!
+    SearchAnalytics::OutcomeRatesViews.refresh!(wait: true, only_if_populated: true)
   end
 
   def perform(date = nil, name = nil, region = nil, log_group_name = SearchAnalytics::DailyQuery::SEARCH_LOG_GROUP_NAME, force = false, service = TradeTariffBackend.service)
@@ -81,6 +86,9 @@ class SearchAnalyticsQueryWorker
       # leave successfully replaced journey data stale indefinitely.
       self.class.refresh_views!
     else
+      # Outcome inputs can be replaced while other groups are still missing.
+      # Unpopulated outcome views stay unpopulated until explicit bootstrap.
+      self.class.refresh_outcome_views! if SearchAnalytics::OutcomeRatesViews::SOURCE_NAMES.include?(name)
       self.class.refresh_views_if_complete(reporting_date:, region:, log_group_name:)
     end
     result
