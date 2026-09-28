@@ -43,6 +43,11 @@ class VersionDiffService
       created_at
       updated_at
     ].freeze,
+    'TariffKnowledge::SyntheticAtar' => %w[
+      id
+      created_at
+      updated_at
+    ].freeze,
     'GoodsNomenclatureIntercept' => %w[
       goods_nomenclature_sid
       created_at
