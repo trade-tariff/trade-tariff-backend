@@ -72,6 +72,11 @@ module Api
 
       def search_result
         exact = find_exact_match
+        ::Search::Instrumentation.search_action_classified(
+          request_id:,
+          search_type: @search_type,
+          search_action: exact && @matched_suggestion ? 'navigation' : 'search',
+        )
         return exact_match_response(exact) if exact
 
         retrieval = retrieve_short_list
@@ -542,6 +547,7 @@ module Api
           .eager(:goods_nomenclature)
           .first
         if suggestion
+          @matched_suggestion = true
           @exact_match_source = suggestion.type
           @exact_matched_value = suggestion.value
         end
@@ -570,6 +576,7 @@ module Api
         gn = ::GoodsNomenclature.non_hidden.where(filter).first
         return nil unless gn
 
+        @matched_suggestion = false
         @exact_match_source = 'goods_nomenclature'
         @exact_matched_value = query
 

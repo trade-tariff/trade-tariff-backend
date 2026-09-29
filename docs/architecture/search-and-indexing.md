@@ -155,7 +155,7 @@ The admin search analytics endpoint reads matching query results from PostgreSQL
 
 UK collection also stores `frontend_events` from the frontend's `guided_search.journey` messages. These messages have a Rails text prefix, so the query extracts their JSON explicitly. It stores hashed journey IDs, bounded event counts, reported question counts and submission-to-visible timing. It also stores result rank, confidence, and a second hash of `browser_session_id` values that match `v1:` plus 64 lowercase hex characters. Raw session identifiers and raw messages are not stored. This ninth group has separate coverage: missing frontend results do not hide the other groups. XI and the Classic view do not expose these UK guided events. Rendered and browser-visible events remain separate, and recorded actions are not unique clicks, completion rates or evidence of abandonment.
 
-`journey_outcomes` adds compact, hashed identifier sets for backend outcomes in bounded windows. It joins the same frontend start IDs used by Search requests, so admin lookups and repeated question steps do not inflate the outcome trend. The latest terminal window determines completed, failed or conflicting status; question-only and unobserved journeys remain explicit. Selections and empty results are overlapping indicators. Outcomes are attributed to existing start buckets, and range totals are independently deduplicated. Outcome records are read one day at a time. The outcome trend uses every stored outcome day, including rows from an older fingerprint when the terminal fields still combine. Range totals wait until every journey day has a current outcome fingerprint, rather than falling back to request-step counts. Other request-based metrics retain their existing definitions. This gives eleven query groups for UK and ten for XI. `classic_outcomes` is the extra group on both services. Collection keeps the latest completion per search, then stores only the results and no-results counts. The stored `ai_cost_trend` rows also keep the model name with each operation.
+`journey_outcomes` adds compact, hashed identifier sets for backend outcomes in bounded windows. It joins the same frontend start IDs used by Search requests, so admin lookups and repeated question steps do not inflate the outcome trend. The latest terminal window determines completed, failed or conflicting status; question-only and unobserved journeys remain explicit. Selections and empty results are overlapping indicators. Outcomes are attributed to existing start buckets, and range totals are independently deduplicated. Outcome records are read one day at a time. The outcome trend uses every stored outcome day, including rows from an older fingerprint when the terminal fields still combine. Range totals wait until every journey day has a current outcome fingerprint, rather than falling back to request-step counts. Other request-based metrics retain their existing definitions. With the separate `search_actions` group, collection has twelve query groups for UK and eleven for XI. `classic_outcomes` is the extra group on both services. Collection keeps the latest completion per search, then stores only the results and no-results counts. The stored `ai_cost_trend` rows also keep the model name with each operation.
 
 `outcome_rates` and `question_outcomes` are additive admin fields. They do not replace `journeys.outcomes`, `trends.outcomes`, or the rendered `frontend_events` counts. Classic rates count completed frontend-origin fuzzy searches by total `result_count`. Guided rates count same-day `initial_submitted` journeys by the latest `page_visible` terminal destination or `dont_know`. Question rates count shown questions by the latest `answer_accepted` (`server_accepted`) or `dont_know`; `answer_submitted` is not a count. Missing days, stale fingerprints, and unpopulated outcome views stay coverage gaps. They are not zero and they are not abandonment. A definition change does not reclassify older stored rows; those days need recollection. Live CloudWatch validation of the new queries is still required before relying on production counts.
 
@@ -164,6 +164,45 @@ For initial population or a manual rerun, use `bundle exec rake search_analytics
 For a range, `bundle exec rake search_analytics:backfill` defaults to `DAYS=30`: yesterday through 30 days ago, inclusive, newest first. It queues one coordinator per incomplete or stale day; each coordinator queues only the query groups still missing when it starts. `DAYS=1` collects yesterday only, and `FORCE=true` queues replacements for every group in the requested range without deleting the existing successful results first. `DAYS` must be an integer from 1 to 366. The task does not wait for CloudWatch. Queued jobs and stored successes are independent of the Rake process; an interrupted in-flight query may still require an explicit gap-fill run because automatic retries remain disabled.
 
 The existing search-count field now counts distinct frontend-origin search-start IDs across the selected dates. AI costs include all recorded calls for those IDs inside the same dates. The total and operation breakdown both derive from the single stored `ai_cost_trend` query; no separate cost-summary query is collected. Other rates retain their request-based denominators. Optional `from` and `to` parameters select inclusive UTC dates, at most 366 days and ending yesterday or earlier; invalid ranges return 400.
+
+### Navigation and search actions
+
+Classic, internal and interactive search emit `search_action_classified` after
+resolving an exact match and before fuzzy or guided retrieval. `search_action`
+is `navigation` when the accepted result comes from a search suggestion, and
+`search` otherwise. A direct goods-nomenclature lookup without a suggestion is
+search, even when it redirects. Existing suggestion normalisation still applies,
+including singular/plural matching and code padding. This measures the resolved
+route, not whether the trader clicked or pressed Return. Failed retrieval after
+classification retains that action; failure before classification stays unknown.
+
+The optional `search_actions` daily group stores the action, search type and
+hashed journey identifier sets for frontend-origin events. It uses eight initial
+three-hour scans, with the existing completeness checks and partition limits.
+It does not change the fingerprints or contents of existing headline groups and
+does not trigger historical recollection on page reads.
+
+The additive admin `actions` field supplies summary and trend counts plus its
+own collection coverage. It joins the existing frontend-start population, counts
+each journey once per bucket, and independently deduplicates the selected range.
+Internal includes both internal and interactive searches. Repeated classifications
+of the same kind count once. Conflicting or unrecognised classifications remain
+unclassified. Result selections do not create navigation actions.
+
+Old days retain their original headline totals. Without a compatible action
+collection, navigation and search counts are null, not zero, and the known total
+is unclassified. A collected day with no journeys has zero counts. Mixed ranges
+show the recorded classification counts, an unclassified remainder and incomplete
+coverage. Range classification uses evidence within the selected dates; daily
+buckets without action collection remain unavailable. Without journey collection,
+the action summary is null. Existing rates and their denominators are unchanged.
+
+Both readers aggregate classifications in PostgreSQL. The indexed reader uses
+the existing daily journey materialized view for its population; the fallback
+reader uses stored start sets. No materialized-view migration or refresh is needed
+for the new group. Validate the new CloudWatch query in an authorised environment
+before relying on live counts. Older logs without explicit classifications cannot
+supply this distinction through recollection.
 
 ### Search analytics SQL cohorts
 

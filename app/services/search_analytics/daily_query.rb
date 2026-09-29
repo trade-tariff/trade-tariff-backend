@@ -6,6 +6,7 @@ module SearchAnalytics
     ROW_LIMIT = 10_000
     MAX_PARTITIONS = 127
     PROCESSING_VERSION = 1
+    IDENTIFIER_QUERIES = %w[search_journeys journey_outcomes search_actions].freeze
 
     attr_reader :reporting_date
 
@@ -69,6 +70,7 @@ module SearchAnalytics
         'search_term_improvements' => improvement_terms_query(term_filter: "query NOT RLIKE '^[0-9 .-]+$'"),
         'item_id_improvements' => improvement_terms_query(term_filter: "query RLIKE '^[0-9 .-]+$'"),
         'search_journeys' => JourneyQueries.new(source:, log_stream_filter:).journeys,
+        'search_actions' => ActionQuery.call(source:, log_stream_filter:),
       }
       # Guided frontend events have no service field and are emitted for UK only.
       definitions['frontend_events'] = FrontendEventsQuery.call(source:, service: @service) if @service == 'uk'
@@ -84,7 +86,7 @@ module SearchAnalytics
 
     def collect(name, sql)
       @partition_count = 0
-      rows = if %w[search_journeys journey_outcomes].include?(name)
+      rows = if IDENTIFIER_QUERIES.include?(name)
                8.times.flat_map do |index|
                  start_at = now - 1.day + index * 3.hours
                  partition(name, sql, start_at, start_at + 3.hours)
@@ -92,7 +94,7 @@ module SearchAnalytics
              else
                partition(name, sql, now - 1.day, now)
              end
-      if %w[search_journeys journey_outcomes].include?(name)
+      if IDENTIFIER_QUERIES.include?(name)
         rows.map do |row|
           ids = JSON.parse(row.fetch('request_ids'))
           unless ids.is_a?(Array) && ids.all? { |id| id.is_a?(String) && id.present? } && ids.uniq.size == Integer(row.fetch('journey_count'))
@@ -148,13 +150,13 @@ module SearchAnalytics
 
       rows, matched = execute_window(sql, start_at, end_at)
       complete = rows.size < ROW_LIMIT
-      if %w[search_journeys frontend_events journey_outcomes classic_outcomes].include?(name)
+      if (IDENTIFIER_QUERIES + %w[frontend_events classic_outcomes]).include?(name)
         raise QueryError, 'Missing journey completeness statistics' if matched.nil?
 
         count_field = name == 'search_journeys' ? 'started_events' : 'event_count'
         complete &&= rows.sum { |row| Integer(row.fetch(count_field)) } == matched
       end
-      complete &&= rows.all? { |row| complete_identifier_set?(row) } if name == 'journey_outcomes'
+      complete &&= rows.all? { |row| complete_identifier_set?(row) } if %w[journey_outcomes search_actions].include?(name)
       if complete
         return rows unless name == 'journey_outcomes'
 

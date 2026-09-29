@@ -21,10 +21,10 @@ module SearchAnalytics
       definitions = DailyQuery.new(reporting_date: last_date, region:, log_group_name:, now:).fingerprints
       # Costs describe activity inside the selected UTC dates, not the lifetime
       # cost of a journey. Later calls belong to their own reporting dates.
-      records = SearchAnalyticsQueryResult.where(service:, reporting_date: dates, name: definitions.keys - %w[journey_outcomes classic_outcomes]).all
+      records = SearchAnalyticsQueryResult.where(service:, reporting_date: dates, name: definitions.keys - %w[journey_outcomes classic_outcomes search_actions]).all
       compatible = records.select { |row| row.fingerprint == definitions.fetch(row.name) }
       frontend_records, backend_records = compatible.partition { |row| row.name == 'frontend_events' }
-      required = definitions.keys - %w[frontend_events journey_outcomes classic_outcomes]
+      required = definitions.keys - %w[frontend_events journey_outcomes classic_outcomes search_actions]
       return if backend_records.empty? && frontend_records.empty?
 
       # Each matching query contributes its own days. A missing or stale group is a
@@ -63,6 +63,7 @@ module SearchAnalytics
         supported: service == 'uk' && period.view != 'classic'
       )
       payload.merge!(OutcomeRates.call(service:, dates:, view: period.view, definitions:))
+      payload['actions'] = ActionBreakdown.call(service:, dates:, period:, definitions:, payload:)
       payload['coverage'] = coverage(dates:, collected_dates:, records: backend_records, required:)
       payload['summary_statuses']['searches'] = {
         'level' => 'neutral', 'message' => "#{collected_dates.size} of #{dates.size} UTC days have stored results"

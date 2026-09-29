@@ -11,6 +11,15 @@ module Search
       }, event)
     end
 
+    def search_action_classified(event)
+      info log_entry({
+        event: 'search_action_classified',
+        request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
+        search_action: event.payload[:search_action],
+      }, event)
+    end
+
     def query_expanded(event)
       info log_entry({
         event: 'query_expanded',

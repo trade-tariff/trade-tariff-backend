@@ -1,6 +1,6 @@
 class SearchService
   class ExactSearch < BaseSearch
-    attr_reader :match_source, :matched_value
+    attr_reader :match_source, :matched_value, :matched_suggestion
 
     def search!
       @results = case query_string
@@ -46,6 +46,7 @@ class SearchService
         .first
 
       if suggestion
+        @matched_suggestion = true
         @match_source = suggestion.type
         @matched_value = suggestion.value
       end
@@ -80,6 +81,7 @@ class SearchService
         end
 
       # Check whether Subheading or Commodity at the appropriate point in time
+      @matched_suggestion = false
       @match_source = 'goods_nomenclature'
       @matched_value = query
 
