@@ -2,9 +2,10 @@
 require 'rails_helper'
 
 RSpec.describe Evaluation::GoldQueryGenerator do
-  subject(:result) { described_class.call(ruling, ai_client:) }
+  subject(:result) { described_class.call(source, ai_client:) }
 
   let(:ai_client) { instance_double(OpenaiClient) }
+  let(:source) { Evaluation::GoldQuerySource.from_public_atar_ruling(ruling) }
   let(:ruling) do
     create(
       :tariff_knowledge_public_atar_ruling,
@@ -92,18 +93,95 @@ RSpec.describe Evaluation::GoldQueryGenerator do
       end
     end
 
-    it 'calls the AI client once with the tiered prompt and the ATaR description' do
+    it 'calls the AI client once with the tiered prompt and the labelled ATaR description' do
       result
 
       expect(ai_client).to have_received(:call).once.with(
         array_including(
           hash_including(role: 'system', content: a_string_including('GENERIC tier', 'ORDINARY tier', 'SPECIFIC tier')),
-          hash_including(role: 'user', content: a_string_including('Bed linen woven from cotton fabric')),
+          hash_including(role: 'user', content: 'Description: Bed linen woven from cotton fabric, printed with a floral pattern.'),
         ),
         model: 'gpt-5-mini-2025-08-07',
         event_kind: 'evaluation_gold_query_generation',
         timeout: 60,
       )
+    end
+
+    it 'leaves out the real search paragraph, because an ATaR has no real user search' do
+      result
+
+      expect(ai_client).to have_received(:call) do |messages, **|
+        expect(messages.first[:content]).not_to include('real user typed')
+        expect(messages.last[:content]).not_to include('Real user search')
+      end
+    end
+  end
+
+  context 'with a synthetic ATaR as the source' do
+    let(:synthetic_atar) do
+      create(
+        :tariff_knowledge_synthetic_atar,
+        real_user_search: 'lunch box',
+        description: 'Plastic lunch box with a lid, for carrying food.',
+        goods_nomenclature_item_id: '3924100000',
+      )
+    end
+    let(:source) { Evaluation::GoldQuerySource.from_synthetic_atar(synthetic_atar) }
+
+    def synthetic_tiers
+      { 'generic' => 'food box', 'ordinary' => 'plastic food container', 'specific' => 'plastic lunch box with clip lid' }
+    end
+
+    before { allow(ai_client).to receive(:call).and_return(synthetic_tiers) }
+
+    it 'sends the real user search and the description as two labelled lines' do
+      result
+
+      expect(ai_client).to have_received(:call).once.with(
+        array_including(
+          hash_including(role: 'user', content: "Real user search: lunch box\nDescription: Plastic lunch box with a lid, for carrying food."),
+        ),
+        model: 'gpt-5-mini-2025-08-07',
+        event_kind: 'evaluation_gold_query_generation',
+        timeout: 60,
+      )
+    end
+
+    it 'adds the real search paragraph to the system prompt, after the normal prompt' do
+      result
+
+      expect(ai_client).to have_received(:call) do |messages, **|
+        system_prompt = messages.first[:content]
+        expect(system_prompt).to start_with(described_class::SYSTEM_PROMPT)
+        expect(system_prompt).to end_with(described_class::REAL_SEARCH_NOTE)
+        expect(system_prompt).to include('a real user typed into the tariff search')
+      end
+    end
+
+    it 'persists 3 rows for the synthetic ATaR, using its id as the source id' do
+      result
+
+      rows = EvaluationGoldQuery.where(source_type: 'synthetic_atar', source_id: synthetic_atar.id.to_s).order(:persona).all
+      expect(rows.map(&:persona)).to eq(%w[emu_generic emu_ordinary emu_specific])
+      expect(rows.map(&:expected_code).uniq).to eq(%w[3924100000])
+    end
+
+    it 'does not count a phrase that repeats the real search as leaked source text' do
+      allow(ai_client).to receive(:call).and_return(synthetic_tiers.merge('generic' => 'lunch box'))
+
+      expect(result).to include('generic' => 'lunch box')
+    end
+
+    context 'when a phrase copies the start of the description' do
+      let(:synthetic_atar) do
+        create(:tariff_knowledge_synthetic_atar, real_user_search: 'lunch box', description: 'Plastic lunch box with a clip lid for food')
+      end
+
+      it 'is still rejected (the leak check reads the description, as it does for an ATaR)' do
+        allow(ai_client).to receive(:call).and_return(synthetic_tiers.merge('specific' => 'plastic lunch box with a clip lid for food'))
+
+        expect(result).to be_nil
+      end
     end
   end
 
@@ -211,7 +289,7 @@ RSpec.describe Evaluation::GoldQueryGenerator do
 
     it 'returns nil without raising, and logs a warning including the HTTP status' do
       expect(result).to be_nil
-      expect(Rails.logger).to have_received(:warn).with(/Gold query generation failed for ATaR 600014988/).exactly(3).times
+      expect(Rails.logger).to have_received(:warn).with(/Gold query generation failed for atar 600014988/).exactly(3).times
       expect(Rails.logger).to have_received(:warn).with(/status=500/).exactly(3).times
     end
   end
