@@ -46,6 +46,59 @@ RSpec.describe SearchAnalytics::DailyResults do
     SearchAnalyticsQueryResult.where(reporting_date: date, name:).update(rows: Sequel.pg_jsonb(rows))
   end
 
+  def action(keys, type, classification, source = 'frontend')
+    { 'journey_keys' => keys, 'search_type' => type, 'search_action' => classification, 'request_source' => source }
+  end
+
+  it 'deduplicates actions and retains view boundaries' do
+    [first_date, last_date].each do |date|
+      replace_rows(date, 'search_actions', [
+        action([date.iso8601], 'classic', 'navigation'),
+        action(%w[shared shared], 'interactive', 'search'),
+        action(%w[shared], 'internal', 'search'),
+        action(%w[shared], 'classic', 'navigation', 'admin'),
+        action(%w[orphan], 'classic', 'search'),
+      ])
+    end
+    expect(read('all').payload.dig('actions', 'summary')).to eq('total' => 3, 'navigation' => 2, 'search' => 1, 'unclassified' => 0)
+    expect(read('classic').payload.dig('actions', 'summary')).to eq('total' => 2, 'navigation' => 2, 'search' => 0, 'unclassified' => 0)
+    expect(read('internal').payload.dig('actions', 'summary')).to eq('total' => 1, 'navigation' => 0, 'search' => 1, 'unclassified' => 0)
+    expect(read('internal').payload.dig('actions', 'trend').pluck('search')).to eq([1, 1])
+  end
+
+  it 'keeps conflicting evidence unclassified' do
+    replace_rows(first_date, 'search_actions', [action(%w[shared], 'interactive', 'search')])
+    replace_rows(last_date, 'search_actions', [action(%w[shared], 'internal', 'navigation')])
+    expect(read.payload.dig('actions', 'summary')).to eq('total' => 1, 'navigation' => 0, 'search' => 0, 'unclassified' => 1)
+  end
+
+  it 'keeps missing and invalid evidence unknown' do
+    replace_rows(last_date, 'search_actions', [action(%w[shared], 'interactive', 'unexpected')])
+    expect(read('all').payload.dig('actions', 'summary')).to eq('total' => 3, 'navigation' => 0, 'search' => 0, 'unclassified' => 3)
+  end
+
+  it 'does not relabel old headline-only days' do
+    SearchAnalyticsQueryResult.where(name: 'search_actions').delete
+    payload = read('classic').payload
+    expect(payload.dig('summary', 'searches')).to eq(2)
+    expect(payload.dig('actions', 'summary')).to eq('total' => 2, 'navigation' => nil, 'search' => nil, 'unclassified' => 2)
+    expect(payload.dig('actions', 'available')).to be(false)
+    expect(payload.dig('coverage', 'queries')).not_to have_key('search_actions')
+  end
+
+  it 'keeps stale action queries unavailable' do
+    replace_rows(last_date, 'search_actions', [action(%w[shared], 'interactive', 'navigation')])
+    SearchAnalyticsQueryResult.where(name: 'search_actions').update(fingerprint: 'stale')
+    expect(read.payload.dig('actions', 'summary')).to include('navigation' => nil, 'search' => nil, 'unclassified' => 1)
+  end
+
+  it 'does not use action-only IDs as starts' do
+    replace_rows(last_date, 'search_journeys', [])
+    replace_rows(last_date, 'search_actions', [action(%w[shared], 'interactive', 'search')])
+    payload = read('internal', '24h').payload
+    expect(payload.dig('actions', 'summary')).to eq('total' => 0, 'navigation' => 0, 'search' => 0, 'unclassified' => 0)
+  end
+
   it 'deduplicates the same frontend journey across days without collapsing its AI calls' do
     payload = read.payload
     expect(payload['summary']).to include('searches' => 1, 'requests' => 6)

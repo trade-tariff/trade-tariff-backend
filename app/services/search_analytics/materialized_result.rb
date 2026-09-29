@@ -5,7 +5,7 @@ module SearchAnalytics
     Result = Data.define(:available, :value)
     METADATA = %i[id service name reporting_date fingerprint collected_at].freeze
     PROJECTED = %w[search_journeys journey_outcomes search_term_improvements item_id_improvements].freeze
-    UNLOADED = (PROJECTED + %w[classic_outcomes]).freeze
+    UNLOADED = (PROJECTED + %w[classic_outcomes search_actions]).freeze
 
     def self.call(...) = new(...).call
 
@@ -20,7 +20,7 @@ module SearchAnalytics
       @service = TradeTariffBackend.service
       # Fingerprints do not depend on the reporting date; collection requires a completed day.
       @definitions = DailyQuery.new(reporting_date: last_date, region:, log_group_name:, now:).fingerprints
-      @required = @definitions.keys - %w[frontend_events journey_outcomes classic_outcomes]
+      @required = @definitions.keys - %w[frontend_events journey_outcomes classic_outcomes search_actions]
     end
 
     def call
@@ -80,6 +80,7 @@ module SearchAnalytics
       attach_outcomes(payload, projection, metadata, dates)
       payload['frontend_events'] = FrontendEvents.call(records: frontend, dates: @dates, supported: @service == 'uk' && @period.view != 'classic')
       payload.merge!(OutcomeRates.call(service: @service, dates: @dates, view: @period.view, definitions: @definitions))
+      payload['actions'] = ActionBreakdown.call(service: @service, dates: @dates, period: @period, definitions: @definitions, payload:, materialized: true)
       payload['coverage'] = DailyResults.coverage(
         dates: @dates, collected_dates:, records: present, required: @required,
       )
