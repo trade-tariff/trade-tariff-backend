@@ -197,6 +197,12 @@ coverage. Range classification uses evidence within the selected dates; daily
 buckets without action collection remain unavailable. Without journey collection,
 the action summary is null. Existing rates and their denominators are unchanged.
 
+The fallback reader uses one read-only, repeatable-read transaction for the whole
+response. Concurrent collection cannot mix an old headline with a newer action
+population. A caller that already owns a transaction must use repeatable-read or
+serializable isolation; a nested transaction cannot strengthen read-committed
+isolation.
+
 Both readers aggregate classifications in PostgreSQL. The indexed reader uses
 the existing daily journey materialized view for its population; the fallback
 reader uses stored start sets. No materialized-view migration or refresh is needed

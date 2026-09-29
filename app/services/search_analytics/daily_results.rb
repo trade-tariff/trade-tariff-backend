@@ -9,7 +9,15 @@ module SearchAnalytics
       legacy_call(period:, region:, log_group_name:, date_range:, now:)
     end
 
-    def self.legacy_call(period:, region:, log_group_name: DailyQuery::SEARCH_LOG_GROUP_NAME, date_range: nil, now: Time.current)
+    # Nested transactions cannot strengthen the caller's isolation. Callers that
+    # already own a transaction must use repeatable-read or serializable isolation.
+    def self.legacy_call(...)
+      SearchAnalyticsQueryResult.db.transaction(isolation: :repeatable, read_only: true) do
+        legacy_snapshot(...)
+      end
+    end
+
+    def self.legacy_snapshot(period:, region:, log_group_name: DailyQuery::SEARCH_LOG_GROUP_NAME, date_range: nil, now: Time.current)
       if date_range
         date_range = DateRange.parse(from: date_range.from.iso8601, to: date_range.to.iso8601, now:)
         period = Period.for_range(date_range:, view: period.view)
@@ -74,6 +82,8 @@ module SearchAnalytics
         data_through: collected_dates.last.to_time(:utc) + 1.day, payload:
       )
     end
+
+    private_class_method :legacy_snapshot
 
     def self.coverage(dates:, collected_dates:, records:, required:)
       present = records.group_by(&:name).transform_values { |rows| rows.map(&:reporting_date).uniq.sort }

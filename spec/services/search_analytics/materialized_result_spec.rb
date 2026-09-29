@@ -188,8 +188,8 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
       expect(terms.count { |row| row['term_type'] == 'search_terms' }).to eq(100)
     end
 
-    it 'declines the fast path inside an existing caller transaction' do
-      SearchAnalyticsQueryResult.db.transaction do
+    it 'declines the fast path inside a caller-owned snapshot' do
+      SearchAnalyticsQueryResult.db.transaction(isolation: :repeatable) do
         expect(described_class.call(**arguments).available).to be(false)
         expect(SearchAnalytics::DailyResults.call(**arguments)).to eq(SearchAnalytics::DailyResults.legacy_call(**arguments))
       end
