@@ -133,7 +133,7 @@ CI enforces two things:
 - **`swagger:check_coverage`** — fails if any public V2 controller has no swagger spec
 - **`swagger:generate` + auto-commit** — regenerates and commits `swagger.json` after specs pass
 
-Internal/authenticated controllers (green lanes, enquiry form, etc.) are explicitly excluded in `lib/tasks/swagger.rake`.
+Internal/authenticated controllers (green lanes, notifications, etc.) are explicitly excluded in `lib/tasks/swagger.rake`.
 
 ## Understanding the codebase
 
