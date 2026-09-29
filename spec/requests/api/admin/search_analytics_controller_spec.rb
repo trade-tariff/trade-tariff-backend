@@ -132,13 +132,13 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
     Sidekiq::Testing.fake! do
       SearchAnalyticsQueryWorker.clear
       SearchAnalyticsQueryWorker.new.perform
-      expect(SearchAnalyticsQueryWorker.jobs.size).to eq(TradeTariffBackend.service == 'uk' ? 13 : 12)
+      expect(SearchAnalyticsQueryWorker.jobs.size).to eq(TradeTariffBackend.service == 'uk' ? 15 : 14)
       SearchAnalyticsQueryWorker.drain
     end
     request_analytics
     expect(response).to have_http_status(:ok)
     expect(attributes['coverage']).to include('complete' => true, 'collected_days' => 1)
-    expect(SearchAnalyticsQueryResult.count).to eq(TradeTariffBackend.service == 'uk' ? 13 : 12)
+    expect(SearchAnalyticsQueryResult.count).to eq(TradeTariffBackend.service == 'uk' ? 15 : 14)
   end
 
   it 'normalises unknown period and view values' do

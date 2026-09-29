@@ -200,9 +200,9 @@ RSpec.describe SearchAnalytics::DailyResults do
     expect(payload.dig('trends', 'volume').map { |row| row['internal'] }).to eq([1, 1])
   end
 
-  it 'derives existing rates from their summed request denominators, not the journey headline' do
+  it 'keeps request-based diagnostics separate from the journey headline and unavailable selection rates' do
     payload = read('classic').payload
-    expect(payload['summary']).to include('searches' => 2, 'requests' => 100, 'failure_rate' => 0.02, 'zero_result_rate' => 3.0 / 44, 'selection_rate' => 4.0 / 44)
+    expect(payload['summary']).to include('searches' => 2, 'requests' => 100, 'failure_rate' => 0.02, 'zero_result_rate' => 3.0 / 44, 'selection_rate' => nil)
     expect(payload['improvement_terms']).to include('query' => 'trainers', 'term_type' => 'search_terms', 'zero_results' => 3)
   end
 

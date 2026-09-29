@@ -6,7 +6,7 @@ module SearchAnalytics
     ROW_LIMIT = 10_000
     MAX_PARTITIONS = 127
     PROCESSING_VERSION = 1
-    IDENTIFIER_QUERIES = %w[search_journeys journey_outcomes search_actions].freeze
+    IDENTIFIER_QUERIES = %w[search_journeys journey_outcomes search_actions selection_results selection_pages].freeze
 
     attr_reader :reporting_date
 
@@ -77,6 +77,8 @@ module SearchAnalytics
       definitions['journey_outcomes'] = JourneyOutcomesQuery.call(source:, log_stream_filter:, zero_result_condition:)
       definitions['classic_outcomes'] = ClassicOutcomesQuery.call(source:, log_stream_filter:)
       definitions['search_results'] = search_results_query
+      definitions['selection_results'] = SelectionQuery.results(source:, log_stream_filter:, request_exclusion_filter:)
+      definitions['selection_pages'] = SelectionQuery.selections(source:)
       definitions
     end
 
@@ -151,13 +153,15 @@ module SearchAnalytics
 
       rows, matched = execute_window(sql, start_at, end_at)
       complete = rows.size < ROW_LIMIT
-      if (IDENTIFIER_QUERIES + %w[frontend_events classic_outcomes]).include?(name)
+      # CloudWatch reports the failure subquery's records_matched for this query,
+      # not its result cohort. Its exact distinct-ID count is checked below.
+      if (IDENTIFIER_QUERIES + %w[frontend_events classic_outcomes] - %w[selection_results]).include?(name)
         raise QueryError, 'Missing journey completeness statistics' if matched.nil?
 
         count_field = name == 'search_journeys' ? 'started_events' : 'event_count'
         complete &&= rows.sum { |row| Integer(row.fetch(count_field)) } == matched
       end
-      complete &&= rows.all? { |row| complete_identifier_set?(row) } if %w[journey_outcomes search_actions].include?(name)
+      complete &&= rows.all? { |row| complete_identifier_set?(row) } if (IDENTIFIER_QUERIES - %w[search_journeys]).include?(name)
       if complete
         return rows unless name == 'journey_outcomes'
 

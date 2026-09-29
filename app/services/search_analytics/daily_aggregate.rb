@@ -3,7 +3,8 @@
 module SearchAnalytics
   # Adapts complete daily query results to the existing dashboard payload.
   class DailyAggregate < CloudwatchSnapshotQuery::Aggregate
-    def initialize(period:, results:, journeys: nil, cost_keys: nil, query_dates: nil)
+    def initialize(period:, results:, journeys: nil, cost_keys: nil, query_dates: nil, selection_rates: nil)
+      @selection_rates = selection_rates
       @query_dates = query_dates || {}
       @search_results = results.fetch('search_results', [])
       @journeys = journeys || Period::VIEWS.index_with do |view|
@@ -33,6 +34,8 @@ module SearchAnalytics
       payload_for(period.view).merge(
         'journeys' => { 'count' => journey_count(period.view) },
         'availability' => {
+          'selection_rate_result_journeys' => !@selection_rates.nil?,
+          'selection_rate_coverage' => @selection_rates&.fetch(:coverage),
           'zero_result_rate_search_only' => true,
           'zero_result_rate_coverage' => search_result_coverage,
           'journey_metrics' => query_present?('search_journeys'),
@@ -82,14 +85,23 @@ module SearchAnalytics
         'zero_result_rate' => search_result_rate(view),
         'completed_searches' => search_result_count(view, 'searches'),
         'zero_result_searches' => search_result_count(view, 'zero_results')
-      )
+      ).merge(selection_stats(view))
     end
 
     def comparison_for(view, request_source: nil)
       original = super
       count = journey_count(view)
       count = 0 if count && request_source && request_source != 'frontend'
-      original.merge(request_metrics(original, view)).merge('searches' => count, 'zero_result_rate' => search_result_rate(view, request_source:))
+      original.merge(request_metrics(original, view)).merge('searches' => count, 'zero_result_rate' => search_result_rate(view, request_source:)).merge(selection_stats(view, request_source:))
+    end
+
+    def selection_stats(view, request_source: nil)
+      return {} unless @selection_rates
+
+      stats = @selection_rates.fetch(:views).fetch(view)
+      return stats if request_source.nil? || request_source == 'frontend'
+
+      stats.transform_values { nil }
     end
 
     def journey_count(view)
