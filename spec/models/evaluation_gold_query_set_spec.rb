@@ -80,6 +80,61 @@ RSpec.describe EvaluationGoldQuerySet do
     end
   end
 
+  describe '.record_item_result' do
+    let(:gold_query_set) { create(:evaluation_gold_query_set, planned_count: 3, status: 'generating') }
+
+    def failure(source_id)
+      { 'source_type' => 'atar', 'source_id' => source_id, 'error' => 'no acceptable phrases' }
+    end
+
+    it 'counts a generated item and keeps generating until every planned item has finished' do
+      described_class.record_item_result(gold_query_set.id)
+
+      expect(gold_query_set.reload).to have_attributes(generated_count: 1, failed_count: 0, status: 'generating')
+    end
+
+    it 'counts a failed item, keeps the failure and keeps generating' do
+      described_class.record_item_result(gold_query_set.id, failure: failure('600000001'))
+
+      expect(gold_query_set.reload).to have_attributes(generated_count: 0, failed_count: 1, status: 'generating')
+      expect(gold_query_set.failures.to_a.map(&:to_h)).to eq([failure('600000001')])
+    end
+
+    it 'becomes ready when every item generated' do
+      3.times { described_class.record_item_result(gold_query_set.id) }
+
+      expect(gold_query_set.reload).to have_attributes(generated_count: 3, failed_count: 0, status: 'ready')
+    end
+
+    it 'becomes partly_failed when some items failed' do
+      2.times { described_class.record_item_result(gold_query_set.id) }
+      described_class.record_item_result(gold_query_set.id, failure: failure('600000003'))
+
+      expect(gold_query_set.reload).to have_attributes(generated_count: 2, failed_count: 1, status: 'partly_failed')
+    end
+
+    it 'becomes failed when every item failed, and lists every failure in order' do
+      %w[600000001 600000002 600000003].each { |id| described_class.record_item_result(gold_query_set.id, failure: failure(id)) }
+
+      expect(gold_query_set.reload).to have_attributes(generated_count: 0, failed_count: 3, status: 'failed')
+      expect(gold_query_set.failures.to_a.map { |entry| entry['source_id'] }).to eq(%w[600000001 600000002 600000003])
+    end
+
+    it 'does nothing for a set that no longer exists' do
+      expect(described_class.record_item_result(999_999)).to eq(0)
+    end
+
+    it 'adds to the counters stored in the database, not to a stale copy in memory' do
+      stale = described_class[gold_query_set.id]
+      described_class.record_item_result(gold_query_set.id)
+      described_class.record_item_result(gold_query_set.id)
+
+      described_class.record_item_result(stale.id)
+
+      expect(gold_query_set.reload.generated_count).to eq(3)
+    end
+  end
+
   describe 'gold queries' do
     let(:gold_query_set) { create(:evaluation_gold_query_set) }
 
