@@ -144,6 +144,15 @@ AdminApi.routes.draw do
             get :versions
           end
         end
+        resources :tariff_knowledge_synthetic_atars, only: %i[index show create update destroy] do
+          collection do
+            post :bulk_import
+          end
+
+          member do
+            get :versions
+          end
+        end
         resources :goods_nomenclature_autocomplete, only: [:index]
       end
 

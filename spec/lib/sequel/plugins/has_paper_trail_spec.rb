@@ -91,6 +91,7 @@ RSpec.describe Sequel::Plugins::HasPaperTrail do
         SearchReference
         SectionNote
         TariffKnowledge::Node
+        TariffKnowledge::SyntheticAtar
       ])
     end
   end

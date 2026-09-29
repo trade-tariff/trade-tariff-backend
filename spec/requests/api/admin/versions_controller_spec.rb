@@ -167,6 +167,21 @@ RSpec.describe Api::Admin::VersionsController do
       end
     end
 
+    context 'with a TariffKnowledge::SyntheticAtar' do
+      let!(:synthetic_atar) { create(:tariff_knowledge_synthetic_atar, notes: 'original note') }
+
+      before { synthetic_atar.update(notes: 'changed note') }
+
+      it 'restores the synthetic ATaR to a previous version' do
+        version = synthetic_atar.versions.first
+
+        post "/uk/admin/versions/#{version.id}/restore.json", headers: request_headers(format: :json), as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(synthetic_atar.reload.notes).to eq('original note')
+      end
+    end
+
     context 'with a GoodsNomenclatureIntercept' do
       let!(:intercept) { create(:goods_nomenclature_intercept, message: 'original commodity guidance') }
 

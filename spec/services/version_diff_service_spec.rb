@@ -110,6 +110,18 @@ RSpec.describe VersionDiffService do
       end
     end
 
+    context 'with TariffKnowledge::SyntheticAtar changes' do
+      it 'ignores the id and timestamps and reports only the edited fields' do
+        old_obj = { 'id' => 1, 'notes' => 'first note', 'chapter' => '39', 'updated_at' => '2026-09-25T10:00:00Z' }
+        new_obj = { 'id' => 1, 'notes' => 'second note', 'chapter' => '39', 'updated_at' => '2026-09-25T11:00:00Z' }
+
+        result = described_class.new('TariffKnowledge::SyntheticAtar', old_obj, new_obj).call
+
+        expect(result['changed_fields']).to eq(%w[notes])
+        expect(result['changes']['notes']).to include('old' => 'first note', 'new' => 'second note')
+      end
+    end
+
     context 'with DescriptionIntercept changes' do
       it 'shows array diffs for sources and simple diffs for other fields' do
         old_obj = { 'id' => 1, 'term' => 'footwear', 'sources' => %w[guided_search], 'excluded' => false }
