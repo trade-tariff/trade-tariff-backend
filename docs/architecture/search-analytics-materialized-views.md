@@ -29,6 +29,32 @@ repeated-identity observations needed for later range reconciliation. They do
 not store term rankings or identifier collections. Compatible populated views
 serve API reads. Missing, stale or incompatible views use the legacy reader.
 
+Outcome rates use a separate helper, `SearchAnalytics::OutcomeRatesViews`.
+Its matviews are not part of `MaterializedViews::MODELS`. An unpopulated
+outcome matview does not make the journey dashboard unready and does not
+force that dashboard onto the legacy reader. Page reads do not refresh either
+helper and do not collect logs. Outcome counts are summed from the matviews
+after SQL has classified identities. Ruby does not aggregate those identities.
+
+The outcome relations are:
+
+- `search_analytics_frontend_event_rows` and
+  `search_analytics_frontend_event_occurrences` deduplicate a logical
+  `event_key` by the earliest observed time. A delayed duplicate does not
+  replace a later outcome.
+- `search_analytics_guided_outcome_counts` and
+  `search_analytics_question_outcome_counts` store one count per service,
+  UTC day and class.
+- `search_analytics_classic_outcome_rows` and
+  `search_analytics_classic_outcome_counts` classify classic completions by
+  total `result_count`. They do not read `commodity_result_count`.
+- `search_analytics_outcome_source_revisions` records the outcome-query
+  slots used for freshness. It does not replace journey source revisions.
+
+Collection refreshes outcome views only when they are already populated.
+`search_analytics:refresh_views` bootstraps both helpers. Bootstrap does not
+recollect CloudWatch.
+
 ## Migration and initial population
 
 Versioned Sequel migrations create the views, materialized views, supporting

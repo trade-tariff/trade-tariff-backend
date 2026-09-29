@@ -57,6 +57,7 @@ RSpec.describe SearchAnalyticsQueryWorker, type: :worker do
     client.stub_responses(:start_query, query_id: 'query-id')
     client.stub_responses(:get_query_results, status: 'Complete', results: [], statistics: { records_matched: 0.0 })
     allow(SearchAnalytics::MaterializedViews).to receive(:refresh!).and_return(true)
+    allow(SearchAnalytics::OutcomeRatesViews).to receive(:refresh!).and_return(true)
   end
 
   it 'disables automatic Sidekiq retries' do
@@ -177,6 +178,16 @@ RSpec.describe SearchAnalyticsQueryWorker, type: :worker do
   it 'does not refresh after an unrelated query in a partially collected day' do
     allow(Aws::CloudWatchLogs::Client).to receive(:new).and_return(client)
     described_class.new.perform(date.iso8601, 'volume', region, group)
+    expect(SearchAnalytics::MaterializedViews).not_to have_received(:refresh!)
+    expect(SearchAnalytics::OutcomeRatesViews).not_to have_received(:refresh!)
+  end
+
+  it 'refreshes populated outcome views after an outcome replacement without bootstrapping' do
+    allow(Aws::CloudWatchLogs::Client).to receive(:new).and_return(client)
+    names = %w[classic_outcomes]
+    names << 'frontend_events' if TradeTariffBackend.service == 'uk'
+    names.each { |name| described_class.new.perform(date.iso8601, name, region, group) }
+    expect(SearchAnalytics::OutcomeRatesViews).to have_received(:refresh!).with(wait: true, only_if_populated: true).exactly(names.size).times
     expect(SearchAnalytics::MaterializedViews).not_to have_received(:refresh!)
   end
 

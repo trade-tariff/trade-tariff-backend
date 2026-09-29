@@ -8,6 +8,7 @@ RSpec.describe 'search analytics materialized view rake tasks' do
       task.reenable
       allow(ENV).to receive(:[]).and_call_original
       allow(SearchAnalytics::MaterializedViews).to receive(:refresh!).and_return(true)
+      allow(SearchAnalytics::OutcomeRatesViews).to receive(:refresh!).and_return(false)
     end
 
     it 'refreshes views without waiting for the lock' do
@@ -16,6 +17,7 @@ RSpec.describe 'search analytics materialized view rake tasks' do
 
       expect { task.invoke }.to output(/Refreshed search analytics materialized views/).to_stdout
       expect(SearchAnalytics::MaterializedViews).to have_received(:refresh!).with(wait: false, force: false)
+      expect(SearchAnalytics::OutcomeRatesViews).to have_received(:refresh!).with(wait: false, force: false)
     end
 
     it 'waits for the lock when WAIT is true' do
@@ -24,6 +26,7 @@ RSpec.describe 'search analytics materialized view rake tasks' do
 
       expect { task.invoke }.to output(/Refreshed search analytics materialized views/).to_stdout
       expect(SearchAnalytics::MaterializedViews).to have_received(:refresh!).with(hash_including(wait: true, force: false))
+      expect(SearchAnalytics::OutcomeRatesViews).to have_received(:refresh!).with(hash_including(wait: true, force: false))
     end
 
     it 'forces a rebuild when FORCE is true' do
@@ -32,6 +35,7 @@ RSpec.describe 'search analytics materialized view rake tasks' do
 
       expect { task.invoke }.to output(/Refreshed search analytics materialized views/).to_stdout
       expect(SearchAnalytics::MaterializedViews).to have_received(:refresh!).with(hash_including(force: true))
+      expect(SearchAnalytics::OutcomeRatesViews).to have_received(:refresh!).with(hash_including(force: true))
     end
 
     it 'reports when source revisions already match' do

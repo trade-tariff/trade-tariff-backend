@@ -576,6 +576,252 @@ CREATE MATERIALIZED VIEW uk.search_analytics_source_revisions AS
   WITH NO DATA;
 
 --
+-- Name: search_analytics_classic_outcome_rows; Type: VIEW; Schema: uk; Owner: -
+--
+
+CREATE VIEW uk.search_analytics_classic_outcome_rows AS
+ SELECT r.service,
+    r.reporting_date,
+    decode(
+        CASE
+            WHEN ((j."row" ->> 'journey_key'::text) ~ '^[0-9a-f]{64}$'::text) THEN (j."row" ->> 'journey_key'::text)
+            ELSE 'invalid journey key'::text
+        END, 'hex'::text) AS journey_key,
+    ((j."row" ->> 'observed_at'::text))::timestamp with time zone AS observed_at,
+    ((j."row" ->> 'result_count'::text))::bigint AS result_count
+   FROM (uk.search_analytics_query_results r
+     CROSS JOIN LATERAL jsonb_array_elements(r.rows) j("row"))
+  WHERE ((r.name = 'classic_outcomes'::text) AND ((j."row" ->> 'journey_key'::text) ~ '^[0-9a-f]{64}$'::text) AND ((j."row" ->> 'observed_at'::text) IS NOT NULL) AND ((j."row" ->> 'result_count'::text) ~ '^[0-9]+$'::text) AND (((j."row" ->> 'result_count'::text))::bigint >= 0));
+
+
+--
+-- Name: search_analytics_classic_outcome_counts; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
+--
+
+CREATE MATERIALIZED VIEW uk.search_analytics_classic_outcome_counts AS
+ SELECT service,
+    reporting_date,
+    outcome,
+    sum(searches) AS searches
+   FROM ( SELECT r.service,
+            r.reporting_date,
+            (j."row" ->> 'outcome'::text) AS outcome,
+            ((j."row" ->> 'searches'::text))::bigint AS searches
+           FROM (uk.search_analytics_query_results r
+             CROSS JOIN LATERAL jsonb_array_elements(r.rows) j("row"))
+          WHERE ((r.name = 'classic_outcomes'::text) AND ((j."row" ->> 'outcome'::text) = ANY (ARRAY['results'::text, 'no_results'::text])) AND ((j."row" ->> 'searches'::text) ~ '^[0-9]+$'::text))
+        UNION ALL
+         SELECT classified.service,
+            classified.reporting_date,
+                CASE
+                    WHEN (classified.result_count = 0) THEN 'no_results'::text
+                    ELSE 'results'::text
+                END AS outcome,
+            1 AS searches
+           FROM ( SELECT DISTINCT ON (search_analytics_classic_outcome_rows.service, search_analytics_classic_outcome_rows.reporting_date, search_analytics_classic_outcome_rows.journey_key) search_analytics_classic_outcome_rows.service,
+                    search_analytics_classic_outcome_rows.reporting_date,
+                    search_analytics_classic_outcome_rows.result_count
+                   FROM uk.search_analytics_classic_outcome_rows
+                  ORDER BY search_analytics_classic_outcome_rows.service, search_analytics_classic_outcome_rows.reporting_date, search_analytics_classic_outcome_rows.journey_key, search_analytics_classic_outcome_rows.observed_at DESC) classified) combined
+  GROUP BY service, reporting_date, outcome
+  WITH NO DATA;
+
+
+--
+-- Name: search_analytics_frontend_event_rows; Type: VIEW; Schema: uk; Owner: -
+--
+
+CREATE VIEW uk.search_analytics_frontend_event_rows AS
+ SELECT r.service,
+    r.reporting_date,
+    decode(
+        CASE
+            WHEN ((j."row" ->> 'journey_key'::text) ~ '^[0-9a-f]{64}$'::text) THEN (j."row" ->> 'journey_key'::text)
+            ELSE 'invalid journey key'::text
+        END, 'hex'::text) AS journey_key,
+        CASE
+            WHEN ((j."row" ->> 'event_key'::text) ~ '^[0-9a-f]{64}$'::text) THEN decode((j."row" ->> 'event_key'::text), 'hex'::text)
+            ELSE NULL::bytea
+        END AS event_key,
+        CASE
+            WHEN ((j."row" ->> 'question_key'::text) ~ '^[0-9a-f]{64}$'::text) THEN decode((j."row" ->> 'question_key'::text), 'hex'::text)
+            ELSE NULL::bytea
+        END AS question_key,
+    ((j."row" ->> 'observed_at'::text))::timestamp with time zone AS observed_at,
+    (j."row" ->> 'outcome'::text) AS outcome,
+    COALESCE((j."row" ->> 'destination'::text), ''::text) AS destination,
+    COALESCE((j."row" ->> 'response_source'::text), ''::text) AS response_source
+   FROM (uk.search_analytics_query_results r
+     CROSS JOIN LATERAL jsonb_array_elements(r.rows) j("row"))
+  WHERE ((r.name = 'frontend_events'::text) AND ((j."row" ->> 'journey_key'::text) IS NOT NULL) AND ((j."row" ->> 'observed_at'::text) IS NOT NULL));
+
+
+--
+-- Name: search_analytics_frontend_event_occurrences; Type: VIEW; Schema: uk; Owner: -
+--
+
+CREATE VIEW uk.search_analytics_frontend_event_occurrences AS
+ SELECT deduplicated_events.service,
+    deduplicated_events.reporting_date,
+    deduplicated_events.journey_key,
+    deduplicated_events.event_key,
+    deduplicated_events.question_key,
+    deduplicated_events.observed_at,
+    deduplicated_events.outcome,
+    deduplicated_events.destination,
+    deduplicated_events.response_source
+   FROM ( SELECT DISTINCT ON (search_analytics_frontend_event_rows.service, search_analytics_frontend_event_rows.reporting_date, search_analytics_frontend_event_rows.event_key) search_analytics_frontend_event_rows.service,
+            search_analytics_frontend_event_rows.reporting_date,
+            search_analytics_frontend_event_rows.journey_key,
+            search_analytics_frontend_event_rows.event_key,
+            search_analytics_frontend_event_rows.question_key,
+            search_analytics_frontend_event_rows.observed_at,
+            search_analytics_frontend_event_rows.outcome,
+            search_analytics_frontend_event_rows.destination,
+            search_analytics_frontend_event_rows.response_source
+           FROM uk.search_analytics_frontend_event_rows
+          WHERE (search_analytics_frontend_event_rows.event_key IS NOT NULL)
+          ORDER BY search_analytics_frontend_event_rows.service, search_analytics_frontend_event_rows.reporting_date, search_analytics_frontend_event_rows.event_key, search_analytics_frontend_event_rows.observed_at, search_analytics_frontend_event_rows.outcome) deduplicated_events
+UNION ALL
+ SELECT search_analytics_frontend_event_rows.service,
+    search_analytics_frontend_event_rows.reporting_date,
+    search_analytics_frontend_event_rows.journey_key,
+    search_analytics_frontend_event_rows.event_key,
+    search_analytics_frontend_event_rows.question_key,
+    search_analytics_frontend_event_rows.observed_at,
+    search_analytics_frontend_event_rows.outcome,
+    search_analytics_frontend_event_rows.destination,
+    search_analytics_frontend_event_rows.response_source
+   FROM uk.search_analytics_frontend_event_rows
+  WHERE (search_analytics_frontend_event_rows.event_key IS NULL);
+
+
+--
+-- Name: search_analytics_guided_outcome_counts; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
+--
+
+CREATE MATERIALIZED VIEW uk.search_analytics_guided_outcome_counts AS
+ WITH starts AS (
+         SELECT DISTINCT search_analytics_frontend_event_occurrences.service,
+            search_analytics_frontend_event_occurrences.reporting_date,
+            search_analytics_frontend_event_occurrences.journey_key
+           FROM uk.search_analytics_frontend_event_occurrences
+          WHERE (search_analytics_frontend_event_occurrences.outcome = 'initial_submitted'::text)
+        ), terminals AS (
+         SELECT DISTINCT ON (search_analytics_frontend_event_occurrences.service, search_analytics_frontend_event_occurrences.reporting_date, search_analytics_frontend_event_occurrences.journey_key) search_analytics_frontend_event_occurrences.service,
+            search_analytics_frontend_event_occurrences.reporting_date,
+            search_analytics_frontend_event_occurrences.journey_key,
+                CASE
+                    WHEN (search_analytics_frontend_event_occurrences.outcome = 'dont_know'::text) THEN 'dont_know'::text
+                    WHEN (search_analytics_frontend_event_occurrences.destination = ANY (ARRAY['results'::text, 'no_results'::text, 'unknown_results'::text, 'blocking_guidance'::text])) THEN search_analytics_frontend_event_occurrences.destination
+                    WHEN (search_analytics_frontend_event_occurrences.destination = ANY (ARRAY['input_error'::text, 'backend_error'::text])) THEN 'error'::text
+                    ELSE NULL::text
+                END AS outcome
+           FROM uk.search_analytics_frontend_event_occurrences
+          WHERE ((search_analytics_frontend_event_occurrences.outcome = 'dont_know'::text) OR ((search_analytics_frontend_event_occurrences.outcome = 'page_visible'::text) AND (search_analytics_frontend_event_occurrences.destination = ANY (ARRAY['results'::text, 'no_results'::text, 'unknown_results'::text, 'blocking_guidance'::text, 'input_error'::text, 'backend_error'::text]))))
+          ORDER BY search_analytics_frontend_event_occurrences.service, search_analytics_frontend_event_occurrences.reporting_date, search_analytics_frontend_event_occurrences.journey_key, search_analytics_frontend_event_occurrences.observed_at DESC,
+                CASE
+                    WHEN (search_analytics_frontend_event_occurrences.outcome = 'dont_know'::text) THEN 'dont_know'::text
+                    WHEN (search_analytics_frontend_event_occurrences.destination = ANY (ARRAY['results'::text, 'no_results'::text, 'unknown_results'::text, 'blocking_guidance'::text])) THEN search_analytics_frontend_event_occurrences.destination
+                    WHEN (search_analytics_frontend_event_occurrences.destination = ANY (ARRAY['input_error'::text, 'backend_error'::text])) THEN 'error'::text
+                    ELSE NULL::text
+                END
+        )
+ SELECT starts.service,
+    starts.reporting_date,
+    COALESCE(terminals.outcome, 'abandonment'::text) AS outcome,
+    count(*) AS journeys
+   FROM (starts
+     LEFT JOIN terminals USING (service, reporting_date, journey_key))
+  GROUP BY starts.service, starts.reporting_date, COALESCE(terminals.outcome, 'abandonment'::text)
+  WITH NO DATA;
+
+
+--
+-- Name: search_analytics_question_outcome_counts; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
+--
+
+CREATE MATERIALIZED VIEW uk.search_analytics_question_outcome_counts AS
+ WITH shown AS (
+         SELECT DISTINCT search_analytics_frontend_event_occurrences.service,
+            search_analytics_frontend_event_occurrences.reporting_date,
+            search_analytics_frontend_event_occurrences.journey_key,
+            search_analytics_frontend_event_occurrences.question_key
+           FROM uk.search_analytics_frontend_event_occurrences
+          WHERE ((search_analytics_frontend_event_occurrences.question_key IS NOT NULL) AND (((search_analytics_frontend_event_occurrences.outcome = 'page_visible'::text) AND (search_analytics_frontend_event_occurrences.destination = 'question'::text)) OR ((search_analytics_frontend_event_occurrences.outcome = 'answer_accepted'::text) AND (search_analytics_frontend_event_occurrences.response_source = 'server_accepted'::text)) OR (search_analytics_frontend_event_occurrences.outcome = 'dont_know'::text)))
+        ), responses AS (
+         SELECT DISTINCT ON (search_analytics_frontend_event_occurrences.service, search_analytics_frontend_event_occurrences.reporting_date, search_analytics_frontend_event_occurrences.journey_key, search_analytics_frontend_event_occurrences.question_key) search_analytics_frontend_event_occurrences.service,
+            search_analytics_frontend_event_occurrences.reporting_date,
+            search_analytics_frontend_event_occurrences.journey_key,
+            search_analytics_frontend_event_occurrences.question_key,
+                CASE
+                    WHEN (search_analytics_frontend_event_occurrences.outcome = 'dont_know'::text) THEN 'dont_know'::text
+                    ELSE 'server_accepted'::text
+                END AS outcome
+           FROM uk.search_analytics_frontend_event_occurrences
+          WHERE ((search_analytics_frontend_event_occurrences.question_key IS NOT NULL) AND ((search_analytics_frontend_event_occurrences.outcome = 'dont_know'::text) OR ((search_analytics_frontend_event_occurrences.outcome = 'answer_accepted'::text) AND (search_analytics_frontend_event_occurrences.response_source = 'server_accepted'::text))))
+          ORDER BY search_analytics_frontend_event_occurrences.service, search_analytics_frontend_event_occurrences.reporting_date, search_analytics_frontend_event_occurrences.journey_key, search_analytics_frontend_event_occurrences.question_key, search_analytics_frontend_event_occurrences.observed_at DESC,
+                CASE
+                    WHEN (search_analytics_frontend_event_occurrences.outcome = 'dont_know'::text) THEN 'dont_know'::text
+                    ELSE 'server_accepted'::text
+                END
+        )
+ SELECT shown.service,
+    shown.reporting_date,
+    COALESCE(responses.outcome, 'unanswered'::text) AS outcome,
+    count(*) AS questions
+   FROM (shown
+     LEFT JOIN responses USING (service, reporting_date, journey_key, question_key))
+  GROUP BY shown.service, shown.reporting_date, COALESCE(responses.outcome, 'unanswered'::text)
+  WITH NO DATA;
+
+
+--
+-- Name: search_analytics_outcome_source_revisions; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
+--
+
+CREATE MATERIALIZED VIEW uk.search_analytics_outcome_source_revisions AS
+ SELECT id,
+    service,
+    reporting_date,
+    name,
+    fingerprint,
+    collected_at,
+    1 AS definition_version
+   FROM uk.search_analytics_query_results
+  WHERE (name = ANY (ARRAY['frontend_events'::text, 'classic_outcomes'::text]))
+  WITH NO DATA;
+
+
+--
+-- Name: search_analytics_classic_outcome_counts_identity; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX search_analytics_classic_outcome_counts_identity ON uk.search_analytics_classic_outcome_counts USING btree (service, reporting_date, outcome);
+
+
+--
+-- Name: search_analytics_guided_outcome_counts_identity; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX search_analytics_guided_outcome_counts_identity ON uk.search_analytics_guided_outcome_counts USING btree (service, reporting_date, outcome);
+
+
+--
+-- Name: search_analytics_outcome_source_revisions_identity; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX search_analytics_outcome_source_revisions_identity ON uk.search_analytics_outcome_source_revisions USING btree (service, reporting_date, name);
+
+
+--
+-- Name: search_analytics_question_outcome_counts_identity; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX search_analytics_question_outcome_counts_identity ON uk.search_analytics_question_outcome_counts USING btree (service, reporting_date, outcome);
+
+
+--
 -- Name: search_analytics_snapshots; Type: TABLE; Schema: uk; Owner: -
 --
 
@@ -15372,3 +15618,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260915110000_create_sear
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260918070000_create_search_analytics_materialized_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260924130000_drop_tariff_update_presence_errors.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260925100000_create_tariff_knowledge_synthetic_atars.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260925120000_create_search_analytics_outcome_rate_views.rb');

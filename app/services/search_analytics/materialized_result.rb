@@ -5,6 +5,7 @@ module SearchAnalytics
     Result = Data.define(:available, :value)
     METADATA = %i[id service name reporting_date fingerprint collected_at].freeze
     PROJECTED = %w[search_journeys journey_outcomes search_term_improvements item_id_improvements].freeze
+    UNLOADED = (PROJECTED + %w[classic_outcomes]).freeze
 
     def self.call(...) = new(...).call
 
@@ -19,7 +20,7 @@ module SearchAnalytics
       @service = TradeTariffBackend.service
       # Fingerprints do not depend on the reporting date; collection requires a completed day.
       @definitions = DailyQuery.new(reporting_date: last_date, region:, log_group_name:, now:).fingerprints
-      @required = @definitions.keys - %w[frontend_events journey_outcomes]
+      @required = @definitions.keys - %w[frontend_events journey_outcomes classic_outcomes]
     end
 
     def call
@@ -55,7 +56,7 @@ module SearchAnalytics
   private
 
     def build(compatible, present, dates, metadata)
-      ids = compatible.reject { |row| PROJECTED.include?(row.name) }.map(&:id)
+      ids = compatible.reject { |row| UNLOADED.include?(row.name) }.map(&:id)
       frontend, backend = SearchAnalyticsQueryResult.where(id: ids).all.partition { |row| row.name == 'frontend_events' }
       results = (@required - PROJECTED).index_with do |name|
         backend.select { |row| row.name == name }.flat_map { |row| row.rows.to_a }
@@ -78,6 +79,7 @@ module SearchAnalytics
       payload = MaterializedAggregate.new(period: @period, results:, projection:, query_dates:).payload
       attach_outcomes(payload, projection, metadata, dates)
       payload['frontend_events'] = FrontendEvents.call(records: frontend, dates: @dates, supported: @service == 'uk' && @period.view != 'classic')
+      payload.merge!(OutcomeRates.call(service: @service, dates: @dates, view: @period.view, definitions: @definitions))
       payload['coverage'] = DailyResults.coverage(
         dates: @dates, collected_dates:, records: present, required: @required,
       )
