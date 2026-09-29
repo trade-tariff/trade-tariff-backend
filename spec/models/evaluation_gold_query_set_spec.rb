@@ -153,7 +153,16 @@ RSpec.describe EvaluationGoldQuerySet do
       gold_query_set = create(:evaluation_gold_query_set)
       create(:evaluation_experiment, gold_query_set_id: gold_query_set.id)
 
-      expect { gold_query_set.destroy }.to raise_error(Sequel::ForeignKeyConstraintViolation)
+      # Postgres 18 reworded RESTRICT-action FK violation messages to
+      # "violates RESTRICT setting of foreign key constraint" (was "violates
+      # foreign key constraint" on 15/16/17). Sequel 5.106.0 classifies this
+      # error by matching text against the raw message, so on 18 it falls back
+      # to the generic Sequel::DatabaseError instead of the specific
+      # Sequel::ForeignKeyConstraintViolation subclass. Both wordings still
+      # contain "foreign key constraint", so assert on that plus the common
+      # ancestor class rather than the version-dependent subclass. See the
+      # same fix in spec/models/evaluation_run_spec.rb.
+      expect { gold_query_set.destroy }.to raise_error(Sequel::DatabaseError, /foreign key constraint/)
       expect(described_class[gold_query_set.id]).to be_present
     end
   end
