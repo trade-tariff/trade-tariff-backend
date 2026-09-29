@@ -106,6 +106,28 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
       expect(result.dig('actions', 'trend').first).to include('navigation' => nil, 'search' => nil, 'unclassified' => 4)
     end
 
+    it 'keeps suggestion-only collections unavailable without changing other analytics or stored rows' do
+      previous_payloads = %w[all classic internal].index_with do |view|
+        described_class.call(**arguments(view:)).value.payload.except('actions')
+      end
+      collector = SearchAnalytics::DailyQuery.new(reporting_date: first_date, **scope)
+      old_definitions = collector.query_definitions.transform_values { |sql| sql.sub("  AND search_action_version = 2\n", '') }
+      allow(collector).to receive(:query_definitions).and_return(old_definitions)
+      SearchAnalyticsQueryResult.where(name: 'search_actions').update(fingerprint: collector.fingerprints.fetch('search_actions'))
+      stored_rows = SearchAnalyticsQueryResult.order(:id).all.map(&:values)
+
+      previous_payloads.each do |view, previous|
+        expect_parity(view:)
+        payload = described_class.call(**arguments(view:)).value.payload
+        expect(payload.except('actions')).to eq(previous)
+        expect(payload.dig('actions', 'summary')).to eq(
+          'total' => previous.dig('summary', 'searches'), 'navigation' => nil, 'search' => nil, 'unclassified' => previous.dig('summary', 'searches'),
+        )
+        expect(payload.dig('actions', 'available')).to be(false)
+      end
+      expect(SearchAnalyticsQueryResult.order(:id).all.map(&:values)).to eq(stored_rows)
+    end
+
     it 'keeps legacy headlines without actions' do
       SearchAnalyticsQueryResult.where(name: 'search_actions').delete
       expect_parity

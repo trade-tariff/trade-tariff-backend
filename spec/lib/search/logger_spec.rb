@@ -63,14 +63,14 @@ RSpec.describe Search::Logger do
   end
 
   describe '#search_action_classified' do
-    let(:payload) { { request_id: 'req-1', search_type: 'classic', search_action: 'navigation' } }
+    let(:payload) { { request_id: 'req-1', search_type: 'classic', search_action: 'navigation', search_action_version: 2 } }
 
     it_behaves_like 'a search log entry', :search_action_classified, 'search_action_classified',
                     { request_id: 'req-1', search_type: 'classic', search_action: 'navigation' }
 
     it 'logs the explicit action without query text' do
       logger_instance.search_action_classified(build_event('search_action_classified', payload))
-      expect(parsed_log_output).to include('event' => 'search_action_classified', 'search_action' => 'navigation', 'search_type' => 'classic', 'request_id' => 'req-1')
+      expect(parsed_log_output).to include('event' => 'search_action_classified', 'search_action' => 'navigation', 'search_action_version' => 2, 'search_type' => 'classic', 'request_id' => 'req-1')
       expect(parsed_log_output).not_to have_key('query')
     end
   end

@@ -10,7 +10,7 @@ module Search
       end
 
       def search_action_classified(request_id:, search_type:, search_action:)
-        instrument('search_action_classified', request_id:, search_type:, search_action:)
+        instrument('search_action_classified', request_id:, search_type:, search_action:, search_action_version: 2)
       end
 
       def search(request_id:, query:, search_type:)

@@ -12,6 +12,7 @@ RSpec.describe SearchResultTracking, :v2, type: :request do
 
   before do
     allow(Search::Instrumentation).to receive(:result_selected)
+    allow(Search::Instrumentation).to receive(:search_action_classified)
   end
 
   describe '#track_result_selected' do
@@ -24,6 +25,7 @@ RSpec.describe SearchResultTracking, :v2, type: :request do
           goods_nomenclature_item_id: commodity.code,
           goods_nomenclature_class: 'Commodity',
         )
+        expect(Search::Instrumentation).not_to have_received(:search_action_classified)
       end
     end
 
