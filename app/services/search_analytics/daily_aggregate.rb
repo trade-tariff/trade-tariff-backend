@@ -31,7 +31,7 @@ module SearchAnalytics
 
     def payload
       payload_for(period.view).merge(
-        'journeys' => { 'count' => @journeys.fetch(period.view).count },
+        'journeys' => { 'count' => journey_count(period.view) },
         'availability' => {
           'zero_result_rate_search_only' => true,
           'zero_result_rate_coverage' => search_result_coverage,
@@ -77,8 +77,8 @@ module SearchAnalytics
 
     def summary(view)
       original = super
-      original.merge(
-        'requests' => original.fetch('searches'), 'searches' => @journeys.fetch(view).count, 'journey_count' => @journeys.fetch(view).count,
+      original.merge(request_metrics(original, view)).merge(
+        'searches' => journey_count(view), 'journey_count' => journey_count(view),
         'zero_result_rate' => search_result_rate(view),
         'completed_searches' => search_result_count(view, 'searches'),
         'zero_result_searches' => search_result_count(view, 'zero_results')
@@ -87,8 +87,28 @@ module SearchAnalytics
 
     def comparison_for(view, request_source: nil)
       original = super
-      count = request_source.nil? || request_source == 'frontend' ? @journeys.fetch(view).count : 0
-      original.merge('requests' => original.fetch('searches'), 'searches' => count, 'zero_result_rate' => search_result_rate(view, request_source:))
+      count = journey_count(view)
+      count = 0 if count && request_source && request_source != 'frontend'
+      original.merge(request_metrics(original, view)).merge('searches' => count, 'zero_result_rate' => search_result_rate(view, request_source:))
+    end
+
+    def journey_count(view)
+      @journeys.fetch(view).count if query_present?('search_journeys')
+    end
+
+    def request_metrics(original, view)
+      selection_views = view == 'all' ? %w[classic internal] : [view]
+      {
+        'requests' => query_present?('volume') ? original.fetch('searches') : nil,
+        'failure_rate' => query_present?('volume') ? original.fetch('failure_rate') : nil,
+        'selection_rate' => selection_views.any? { |type| query_present?("#{type}_selection_trend") } ? original.fetch('selection_rate') : nil,
+      }
+    end
+
+    def status_for_selection_rate(value)
+      return { 'level' => 'neutral', 'message' => 'Selection data is unavailable for these dates' } if value.nil?
+
+      super
     end
 
     def search_result_coverage

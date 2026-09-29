@@ -117,6 +117,20 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
       expect(SearchAnalyticsQueryResult.exclude(name: 'search_results').order(:id).all.map(&:values)).to eq(untouched)
     end
 
+    it 'falls back to standalone search results when no view inputs remain' do
+      SearchAnalyticsQueryResult.exclude(name: 'search_results').delete
+      stored = SearchAnalyticsQueryResult.order(:id).all.map(&:values)
+      %w[all classic internal].each do |view|
+        args = arguments(view:)
+        expect(described_class.call(**args).available).to be(false)
+        expected = SearchAnalytics::DailyResults.legacy_call(**args)
+        expect(expected).not_to be_nil
+        expect(SearchAnalytics::DailyResults.call(**args)).to eq(expected)
+        expect(expected.payload['summary']).to include('searches' => nil, 'failure_rate' => nil, 'selection_rate' => nil)
+      end
+      expect(SearchAnalyticsQueryResult.order(:id).all.map(&:values)).to eq(stored)
+    end
+
     it 'keeps readers consistent without search-only history' do
       SearchAnalyticsQueryResult.where(name: 'search_results').delete
       expect_parity
