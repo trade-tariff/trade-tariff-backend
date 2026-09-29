@@ -1313,7 +1313,7 @@ RSpec.describe Measure do
       let(:additional_code_id) { nil }
 
       it 'applies no filter' do
-        expect(dataset.pluck(:additional_code_id)).to eq %w[700 800]
+        expect(dataset.pluck(:additional_code_id)).to match_array(%w[700 800])
       end
     end
 
