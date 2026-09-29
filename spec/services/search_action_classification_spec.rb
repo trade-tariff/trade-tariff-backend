@@ -32,7 +32,7 @@ RSpec.describe 'Search action classification' do
       end
 
       def expect_action(action)
-        expect(events).to contain_exactly(hash_including(request_id:, request_source: 'frontend', search_type:, search_action: action, search_action_version: 2, search_degraded: false))
+        expect(events).to contain_exactly(hash_including(request_id:, request_source: 'frontend', search_type:, search_action: action, search_degraded: false))
       end
 
       it 'classifies a typed suggestion' do

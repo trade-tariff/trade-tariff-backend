@@ -179,12 +179,12 @@ shows its single exact result. Classic's unmatched-code redirect fallback does
 not establish an accepted match. Failed retrieval after classification retains
 that action; failure before classification stays unknown.
 
-Corrected events carry `search_action_version: 2`. The action query reads only
-that version, which changes only the `search_actions` fingerprint. Earlier
-suggestion-only collections become unavailable, not zero or reclassified. Old
-logs cannot produce corrected classifications through recollection. On a rollout
-day, journeys without version 2 evidence remain unclassified. No stored rows are
-rewritten and existing total and rate fingerprints remain unchanged.
+The counting correction applies to newly recorded events. Existing collections
+remain readable with their recorded classifications. Direct code lookups recorded
+under the earlier suggestion-only rule remain search, so a range spanning the
+change includes both definitions. The action query and its fingerprint remain
+unchanged. No stored rows are rewritten and no historical recollection is
+triggered. Historical totals and rates remain unchanged.
 
 The optional `search_actions` daily group stores the action, search type and
 hashed journey identifier sets for frontend-origin events. It uses eight initial
