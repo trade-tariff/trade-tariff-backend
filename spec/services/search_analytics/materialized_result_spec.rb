@@ -117,6 +117,29 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
       expect(SearchAnalyticsQueryResult.exclude(name: 'search_results').order(:id).all.map(&:values)).to eq(untouched)
     end
 
+    it 'reads deduplicated selection journeys through both readers without refreshing views or changing other data' do
+      previous = described_class.call(**arguments).value.payload
+      names = SearchAnalytics::SelectionRates::SOURCE_NAMES
+      untouched = SearchAnalyticsQueryResult.exclude(name: names).order(:id).all.map(&:values)
+      [first_date, first_date + 1].each do |date|
+        SearchAnalyticsQueryResult.where(name: 'selection_results', reporting_date: date).update(rows: Sequel.pg_jsonb([
+          { 'search_type' => 'classic', 'journey_keys' => [key("classic-#{date}")] },
+          { 'search_type' => 'interactive', 'journey_keys' => [key('shared')] },
+        ]))
+      end
+      SearchAnalyticsQueryResult.where(name: 'selection_pages', reporting_date: first_date + 1).update(rows: Sequel.pg_jsonb([
+        { 'journey_keys' => [key("classic-#{first_date}"), key('shared'), key('shared'), key('navigation')] },
+      ]))
+      %w[all classic internal].each { |view| expect_parity(view:) }
+      payload = described_class.call(**arguments).value.payload
+      expect(payload['summary']).to include('result_journeys' => 3, 'selected_result_journeys' => 2, 'selection_rate' => 2.0 / 3)
+      expect(payload.dig('comparisons', 'classic', 'selection_rate')).to eq(0.5)
+      expect(payload.dig('comparisons', 'internal', 'selection_rate')).to eq(1.0)
+      expect(payload.dig('availability', 'selection_rate_coverage')).to include('complete' => true, 'collected_days' => 2)
+      expect(payload.slice('actions', 'trends', 'ai_costs', 'coverage')).to eq(previous.slice('actions', 'trends', 'ai_costs', 'coverage'))
+      expect(SearchAnalyticsQueryResult.exclude(name: names).order(:id).all.map(&:values)).to eq(untouched)
+    end
+
     it 'falls back to standalone search results when no view inputs remain' do
       SearchAnalyticsQueryResult.exclude(name: 'search_results').delete
       stored = SearchAnalyticsQueryResult.order(:id).all.map(&:values)

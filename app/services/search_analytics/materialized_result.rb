@@ -5,7 +5,7 @@ module SearchAnalytics
     Result = Data.define(:available, :value)
     METADATA = %i[id service name reporting_date fingerprint collected_at].freeze
     PROJECTED = %w[search_journeys journey_outcomes search_term_improvements item_id_improvements].freeze
-    UNLOADED = (PROJECTED + %w[classic_outcomes search_actions]).freeze
+    UNLOADED = (PROJECTED + %w[classic_outcomes search_actions] + SelectionRates::SOURCE_NAMES).freeze
 
     def self.call(...) = new(...).call
 
@@ -20,7 +20,7 @@ module SearchAnalytics
       @service = TradeTariffBackend.service
       # Fingerprints do not depend on the reporting date; collection requires a completed day.
       @definitions = DailyQuery.new(reporting_date: last_date, region:, log_group_name:, now:).fingerprints
-      @required = @definitions.keys - %w[frontend_events journey_outcomes classic_outcomes search_actions search_results]
+      @required = @definitions.keys - %w[frontend_events journey_outcomes classic_outcomes search_actions search_results] - SelectionRates::SOURCE_NAMES
     end
 
     def call
@@ -64,7 +64,7 @@ module SearchAnalytics
       query_dates = (@required + %w[search_results]).index_with do |name|
         compatible.select { |row| row.name == name }.map(&:reporting_date).uniq.sort
       end
-      optional = compatible.select { |row| %w[frontend_events search_results].include?(row.name) }
+      optional = compatible.select { |row| (%w[frontend_events search_results] + SelectionRates::SOURCE_NAMES).include?(row.name) }
       collected_dates = (present.map(&:reporting_date) + optional.map(&:reporting_date)).uniq.sort
       projection = MaterializedProjection.new(
         service: @service,
@@ -76,7 +76,8 @@ module SearchAnalytics
         cost_dates: query_dates['ai_cost_trend'],
         term_fingerprints: @definitions.slice('item_id_improvements', 'search_term_improvements'),
       )
-      payload = MaterializedAggregate.new(period: @period, results:, projection:, query_dates:).payload
+      selection_rates = SelectionRates.call(service: @service, dates: @dates, definitions: @definitions)
+      payload = MaterializedAggregate.new(period: @period, results:, projection:, query_dates:, selection_rates:).payload
       attach_outcomes(payload, projection, metadata, dates)
       payload['frontend_events'] = FrontendEvents.call(records: frontend, dates: @dates, supported: @service == 'uk' && @period.view != 'classic')
       payload.merge!(OutcomeRates.call(service: @service, dates: @dates, view: @period.view, definitions: @definitions))

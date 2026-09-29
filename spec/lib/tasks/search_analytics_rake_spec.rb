@@ -96,7 +96,7 @@ RSpec.describe 'search analytics rake tasks' do
             'bundle', 'exec', 'rake', '--require', file.path, task.name
           )
           expect(status.success?).to be(true), output
-          expect(output).to include('Validated daily/search_journeys', 'Validated daily/journey_outcomes', 'Validated daily/classic_outcomes', 'Validated daily/search_actions', 'Validated daily/search_results', "Validated #{service == 'uk' ? 13 : 12} distinct CloudWatch queries")
+          expect(output).to include('Validated daily/search_journeys', 'Validated daily/journey_outcomes', 'Validated daily/classic_outcomes', 'Validated daily/search_actions', 'Validated daily/search_results', 'Validated daily/selection_results', 'Validated daily/selection_pages', "Validated #{service == 'uk' ? 15 : 14} distinct CloudWatch queries")
           expect(output.include?('Validated daily/frontend_events')).to eq(service == 'uk')
         end
       end
