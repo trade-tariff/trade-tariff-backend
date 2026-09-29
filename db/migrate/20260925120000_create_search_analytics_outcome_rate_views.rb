@@ -5,7 +5,6 @@ Sequel.migration do
     %w[
       search_analytics_frontend_event_rows
       search_analytics_frontend_event_occurrences
-      search_analytics_classic_outcome_rows
       search_analytics_guided_outcome_counts
       search_analytics_question_outcome_counts
       search_analytics_classic_outcome_counts
