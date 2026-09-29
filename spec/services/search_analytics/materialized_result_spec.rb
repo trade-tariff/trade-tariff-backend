@@ -29,6 +29,10 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
     groups['volume'] = %w[classic interactive classification].map do |type|
       { '@timestamp' => bucket, 'search_type' => type, 'request_source' => 'frontend', 'event' => 'search_completed', 'searches' => '5', 'zero_results' => '1' }
     end
+    groups['search_results'] = [
+      { 'search_type' => 'classic', 'request_source' => 'frontend', 'searches' => 4, 'zero_results' => 2 },
+      { 'search_type' => 'interactive', 'request_source' => 'frontend', 'searches' => 2, 'zero_results' => 0 },
+    ]
     groups['journey_outcomes'] = [
       outcome(date, [key("classic-#{date}"), key("classification-#{date}"), key("admin-#{date}")], 'completed', 'selected' => '1', 'total_questions' => '0'),
       outcome(date, [key('shared')], date == first_date ? 'failed' : 'completed', 'zero_result' => '1', 'total_questions' => date == first_date ? '1' : '2'),
@@ -95,6 +99,28 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
         expect(result.available).to be(true)
         expect(result.value).to be_nil
       end
+    end
+
+    it 'reads regenerated search-only rates without refreshing journey views or changing other metrics' do
+      previous = described_class.call(**arguments).value.payload
+      untouched = SearchAnalyticsQueryResult.exclude(name: 'search_results').order(:id).all.map(&:values)
+      SearchAnalyticsQueryResult.where(name: 'search_results', reporting_date: first_date).delete
+      SearchAnalyticsQueryResult.where(name: 'search_results').update(rows: Sequel.pg_jsonb([
+        { 'search_type' => 'classic', 'request_source' => 'frontend', 'searches' => 5, 'zero_results' => 3 },
+      ]))
+      %w[all classic internal].each { |view| expect_parity(view:) }
+      payload = described_class.call(**arguments).value.payload
+      expect(payload['summary']).to include('completed_searches' => 5, 'zero_result_searches' => 3, 'zero_result_rate' => 0.6)
+      expect(payload.dig('availability', 'zero_result_rate_coverage')).to include('collected_days' => 1, 'complete' => false)
+      expect(payload['summary'].except('zero_result_rate', 'completed_searches', 'zero_result_searches')).to eq(previous['summary'].except('zero_result_rate', 'completed_searches', 'zero_result_searches'))
+      expect(payload.slice('actions', 'trends', 'ai_costs', 'coverage')).to eq(previous.slice('actions', 'trends', 'ai_costs', 'coverage'))
+      expect(SearchAnalyticsQueryResult.exclude(name: 'search_results').order(:id).all.map(&:values)).to eq(untouched)
+    end
+
+    it 'keeps readers consistent without search-only history' do
+      SearchAnalyticsQueryResult.where(name: 'search_results').delete
+      expect_parity
+      expect(described_class.call(**arguments).value.payload.dig('summary', 'zero_result_rate')).to be_nil
     end
 
     it 'reads action updates without refreshing journey views' do

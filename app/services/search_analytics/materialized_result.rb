@@ -20,7 +20,7 @@ module SearchAnalytics
       @service = TradeTariffBackend.service
       # Fingerprints do not depend on the reporting date; collection requires a completed day.
       @definitions = DailyQuery.new(reporting_date: last_date, region:, log_group_name:, now:).fingerprints
-      @required = @definitions.keys - %w[frontend_events journey_outcomes classic_outcomes search_actions]
+      @required = @definitions.keys - %w[frontend_events journey_outcomes classic_outcomes search_actions search_results]
     end
 
     def call
@@ -58,14 +58,14 @@ module SearchAnalytics
     def build(compatible, present, dates, metadata)
       ids = compatible.reject { |row| UNLOADED.include?(row.name) }.map(&:id)
       frontend, backend = SearchAnalyticsQueryResult.where(id: ids).all.partition { |row| row.name == 'frontend_events' }
-      results = (@required - PROJECTED).index_with do |name|
+      results = (@required - PROJECTED + %w[search_results]).index_with do |name|
         backend.select { |row| row.name == name }.flat_map { |row| row.rows.to_a }
       end
-      query_dates = @required.index_with do |name|
-        present.select { |row| row.name == name }.map(&:reporting_date).uniq.sort
+      query_dates = (@required + %w[search_results]).index_with do |name|
+        compatible.select { |row| row.name == name }.map(&:reporting_date).uniq.sort
       end
-      frontend_dates = compatible.select { |row| row.name == 'frontend_events' }.map(&:reporting_date)
-      collected_dates = (present.map(&:reporting_date) + frontend_dates).uniq.sort
+      optional = compatible.select { |row| %w[frontend_events search_results].include?(row.name) }
+      collected_dates = (present.map(&:reporting_date) + optional.map(&:reporting_date)).uniq.sort
       projection = MaterializedProjection.new(
         service: @service,
         dates:,
@@ -89,7 +89,7 @@ module SearchAnalytics
       }
       DailyResults.new(
         service: @service, period: @period.key, view: @period.view, bucket_size: @period.bucket_size,
-        generated_at: (present + compatible.select { |row| row.name == 'frontend_events' }).map(&:collected_at).max,
+        generated_at: (present + optional).map(&:collected_at).max,
         data_through: collected_dates.last.to_time(:utc) + 1.day, payload:
       )
     end

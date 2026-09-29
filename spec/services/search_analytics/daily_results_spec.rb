@@ -24,6 +24,10 @@ RSpec.describe SearchAnalytics::DailyResults do
       { '@timestamp' => bucket, 'search_type' => 'classic', 'event' => 'search_failed', 'searches' => failed, 'zero_results' => 0 },
       { '@timestamp' => bucket, 'search_type' => 'interactive', 'event' => 'search_completed', 'searches' => 3, 'zero_results' => 0 },
     ]
+    rows['search_results'] = [
+      { 'search_type' => 'classic', 'request_source' => 'frontend', 'searches' => eligible, 'zero_results' => zero },
+      { 'search_type' => 'interactive', 'request_source' => 'frontend', 'searches' => 2, 'zero_results' => 0 },
+    ]
     rows['search_journeys'] = [
       { '@timestamp' => bucket, 'search_type' => 'interactive', 'request_source' => 'frontend', 'journey_keys' => %w[shared] },
       { '@timestamp' => bucket, 'search_type' => 'classic', 'request_source' => 'frontend', 'journey_keys' => [date.iso8601] },
@@ -48,6 +52,36 @@ RSpec.describe SearchAnalytics::DailyResults do
 
   def action(keys, type, classification, source = 'frontend')
     { 'journey_keys' => keys, 'search_type' => type, 'search_action' => classification, 'request_source' => source }
+  end
+
+  it 'uses weighted search-only counts across dates and views' do
+    expect(read('classic').payload['summary']).to include('completed_searches' => 44, 'zero_result_searches' => 3, 'zero_result_rate' => 3.0 / 44)
+    expect(read('internal').payload['summary']).to include('completed_searches' => 4, 'zero_result_searches' => 0, 'zero_result_rate' => 0.0)
+    expect(read('all').payload['summary']).to include('completed_searches' => 48, 'zero_result_searches' => 3, 'zero_result_rate' => 3.0 / 48)
+    expect(read('all').payload.dig('availability', 'zero_result_rate_coverage')).to eq('complete' => false, 'collected_days' => 2, 'expected_days' => 30)
+    expect(read('classic').payload.dig('comparisons', 'classic', 'zero_result_rate')).to eq(3.0 / 44)
+  end
+
+  it 'keeps legacy totals without inventing a search-only rate' do
+    SearchAnalyticsQueryResult.where(name: 'search_results').delete
+    payload = read('classic').payload
+    expect(payload['summary']).to include('searches' => 2, 'requests' => 100, 'zero_result_rate' => nil, 'completed_searches' => nil)
+    expect(payload.dig('summary_statuses', 'zero_result_rate', 'level')).to eq('neutral')
+    expect(payload.dig('coverage', 'queries')).not_to have_key('search_results')
+  end
+
+  it 'distinguishes no completed searches from a zero-percent rate' do
+    replace_rows(last_date, 'search_results', [])
+    payload = read('classic', '24h').payload
+    expect(payload['summary']).to include('completed_searches' => 0, 'zero_result_searches' => 0, 'zero_result_rate' => nil)
+    expect(payload.dig('availability', 'zero_result_rate_coverage', 'complete')).to be(true)
+  end
+
+  it 'does not use stale or missing days in the numerator or denominator' do
+    SearchAnalyticsQueryResult.where(name: 'search_results', reporting_date: first_date).update(fingerprint: 'stale')
+    payload = read('classic').payload
+    expect(payload['summary']).to include('completed_searches' => 40, 'zero_result_searches' => 1, 'zero_result_rate' => 0.025)
+    expect(payload.dig('availability', 'zero_result_rate_coverage', 'collected_days')).to eq(1)
   end
 
   it 'deduplicates actions and retains view boundaries' do
@@ -168,7 +202,7 @@ RSpec.describe SearchAnalytics::DailyResults do
 
   it 'derives existing rates from their summed request denominators, not the journey headline' do
     payload = read('classic').payload
-    expect(payload['summary']).to include('searches' => 2, 'requests' => 100, 'failure_rate' => 0.02, 'zero_result_rate' => 3.0 / 98, 'selection_rate' => 4.0 / 44)
+    expect(payload['summary']).to include('searches' => 2, 'requests' => 100, 'failure_rate' => 0.02, 'zero_result_rate' => 3.0 / 44, 'selection_rate' => 4.0 / 44)
     expect(payload['improvement_terms']).to include('query' => 'trainers', 'term_type' => 'search_terms', 'zero_results' => 3)
   end
 

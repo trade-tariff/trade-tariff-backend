@@ -76,6 +76,7 @@ module SearchAnalytics
       definitions['frontend_events'] = FrontendEventsQuery.call(source:, service: @service) if @service == 'uk'
       definitions['journey_outcomes'] = JourneyOutcomesQuery.call(source:, log_stream_filter:, zero_result_condition:)
       definitions['classic_outcomes'] = ClassicOutcomesQuery.call(source:, log_stream_filter:)
+      definitions['search_results'] = search_results_query
       definitions
     end
 
@@ -227,6 +228,22 @@ module SearchAnalytics
           SUM(CASE WHEN event = 'search_completed' AND #{zero_result_condition} THEN 1 ELSE 0 END) AS zero_results
         FROM #{source} WHERE #{log_stream_filter} AND #{base_search_filter} AND #{request_exclusion_filter}
         GROUP BY #{bucket_expression}, search_type, event, COALESCE(request_source, 'unknown')
+      SQL
+    end
+
+    def search_results_query
+      <<~SQL
+        SELECT search_type, request_source, COUNT(*) AS searches,
+          SUM(CASE WHEN result_count = 0 THEN 1 ELSE 0 END) AS zero_results
+        FROM #{source}
+        WHERE #{log_stream_filter} AND service = 'search' AND event = 'search_completed'
+          AND request_source = 'frontend' AND result_count >= 0
+          AND (search_degraded IS NULL OR search_degraded = false)
+          AND ((search_type = 'classic' AND results_type = 'fuzzy_search')
+            OR (search_type IN ('internal', 'interactive') AND results_type IN ('opensearch', 'vector', 'hybrid')
+              AND (final_result_type IS NULL OR final_result_type = '' OR final_result_type = 'answers')))
+          AND #{request_exclusion_filter}
+        GROUP BY search_type, request_source
       SQL
     end
 

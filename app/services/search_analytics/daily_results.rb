@@ -32,17 +32,17 @@ module SearchAnalytics
       records = SearchAnalyticsQueryResult.where(service:, reporting_date: dates, name: definitions.keys - %w[journey_outcomes classic_outcomes search_actions]).all
       compatible = records.select { |row| row.fingerprint == definitions.fetch(row.name) }
       frontend_records, backend_records = compatible.partition { |row| row.name == 'frontend_events' }
-      required = definitions.keys - %w[frontend_events journey_outcomes classic_outcomes search_actions]
-      return if backend_records.empty? && frontend_records.empty?
+      required = definitions.keys - %w[frontend_events journey_outcomes classic_outcomes search_actions search_results]
+      return if backend_records.none? { |row| required.include?(row.name) } && frontend_records.empty?
 
       # Each matching query contributes its own days. A missing or stale group is a
       # coverage gap for that widget, not a reason to hide the others. This path
       # never executes the collector or its cache fetch.
       collected_dates = (backend_records + frontend_records).map(&:reporting_date).uniq.sort
-      query_dates = required.index_with do |name|
+      query_dates = (required + %w[search_results]).index_with do |name|
         backend_records.select { |row| row.name == name }.map(&:reporting_date).uniq.sort
       end
-      results = required.index_with do |name|
+      results = (required + %w[search_results]).index_with do |name|
         backend_records.select { |row| row.name == name }.flat_map { |row| row.rows.to_a }
       end
       payload = DailyAggregate.new(period:, results:, query_dates:).payload

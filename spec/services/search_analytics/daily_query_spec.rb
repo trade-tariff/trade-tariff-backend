@@ -14,21 +14,21 @@ RSpec.describe SearchAnalytics::DailyQuery do
   def collect(**extra) = collector(**extra).call
   def encoded(row) = row.map { |field, value| { field:, value: value.to_s } }
 
-  it 'stores twelve complete logical query groups and reuses them without another scan' do
+  it 'stores thirteen complete logical query groups and reuses them without another scan' do
     rows = collect
-    expect(rows.size).to eq(12)
-    expect(starts.size).to eq(33)
-    expect(SearchAnalyticsQueryResult.count).to eq(12)
+    expect(rows.size).to eq(13)
+    expect(starts.size).to eq(34)
+    expect(SearchAnalyticsQueryResult.count).to eq(13)
     expect(collect).to eq(rows)
-    expect(starts.size).to eq(33)
+    expect(starts.size).to eq(34)
     expect(rows).not_to have_key('ai_cost_summary')
   end
 
   it 'can plan reusable results without constructing an AWS client' do
     collect
     expect(Aws::CloudWatchLogs::Client).not_to receive(:new)
-    expect(collector(client: nil).plan.values).to eq(%w[reuse] * 12)
-    expect(collector(client: nil).call.values).to eq([[]] * 12)
+    expect(collector(client: nil).plan.values).to eq(%w[reuse] * 13)
+    expect(collector(client: nil).call.values).to eq([[]] * 13)
   end
 
   it 'reruns only the missing query after a later query fails' do
@@ -37,15 +37,15 @@ RSpec.describe SearchAnalytics::DailyQuery do
     expect(SearchAnalyticsQueryResult.count).to eq(7)
     client.stub_responses(:get_query_results, complete)
     collect
-    expect(starts.size).to eq(34)
-    expect(SearchAnalyticsQueryResult.count).to eq(12)
+    expect(starts.size).to eq(35)
+    expect(SearchAnalyticsQueryResult.count).to eq(13)
   end
 
   it 'forces only the selected query and preserves other results' do
     collect
     ids = SearchAnalyticsQueryResult.where(name: 'volume').select_map(:id)
     collect(queries: %w[ai_cost_trend], force: true)
-    expect(starts.size).to eq(34)
+    expect(starts.size).to eq(35)
     expect(SearchAnalyticsQueryResult.where(name: 'volume').select_map(:id)).to eq(ids)
   end
 
@@ -53,7 +53,7 @@ RSpec.describe SearchAnalytics::DailyQuery do
     expect(collect(queries: %w[volume])).to eq('volume' => [])
     expect(starts.size).to eq(1)
     expect(SearchAnalyticsQueryResult.select_map(:name)).to eq(%w[volume])
-    expect(collector(queries: %w[volume]).plan.values.tally).to eq('reuse' => 1, 'skip' => 11)
+    expect(collector(queries: %w[volume]).plan.values.tally).to eq('reuse' => 1, 'skip' => 12)
   end
 
   it 'rejects unknown selections and incomplete dates without submissions' do
@@ -145,7 +145,7 @@ RSpec.describe SearchAnalytics::DailyQuery do
   it 'splits incomplete journey output even when below the row cap' do
     client.stub_responses(:get_query_results, [*Array.new(7) { complete }, complete.merge(statistics: { records_matched: 2.0 }), *Array.new(9) { complete }])
     collect
-    expect(starts.size).to eq(35)
+    expect(starts.size).to eq(36)
     expect(starts[8][:params][:query_string]).to include('2026-09-14 01:30:00')
     expect(starts[9][:params][:query_string]).to include('2026-09-14 01:30:00')
   end
