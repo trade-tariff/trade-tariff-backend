@@ -99,6 +99,32 @@ RSpec.describe SearchAnalytics::DailyResults do
     expect(payload.dig('actions', 'summary')).to eq('total' => 0, 'navigation' => 0, 'search' => 0, 'unclassified' => 0)
   end
 
+  context 'with concurrent recollection', :truncation do
+    it 'keeps the headline and split consistent' do
+      expected = read('internal', '24h')
+      ready = Queue.new
+      release = Queue.new
+      allow(SearchAnalytics::ActionBreakdown).to receive(:call).and_wrap_original do |method, **args|
+        ready << true
+        release.pop
+        method.call(**args)
+      end
+      reader = Thread.new { read('internal', '24h') }
+      Timeout.timeout(10) { ready.pop }
+      replace_rows(last_date, 'search_journeys', [
+        { '@timestamp' => '2026-09-14T08:00:00Z', 'request_source' => 'frontend', 'search_type' => 'internal', 'journey_keys' => %w[shared new] },
+      ])
+      replace_rows(last_date, 'search_actions', [action(%w[shared new], 'internal', 'search')])
+      release << true
+
+      expect(Timeout.timeout(10) { reader.value }).to eq(expected)
+    ensure
+      release << true if release
+      reader&.join(10)
+      reader&.kill if reader&.alive?
+    end
+  end
+
   it 'deduplicates the same frontend journey across days without collapsing its AI calls' do
     payload = read.payload
     expect(payload['summary']).to include('searches' => 1, 'requests' => 6)
