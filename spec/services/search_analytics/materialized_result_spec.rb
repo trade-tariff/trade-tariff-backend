@@ -22,6 +22,10 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
       { '@timestamp' => bucket, 'search_type' => 'interactive', 'request_source' => 'frontend', 'journey_keys' => [key('shared'), key("question-#{date}")] },
       { '@timestamp' => bucket, 'search_type' => 'classification', 'request_source' => 'frontend', 'journey_keys' => [key("classification-#{date}")] },
     ]
+    groups['search_actions'] = [
+      { 'search_type' => 'classic', 'request_source' => 'frontend', 'search_action' => 'navigation', 'journey_keys' => [key("classic-#{date}")] },
+      { 'search_type' => 'internal', 'request_source' => 'frontend', 'search_action' => 'search', 'journey_keys' => [key('shared')] },
+    ]
     groups['volume'] = %w[classic interactive classification].map do |type|
       { '@timestamp' => bucket, 'search_type' => type, 'request_source' => 'frontend', 'event' => 'search_completed', 'searches' => '5', 'zero_results' => '1' }
     end
@@ -91,6 +95,24 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
         expect(result.available).to be(true)
         expect(result.value).to be_nil
       end
+    end
+
+    it 'reads action updates without refreshing journey views' do
+      SearchAnalyticsQueryResult.where(name: 'search_actions', reporting_date: first_date).delete
+      expect_parity
+      result = described_class.call(**arguments).value.payload
+      expect(result.dig('actions', 'summary')).to eq('total' => 7, 'navigation' => 1, 'search' => 1, 'unclassified' => 5)
+      expect(result.dig('actions', 'coverage')).to include('collected_days' => 1, 'complete' => false)
+      expect(result.dig('actions', 'trend').first).to include('navigation' => nil, 'search' => nil, 'unclassified' => 4)
+    end
+
+    it 'keeps legacy headlines without actions' do
+      SearchAnalyticsQueryResult.where(name: 'search_actions').delete
+      expect_parity
+      result = described_class.call(**arguments).value.payload
+      expect(result.dig('summary', 'searches')).to eq(7)
+      expect(result.dig('actions', 'summary')).to eq('total' => 7, 'navigation' => nil, 'search' => nil, 'unclassified' => 7)
+      expect(result.dig('actions', 'available')).to be(false)
     end
 
     it 'preserves partial range coverage without counting missing days as zero' do
@@ -166,8 +188,8 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
       expect(terms.count { |row| row['term_type'] == 'search_terms' }).to eq(100)
     end
 
-    it 'declines the fast path inside an existing caller transaction' do
-      SearchAnalyticsQueryResult.db.transaction do
+    it 'declines the fast path inside a caller-owned snapshot' do
+      SearchAnalyticsQueryResult.db.transaction(isolation: :repeatable) do
         expect(described_class.call(**arguments).available).to be(false)
         expect(SearchAnalytics::DailyResults.call(**arguments)).to eq(SearchAnalytics::DailyResults.legacy_call(**arguments))
       end

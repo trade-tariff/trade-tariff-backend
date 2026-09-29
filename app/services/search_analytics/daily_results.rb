@@ -9,7 +9,15 @@ module SearchAnalytics
       legacy_call(period:, region:, log_group_name:, date_range:, now:)
     end
 
-    def self.legacy_call(period:, region:, log_group_name: DailyQuery::SEARCH_LOG_GROUP_NAME, date_range: nil, now: Time.current)
+    # Nested transactions cannot strengthen the caller's isolation. Callers that
+    # already own a transaction must use repeatable-read or serializable isolation.
+    def self.legacy_call(...)
+      SearchAnalyticsQueryResult.db.transaction(isolation: :repeatable, read_only: true) do
+        legacy_snapshot(...)
+      end
+    end
+
+    def self.legacy_snapshot(period:, region:, log_group_name: DailyQuery::SEARCH_LOG_GROUP_NAME, date_range: nil, now: Time.current)
       if date_range
         date_range = DateRange.parse(from: date_range.from.iso8601, to: date_range.to.iso8601, now:)
         period = Period.for_range(date_range:, view: period.view)
@@ -21,10 +29,10 @@ module SearchAnalytics
       definitions = DailyQuery.new(reporting_date: last_date, region:, log_group_name:, now:).fingerprints
       # Costs describe activity inside the selected UTC dates, not the lifetime
       # cost of a journey. Later calls belong to their own reporting dates.
-      records = SearchAnalyticsQueryResult.where(service:, reporting_date: dates, name: definitions.keys - %w[journey_outcomes classic_outcomes]).all
+      records = SearchAnalyticsQueryResult.where(service:, reporting_date: dates, name: definitions.keys - %w[journey_outcomes classic_outcomes search_actions]).all
       compatible = records.select { |row| row.fingerprint == definitions.fetch(row.name) }
       frontend_records, backend_records = compatible.partition { |row| row.name == 'frontend_events' }
-      required = definitions.keys - %w[frontend_events journey_outcomes classic_outcomes]
+      required = definitions.keys - %w[frontend_events journey_outcomes classic_outcomes search_actions]
       return if backend_records.empty? && frontend_records.empty?
 
       # Each matching query contributes its own days. A missing or stale group is a
@@ -63,6 +71,7 @@ module SearchAnalytics
         supported: service == 'uk' && period.view != 'classic'
       )
       payload.merge!(OutcomeRates.call(service:, dates:, view: period.view, definitions:))
+      payload['actions'] = ActionBreakdown.call(service:, dates:, period:, definitions:, payload:)
       payload['coverage'] = coverage(dates:, collected_dates:, records: backend_records, required:)
       payload['summary_statuses']['searches'] = {
         'level' => 'neutral', 'message' => "#{collected_dates.size} of #{dates.size} UTC days have stored results"
@@ -73,6 +82,8 @@ module SearchAnalytics
         data_through: collected_dates.last.to_time(:utc) + 1.day, payload:
       )
     end
+
+    private_class_method :legacy_snapshot
 
     def self.coverage(dates:, collected_dates:, records:, required:)
       present = records.group_by(&:name).transform_values { |rows| rows.map(&:reporting_date).uniq.sort }

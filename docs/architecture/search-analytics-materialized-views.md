@@ -33,8 +33,9 @@ Outcome rates use a separate helper, `SearchAnalytics::OutcomeRatesViews`.
 Its matviews are not part of `MaterializedViews::MODELS`. An unpopulated
 outcome matview does not make the journey dashboard unready and does not
 force that dashboard onto the legacy reader. Page reads do not refresh either
-helper and do not collect logs. Outcome counts are summed from the matviews
-after SQL has classified identities. Ruby does not aggregate those identities.
+helper and do not collect logs. Outcome counts are summed from the matviews.
+Guided and question identities are classified in SQL. Classic counts are
+stored already classified, so Ruby does not aggregate those identities on read.
 
 The outcome relations are:
 
@@ -45,9 +46,9 @@ The outcome relations are:
 - `search_analytics_guided_outcome_counts` and
   `search_analytics_question_outcome_counts` store one count per service,
   UTC day and class.
-- `search_analytics_classic_outcome_rows` and
-  `search_analytics_classic_outcome_counts` classify classic completions by
-  total `result_count`. They do not read `commodity_result_count`.
+- `search_analytics_classic_outcome_counts` sums the stored results and
+  no-results counts. It does not read per-search rows or
+  `commodity_result_count`.
 - `search_analytics_outcome_source_revisions` records the outcome-query
   slots used for freshness. It does not replace journey source revisions.
 

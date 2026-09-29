@@ -68,13 +68,14 @@ class SearchService
 private
 
   def perform
-    @result = if SearchService::RogueSearchService.call(q)
-                NullSearch.new(q)
-              else
-                if q.present?
-                  exact_search.presence || fuzzy_search.presence
-                end || NullSearch.new(q)
-              end
+    blocked = SearchService::RogueSearchService.call(q)
+    exact = exact_search.presence if q.present? && !blocked
+    Search::Instrumentation.search_action_classified(
+      request_id: TradeTariffRequest.request_id,
+      search_type: 'classic',
+      search_action: exact&.matched_suggestion ? 'navigation' : 'search',
+    )
+    @result = exact || (fuzzy_search.presence if q.present? && !blocked) || NullSearch.new(q)
 
     instrument_result
 
