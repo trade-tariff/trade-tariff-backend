@@ -44,6 +44,42 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
     expect(attributes['bucket_size']).to eq('hour')
   end
 
+  context 'with only search-result collection' do
+    before do
+      SearchAnalyticsQueryResult.exclude(name: 'search_results').delete
+      SearchAnalyticsQueryResult.where(name: 'search_results').update(rows: Sequel.pg_jsonb([
+        { 'search_type' => 'classic', 'request_source' => 'frontend', 'searches' => 100, 'zero_results' => 60 },
+        { 'search_type' => 'internal', 'request_source' => 'frontend', 'searches' => 20, 'zero_results' => 5 },
+      ]))
+    end
+
+    { 'all' => 65.0 / 120, 'classic' => 0.6, 'internal' => 0.25 }.each do |view, rate|
+      it "serves the #{view} rate without fabricating other metrics" do
+        expect { request_analytics(period: '24h', view:) }.not_to change(SearchAnalyticsQueryResult, :count)
+        expect(response).to have_http_status(:ok)
+        expect(attributes['summary']).to include('zero_result_rate' => rate, 'searches' => nil, 'requests' => nil, 'failure_rate' => nil, 'selection_rate' => nil, 'p90_latency_ms' => nil)
+        expect(attributes.dig('journeys', 'count')).to be_nil
+        expect(attributes.dig('actions', 'summary')).to be_nil
+        expect(attributes.dig('comparisons', view, 'searches')).to be_nil unless view == 'all'
+        expect(attributes.dig('availability', 'zero_result_rate_coverage')).to include('complete' => true, 'collected_days' => 1)
+        expect(attributes['availability']).to include('journey_metrics' => false, 'costs_match_view' => false)
+      end
+    end
+
+    it 'serves a collected empty population without claiming a zero-percent rate' do
+      SearchAnalyticsQueryResult.where(name: 'search_results').update(rows: Sequel.pg_jsonb([]))
+      request_analytics(period: '24h', view: 'classic')
+      expect(response).to have_http_status(:ok)
+      expect(attributes['summary']).to include('completed_searches' => 0, 'zero_result_searches' => 0, 'zero_result_rate' => nil)
+    end
+
+    it 'does not serve an obsolete search-result collection' do
+      SearchAnalyticsQueryResult.where(name: 'search_results').update(fingerprint: 'stale')
+      request_analytics
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
   it 'retains legacy totals without inventing a split' do
     SearchAnalyticsQueryResult.where(name: 'search_actions').delete
     request_analytics(period: '24h', view: 'internal')
@@ -114,7 +150,7 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
     SearchAnalyticsQueryResult.where(name: 'search_journeys').delete
     request_analytics
     expect(response).to have_http_status(:ok)
-    expect(attributes['summary']).to include('searches' => 0, 'requests' => 3)
+    expect(attributes['summary']).to include('searches' => nil, 'requests' => 3)
     expect(attributes['availability']).to include('journey_metrics' => false)
     expect(attributes.dig('actions', 'summary')).to be_nil
     expect(attributes.dig('actions', 'available')).to be(false)

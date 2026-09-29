@@ -33,7 +33,7 @@ module SearchAnalytics
       compatible = records.select { |row| row.fingerprint == definitions.fetch(row.name) }
       frontend_records, backend_records = compatible.partition { |row| row.name == 'frontend_events' }
       required = definitions.keys - %w[frontend_events journey_outcomes classic_outcomes search_actions search_results]
-      return if backend_records.none? { |row| required.include?(row.name) } && frontend_records.empty?
+      return if compatible.empty?
 
       # Each matching query contributes its own days. A missing or stale group is a
       # coverage gap for that widget, not a reason to hide the others. This path
