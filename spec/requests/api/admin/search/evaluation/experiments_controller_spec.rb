@@ -89,6 +89,28 @@ RSpec.describe Api::Admin::Search::Evaluation::ExperimentsController, :admin do
       end
     end
 
+    context 'with a gold query set' do
+      let(:gold_query_set) { create(:evaluation_gold_query_set) }
+      let(:params) { { data: { type: :experiment, attributes: { name: 'with-set', gold_query_set_id: gold_query_set.id } } } }
+
+      it { is_expected.to have_http_status :created }
+      it { expect(json_response['data']['attributes']['gold_query_set_id']).to eq(gold_query_set.id) }
+    end
+
+    context 'without a gold query set' do
+      let(:params) { { data: { type: :experiment, attributes: { name: 'no-set' } } } }
+
+      it { expect(json_response['data']['attributes']['gold_query_set_id']).to be_nil }
+    end
+
+    context 'with a gold query set that does not exist' do
+      let(:params) { { data: { type: :experiment, attributes: { name: 'bad-set', gold_query_set_id: 999_999 } } } }
+
+      it { is_expected.to have_http_status :unprocessable_content }
+      it { expect { api_response }.not_to change(EvaluationExperiment, :count) }
+      it { expect(json_response['errors'].first['source']['pointer']).to eq('/data/attributes/gold_query_set_id') }
+    end
+
     context 'with a missing name' do
       let(:params) { { data: { type: :experiment, attributes: { description: 'no name' } } } }
 
@@ -115,6 +137,35 @@ RSpec.describe Api::Admin::Search::Evaluation::ExperimentsController, :admin do
 
       it { is_expected.to have_http_status :success }
       it { expect { api_response }.to change { experiment.reload.enabled }.from(true).to(false) }
+    end
+
+    context 'when choosing a gold query set' do
+      let(:id) { experiment.id }
+      let(:params) { { data: { type: :experiment, attributes: { gold_query_set_id: gold_query_set.id } } } }
+
+      # Memoised in a method, not a let, to stay within the memoized helper limit.
+      def gold_query_set
+        @gold_query_set ||= create(:evaluation_gold_query_set)
+      end
+
+      it { is_expected.to have_http_status :success }
+      it { expect { api_response }.to change { experiment.reload.gold_query_set_id }.from(nil).to(gold_query_set.id) }
+    end
+
+    context 'when choosing a gold query set that does not exist' do
+      let(:id) { experiment.id }
+      let(:params) { { data: { type: :experiment, attributes: { gold_query_set_id: 999_999 } } } }
+
+      it { is_expected.to have_http_status :unprocessable_content }
+      it { expect { api_response }.not_to(change { experiment.reload.gold_query_set_id }) }
+    end
+
+    context 'when clearing the gold query set' do
+      let(:id) { experiment.id }
+      let(:experiment) { create(:evaluation_experiment, gold_query_set_id: create(:evaluation_gold_query_set).id) }
+      let(:params) { { data: { type: :experiment, attributes: { gold_query_set_id: nil } } } }
+
+      it { expect { api_response }.to change { experiment.reload.gold_query_set_id }.to(nil) }
     end
 
     context 'with an unknown experiment' do
