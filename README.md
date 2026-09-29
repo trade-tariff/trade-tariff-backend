@@ -1,146 +1,135 @@
 # Trade Tariff Backend
 
-The Trade Tariff Backend provides an API which allows to search commodity codes
-for import and export for tax, duty and licences that apply to goods, from and
-to UK and NI.
+Trade Tariff Backend provides tariff data and APIs for the
+[Online Trade Tariff](https://www.gov.uk/trade-tariff). It imports tariff
+updates and serves commodity codes, duties, measures, quotas, certificates and
+rules of origin. It also supports search, reporting and staff administration.
 
-Projects using the Trade Tariff (TT) API:
+This Ruby on Rails application uses Sequel and PostgreSQL for tariff data,
+OpenSearch for search, and Redis and Sidekiq for background work. Each process
+runs as either the UK service (`SERVICE=uk`) or the Northern Ireland service
+(`SERVICE=xi`).
 
-- [Trade Tariff Frontend](https://github.com/trade-tariff/trade-tariff-frontend)
-- [Trade Tariff Admin](https://github.com/trade-tariff/trade-tariff-admin)
-- [Trade Tariff Duty Calculator](https://github.com/trade-tariff/trade-tariff-duty-calculator)
+The main consumers are
+[Trade Tariff Frontend](https://github.com/trade-tariff/trade-tariff-frontend),
+which includes the duty calculator, and
+[Trade Tariff Admin](https://github.com/trade-tariff/trade-tariff-admin).
+For API consumers, start with the
+[Trade Tariff API documentation](https://docs.trade-tariff.service.gov.uk/).
 
-## Development
+## Run locally
 
-> Make sure you install and enable all pre-commit hooks https://pre-commit.com/
+### Prerequisites
 
-Before setup you will need your backing services and header files/libs:
+- Ruby at the version in [.ruby-version](.ruby-version) and Bundler.
+- PostgreSQL with the [pgvector extension](https://github.com/pgvector/pgvector).
+- OpenSearch and Redis.
+- PostgreSQL, libyaml and zlib development libraries for native Ruby gems.
+- A local PostgreSQL user that can create databases and install the required extensions.
 
-- PostgreSQL (with [pgvector](https://github.com/pgvector/pgvector) extension)
-- OpenSearch
-- Redis
-- `libpq`, `libyaml`, `zlib`  (`brew install libpq libyaml zlib` on macOS)
+Clone this repository, or follow the [fork workflow](CONTRIBUTING.md#fork-and-branch)
+if you want to contribute without write access. See
+[CI configuration](.github/workflows/ci.yml) for the backing services used in tests.
 
-These can be configured by following the instructions here:
+### Configure the application
 
-https://transformuk.atlassian.net/wiki/spaces/HO/pages/22447161366/Get+started+developing+on+the+OTT
+Put overrides in `.env.development.local`, not in the tracked
+[.env.development](.env.development). The defaults use `host.docker.internal`
+for several backing services. If they run directly on your machine, set:
 
-### Docker Compose (recommended)
+```dotenv
+PGHOST=localhost
+REDIS_URL=redis://localhost:6379
+ELASTICSEARCH_URL=http://localhost:9200
+```
 
-You can run the service locally using docker compose with the development stack.
+`ELASTICSEARCH_URL` is the configuration name used for OpenSearch.
+`DB_USER` defaults to `postgres`. See [config/database.yml](config/database.yml)
+for database settings. Keep credentials out of Git and use only local or
+explicitly authorised development services.
 
-<https://github.com/trade-tariff/trade-tariff-development-stack>
+### Set up and start
 
-Clone the repository and follow the instructions in the README.
-
-### Manual development (not recommended)
-
-#### Dependencies
-
-- Ruby [v3.3](https://github.com/trade-tariff/trade-tariff-frontend/blob/main/.ruby-version#L1)
-- PostgreSQL 15+ with pgvector ([Postgres.app](https://postgresapp.com/) includes it, or `brew install pgvector` on macOS)
-- `postgresql-dev` / `libpq-dev` header files for compiling the `pg` gem
-
-#### Setup
-
-1. Clone this repo
-2. Install the correct ruby version according to the `.ruby-version` - eg using
-  `rbenv` or `asdf`.
-3. Setup the app:
-    - If you don't have a db dump then run `bin/setup` without parameters.
-      - _NB: this will result in a empty dataset._
-    - If you do have a database dump, run `bin/setup <path/to/dump/ file>`.
-      Sidekiq is started to build the search indexes - once the jobs have all
-      finished (10 `[done]` jobs, one after the other), hit `Ctrl-C` to exit
-      sidekiq.
-4. Start the app with `bin/rails s`. If you want to run rails plus the sidekiq worker, run `bin/dev`.
-
-### Database
-
-If you have access, you can download a database dump from our environments.
-Details of how to fetch a database dump are available on Slack.
-
-To restore the database dump:
+On a new local database:
 
 ```sh
-psql -h localhost tariff_development < tariff-merged-staging.sql
+bin/setup
+bin/dev
 ```
 
-### Running an XI service
+`bin/setup` installs Ruby dependencies, creates the database, loads its structure
+and seeds, prepares the test database and queues search indexing jobs. It is not
+a production-data installer: the seed data does not provide a complete tariff.
+Do not use it to reinitialise a database you need to keep.
 
-1. Add `SERVICE=xi` to `.env.development.local`
-2. Rebuild the search indexes
-   - `bin/rake tariff:reindex`
-   - `bundle exec sidekiq`
-3. Run the rails server as normal - `bin/rails s`
+`bin/dev` starts Rails on port 3000 and a Sidekiq worker. The UK API root is
+<http://localhost:3000/uk/api>. To run only the web process, use `bin/rails server`.
 
-`SERVICE` controls the Postgres `search_path` (see `config/database.yml`), so
-migrations run under `SERVICE=xi` create tables in the `xi` schema. A few
-models (`AdminConfiguration`, `EvaluationExperiment`, `EvaluationRun`,
-`EvaluationResult`) are hardcoded to the `uk` schema instead, because they're
-shared across both services rather than duplicated per-service. Always run
-migrations for those with the default `SERVICE=uk` - migrating them under
-`SERVICE=xi` will not create the tables they actually query, and you'll see
-`relation "uk.<table>" does not exist` errors from the xi service instead.
+For journeys that need real tariff data, team members must obtain an approved
+database dump through the team's access process. Do not commit or share dumps
+in public issues. On a new local database, `bin/setup /path/to/dump.sql` restores
+a plain SQL dump and starts Sidekiq to rebuild indexes. Stop Sidekiq after the
+indexing jobs finish, then start `bin/dev`.
 
-### Performing daily updates
+### Run the Northern Ireland service
 
-These are run daily by a background job, `CdsUpdatesSynchronizerWorker` or
-`TaricUpdatesSynchronizerWorker`. Additional environment variables are needed to
-run these jobs locally.
+Set `SERVICE=xi` in the environment of the XI process. It needs an XI dataset and
+search indexes. Run `bin/rails tariff:reindex` and a Sidekiq worker with the same
+`SERVICE` setting. If the UK process already uses port 3000, start the XI web
+process on another port, for example `SERVICE=xi bin/rails server -p 3002`.
 
-These should be added to `.env.development.local`:
+`SERVICE` controls the PostgreSQL schema. Some records, including
+`AdminConfiguration` and evaluation records, are shared in the `uk` schema.
+Run shared-table migrations with `SERVICE=uk`; running only XI migrations does
+not create those shared tables. See [config/database.yml](config/database.yml)
+and [architecture](docs/architecture/README.md) before changing service setup.
 
-```text
-AWS_ACCESS_KEY_ID
-AWS_BUCKET_NAME
-AWS_REGION
-AWS_REPORTING_BUCKET_NAME
-AWS_SECRET_ACCESS_KEY
-HMRC_API_HOST
-HMRC_CLIENT_ID
-HMRC_CLIENT_SECRET
-TARIFF_FROM_EMAIL
-TARIFF_MANAGEMENT_EMAIL
-TARIFF_SUPPORT_EMAIL
-TARIFF_SYNC_EMAIL
-TARIFF_SYNC_HOST
-TARIFF_SYNC_PASSWORD
-TARIFF_SYNC_USERNAME
-GREEN_LANES_UPDATE_EMAIL
-GREEN_LANES_NOTIFY_MEASURE_UPDATES
-OPTIMISED_SEARCH_ENABLED
+## Run checks
+
+With PostgreSQL, Redis and OpenSearch available and the test database prepared:
+
+```sh
+bundle exec rspec
+bundle exec rubocop
+bundle exec brakeman
+bundle exec rake swagger:check_coverage
 ```
 
-## API Documentation
+See [CONTRIBUTING.md](CONTRIBUTING.md) for hooks and pull requests.
+[GitHub Actions](.github/workflows/ci.yml) defines the CI checks.
 
-The V2 public API is documented as an OpenAPI 3.0 spec generated from RSpec metadata using [rswag](https://github.com/rswag/rswag).
+## API documentation
 
-`swagger/v2/swagger.json` is generated automatically by CI after the rspec suite passes and committed back to the branch — you never need to commit it manually.
+Public V2 endpoint documentation comes from specs in
+[spec/swagger/api/v2/](spec/swagger/api/v2/). Update those specs alongside request
+specs when changing a public endpoint. Do not edit the generated
+[OpenAPI document](swagger/v2/swagger.json) by hand.
 
-### Adding documentation for a new endpoint
-
-1. Write a spec under `spec/swagger/api/v2/` (see existing files for the pattern)
-2. Push — CI will run the specs, generate `swagger/v2/swagger.json`, and commit it back
-
-To preview the generated spec locally:
+To generate a local preview:
 
 ```sh
 RAILS_ENV=test bin/generate-swagger
 ```
 
-CI enforces two things:
-- **`swagger:check_coverage`** — fails if any public V2 controller has no swagger spec
-- **`swagger:generate` + auto-commit** — regenerates and commits `swagger.json` after specs pass
+See the [API documentation guide](docs/architecture/api-documentation.md) for the
+generation and CI workflow.
 
-Internal/authenticated controllers (green lanes, enquiry form, etc.) are explicitly excluded in `lib/tasks/swagger.rake`.
+## Find your way around
 
-## Understanding the codebase
+- [Documentation index](docs/README.md): architecture and domain guides.
+- [Architecture](docs/architecture/README.md): routing, imports, search and background jobs.
+- [Daily tariff updates](docs/daily-updates.md): integration prerequisites for maintainers.
+- [Development and delivery](docs/development-and-delivery.md): team and deployment conventions.
 
-Start with [docs/README.md](docs/README.md) for the documentation map, [docs/architecture/README.md](docs/architecture/README.md) for the main runtime boundaries, and [docs/development-and-delivery.md](docs/development-and-delivery.md) for team delivery conventions.
+## Contribute
 
-For AI-assisted exploration, see [docs/code-wiki.md](docs/code-wiki.md). Google Code Wiki can help find candidate files and concepts for this public repository, but source code, tests, ADRs, and local docs remain authoritative.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) for reporting bugs, making a fork,
+submitting changes and reporting security issues privately.
 
 ## Licence
 
-Trade Tariff is licenced under the [MIT licence](https://github.com/trade-tariff/trade-tariff-backend/blob/main/LICENCE.txt)
+The code and associated documentation are available under the
+[MIT licence](LICENCE.txt), with the existing Crown copyright notice.
+Keep the licence and copyright notice when you reuse the software.
+Third-party dependencies and datasets retain their own terms; the software
+licence is not a licence for every dataset the application can import.
