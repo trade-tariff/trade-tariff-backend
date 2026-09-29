@@ -168,13 +168,31 @@ The existing search-count field now counts distinct frontend-origin search-start
 ### Navigation and search actions
 
 Classic, internal and interactive search emit `search_action_classified` after
-resolving an exact match and before fuzzy or guided retrieval. `search_action`
-is `navigation` when the accepted result comes from a search suggestion, and
-`search` otherwise. A direct goods-nomenclature lookup without a suggestion is
-search, even when it redirects. Existing suggestion normalisation still applies,
-including singular/plural matching and code padding. This measures the resolved
-route, not whether the trader clicked or pressed Return. Failed retrieval after
-classification retains that action; failure before classification stays unknown.
+resolving an exact match and before fuzzy or guided retrieval. The rule depends
+on what the trader then sees, so it differs by search type.
+
+Classic redirects a resolved match straight to its tariff page. Any visible
+exact match is therefore `navigation`, whether it resolved through a search
+suggestion or through a direct goods-nomenclature lookup. A trader who types a
+code and presses Return has navigated. Only a journey that falls through to
+fuzzy search is `search`.
+
+Internal and interactive search render a results page for a resolved match
+instead of redirecting. The trader still chooses from those results, so they use
+the narrower rule: `search_action` is `navigation` when the accepted result
+comes from a search suggestion, and `search` otherwise. Existing suggestion
+normalisation still applies there, including singular/plural matching and code
+padding.
+
+Hidden goods, blocked queries and empty queries never resolve an exact match and
+stay `search` on every search type. This measures the resolved route, not whether
+the trader clicked or pressed Return. Failed retrieval after classification
+retains that action; failure before classification stays unknown.
+
+A rule change does not reclassify days that were already collected. Days
+collected before this rule change keep the earlier suggestion-based labels for
+classic search, so a range that spans the change compares two rules. Recollection
+is not required and is not triggered.
 
 The optional `search_actions` daily group stores the action, search type and
 hashed journey identifier sets for frontend-origin events. It uses eight initial

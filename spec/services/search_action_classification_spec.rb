@@ -35,6 +35,8 @@ RSpec.describe 'Search action classification' do
         expect(events).to contain_exactly(hash_including(request_id:, request_source: 'frontend', search_type:, search_action: action, search_degraded: false))
       end
 
+      def classic? = search_type == 'classic'
+
       it 'classifies a typed suggestion' do
         create(:search_suggestion, :search_reference, goods_nomenclature: heading, value: 'horse', declarable: true)
         search('horse')
@@ -53,10 +55,13 @@ RSpec.describe 'Search action classification' do
         expect_action('navigation')
       end
 
-      it 'distinguishes direct code lookups' do
+      # Classic redirects a resolved match straight to its tariff page, so a
+      # trader typing a code has navigated. Guided search renders a results page
+      # instead, so the trader still chooses from results.
+      it 'counts a resolved code lookup as navigation only on classic' do
         heading
         search('0101')
-        expect_action('search')
+        expect_action(classic? ? 'navigation' : 'search')
       end
 
       it 'classifies a query without a match' do

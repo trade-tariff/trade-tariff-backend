@@ -73,7 +73,7 @@ private
     Search::Instrumentation.search_action_classified(
       request_id: TradeTariffRequest.request_id,
       search_type: 'classic',
-      search_action: exact&.matched_suggestion ? 'navigation' : 'search',
+      search_action: exact ? 'navigation' : 'search',
     )
     @result = exact || (fuzzy_search.presence if q.present? && !blocked) || NullSearch.new(q)
 
