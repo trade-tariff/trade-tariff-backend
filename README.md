@@ -114,6 +114,8 @@ RAILS_ENV=test bin/generate-swagger
 See the [API documentation guide](docs/architecture/api-documentation.md) for the
 generation and CI workflow.
 
+Internal/authenticated controllers (green lanes, notifications, etc.) are explicitly excluded in `lib/tasks/swagger.rake`.
+
 ## Find your way around
 
 - [Documentation index](docs/README.md): architecture and domain guides.
