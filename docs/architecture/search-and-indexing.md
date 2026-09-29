@@ -169,12 +169,22 @@ The existing search-count field now counts distinct frontend-origin search-start
 
 Classic, internal and interactive search emit `search_action_classified` after
 resolving an exact match and before fuzzy or guided retrieval. `search_action`
-is `navigation` when the accepted result comes from a search suggestion, and
-`search` otherwise. A direct goods-nomenclature lookup without a suggestion is
-search, even when it redirects. Existing suggestion normalisation still applies,
-including singular/plural matching and code padding. This measures the resolved
-route, not whether the trader clicked or pressed Return. Failed retrieval after
-classification retains that action; failure before classification stays unknown.
+is `navigation` when the backend accepts an exact match from either a typed
+code or a suggestion, including titles and chemical numbers. It is `search`
+otherwise. A numeric query that enters fuzzy or guided retrieval remains search.
+Existing suggestion normalisation still applies, including singular/plural
+matching and code padding. This measures exact resolution, not whether the trader
+clicked or pressed Return. Classic redirects an accepted match; guided search
+shows its single exact result. Classic's unmatched-code redirect fallback does
+not establish an accepted match. Failed retrieval after classification retains
+that action; failure before classification stays unknown.
+
+Corrected events carry `search_action_version: 2`. The action query reads only
+that version, which changes only the `search_actions` fingerprint. Earlier
+suggestion-only collections become unavailable, not zero or reclassified. Old
+logs cannot produce corrected classifications through recollection. On a rollout
+day, journeys without version 2 evidence remain unclassified. No stored rows are
+rewritten and existing total and rate fingerprints remain unchanged.
 
 The optional `search_actions` daily group stores the action, search type and
 hashed journey identifier sets for frontend-origin events. It uses eight initial

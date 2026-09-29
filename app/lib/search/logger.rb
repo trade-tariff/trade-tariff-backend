@@ -17,6 +17,7 @@ module Search
         request_id: event.payload[:request_id],
         search_type: event.payload[:search_type],
         search_action: event.payload[:search_action],
+        search_action_version: event.payload[:search_action_version],
       }, event)
     end
 

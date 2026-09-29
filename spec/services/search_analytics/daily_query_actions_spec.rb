@@ -30,9 +30,9 @@ RSpec.describe SearchAnalytics::DailyQuery do
     expect(starts.size).to eq(8)
   end
 
-  it 'uses only explicit frontend actions' do
+  it 'uses only explicit frontend actions with the exact-match definition' do
     sql = described_class.new(**options).query_definitions.fetch('search_actions')
-    expect(sql).to include("event = 'search_action_classified'", "request_source = 'frontend'", 'GROUP BY search_type, request_source, search_action')
+    expect(sql).to include("event = 'search_action_classified'", 'search_action_version = 2', "request_source = 'frontend'", 'GROUP BY search_type, request_source, search_action')
     expect(sql).not_to include('exact_match', 'result_selected', 'search_degraded', 'query RLIKE')
   end
 
@@ -42,6 +42,15 @@ RSpec.describe SearchAnalytics::DailyQuery do
     existing = collector.query_definitions.except('search_actions')
     allow(collector).to receive(:query_definitions).and_return(existing)
     expect(collector.fingerprints).to eq(current.except('search_actions'))
+  end
+
+  it 'invalidates only the suggestion-only action fingerprint' do
+    collector = described_class.new(**options)
+    current = collector.fingerprints
+    previous = collector.query_definitions.transform_values { |sql| sql.sub("  AND search_action_version = 2\n", '') }
+    allow(collector).to receive(:query_definitions).and_return(previous)
+    expect(collector.fingerprints.fetch('search_actions')).not_to eq(current.fetch('search_actions'))
+    expect(collector.fingerprints.except('search_actions')).to eq(current.except('search_actions'))
   end
 
   it 'reuses stored actions without scanning' do

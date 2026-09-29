@@ -32,7 +32,7 @@ RSpec.describe 'Search action classification' do
       end
 
       def expect_action(action)
-        expect(events).to contain_exactly(hash_including(request_id:, request_source: 'frontend', search_type:, search_action: action, search_degraded: false))
+        expect(events).to contain_exactly(hash_including(request_id:, request_source: 'frontend', search_type:, search_action: action, search_action_version: 2, search_degraded: false))
       end
 
       it 'classifies a typed suggestion' do
@@ -53,9 +53,47 @@ RSpec.describe 'Search action classification' do
         expect_action('navigation')
       end
 
-      it 'distinguishes direct code lookups' do
+      it 'classifies a typed heading code without a suggestion as navigation' do
         heading
         search('0101')
+        expect_action('navigation')
+      end
+
+      it 'classifies a typed commodity code without a suggestion as navigation' do
+        create(:commodity, :with_description, goods_nomenclature_item_id: '0101210000')
+        search('0101210000')
+        expect_action('navigation')
+      end
+
+      it 'classifies a typed chapter code without a suggestion as navigation' do
+        create(:chapter, :with_description, goods_nomenclature_item_id: '0100000000')
+        search('01')
+        expect_action('navigation')
+      end
+
+      it 'classifies an enabled chemical name suggestion as navigation' do
+        allow(AdminConfiguration).to receive(:enabled?).with('suggest_chemical_names').and_return(true)
+        create(:search_suggestion, :full_chemical_name, goods_nomenclature: heading, value: 'test chemical', declarable: true)
+        search('test chemical')
+        expect_action('navigation')
+      end
+
+      it 'classifies an enabled prefixed CAS suggestion as navigation' do
+        allow(AdminConfiguration).to receive(:enabled?).with('suggest_chemical_cas').and_return(true)
+        create(:search_suggestion, :full_chemical_cas, goods_nomenclature: heading, value: '10310-21-1', declarable: true)
+        search('cas 10310-21-1')
+        expect_action('navigation')
+      end
+
+      it 'keeps suggestions without a destination as search' do
+        create(:search_suggestion, :search_reference, value: 'missing destination', declarable: true)
+        search('missing destination')
+        expect_action('search')
+      end
+
+      it 'keeps hidden direct code lookups as search' do
+        create(:chapter, :with_description, :hidden, goods_nomenclature_item_id: '9900000000')
+        search('9900000000')
         expect_action('search')
       end
 
@@ -74,6 +112,30 @@ RSpec.describe 'Search action classification' do
         create(:search_suggestion, :goods_nomenclature, goods_nomenclature: hidden, value: '9900000000', declarable: true)
         search('9900000000')
         expect_action('search')
+      end
+
+      unless type == 'classic'
+        it 'keeps disabled chemical suggestions as search' do
+          allow(AdminConfiguration).to receive(:enabled?).with('suggest_chemical_cas').and_return(false)
+          create(:search_suggestion, :full_chemical_cas, goods_nomenclature: heading, value: '10310-21-1', declarable: true)
+          search('cas 10310-21-1')
+          expect_action('search')
+        end
+
+        it 'does not classify a code rejected by a chapter exclusion as navigation' do
+          heading
+          allow(AdminConfiguration).to receive(:multi_options_values).and_call_original
+          allow(AdminConfiguration).to receive(:multi_options_values).with('interactive_search_excluded_chapters').and_return(%w[01])
+          search('0101')
+          expect_action('search')
+        end
+
+        it 'does not classify a suggestion rejected by an intercept filter as navigation' do
+          create(:description_intercept, term: 'horse', filter_prefixes: Sequel.pg_array(%w[9503], :text))
+          create(:search_suggestion, :search_reference, goods_nomenclature: heading, value: 'horse', declarable: true)
+          search('horse')
+          expect_action('search')
+        end
       end
 
       it 'classifies before retrieval failure' do
