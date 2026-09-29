@@ -84,8 +84,9 @@ module Evaluation
 
     def self.call(...) = new(...).call
 
-    def initialize(source, ai_client: TradeTariffBackend.ai_client)
+    def initialize(source, set:, ai_client: TradeTariffBackend.ai_client)
       @source = source
+      @set = set
       @ai_client = ai_client
     end
 
@@ -99,7 +100,7 @@ module Evaluation
 
   private
 
-    attr_reader :source, :ai_client
+    attr_reader :source, :set, :ai_client
 
     def generate_tiers
       MAX_ATTEMPTS.times do
@@ -198,36 +199,35 @@ module Evaluation
       lines.join("\n")
     end
 
+    # All three rows are saved together or not at all.
     def persist(tiers)
       EvaluationGoldQuery.db.transaction do
-        tiers.each do |tier, query|
-          values = {
-            source_type: source.source_type,
-            source_id: source.source_id,
-            persona: PERSONA_FOR_TIER.fetch(tier),
-            query: query,
-            expected_code: source.expected_code,
-            expected_description: source.expected_description,
-            notes: 'ported emulator',
-            generator: MODEL,
-            created_at: Time.current,
-          }
-
-          # update_where restricts the upsert to conflicting rows that are currently
-          # inactive, so a deactivated tier gets repaired with this fresh generation
-          # (and reactivated), while an already-active row — however this generation
-          # attempt happened to reword it — is left exactly as it was.
-          update_values = values
-                           .except(*EvaluationGoldQuery::IDENTITY_COLUMNS)
-                           .each_with_object(active: true) { |(column, _), update| update[column] = Sequel[:excluded][column] }
-
-          EvaluationGoldQuery.dataset.insert_conflict(
-            target: EvaluationGoldQuery::IDENTITY_COLUMNS,
-            update: update_values,
-            update_where: { Sequel[:evaluation_gold_queries][:active] => false },
-          ).insert(values)
-        end
+        tiers.each { |tier, query| insert_row(PERSONA_FOR_TIER.fetch(tier), query) }
       end
+    end
+
+    def insert_row(persona, query)
+      # A unique conflict means this exact row (same set, source and persona) is already
+      # there, for example because Sidekiq retried the job. It is left as it is, with its
+      # history, so a retry can never create a duplicate or overwrite an operator's edit.
+      inserted = EvaluationGoldQuery.dataset.insert_conflict(target: EvaluationGoldQuery::IDENTITY_COLUMNS).returning(:id).insert(
+        set_id: set.id,
+        source_type: source.source_type,
+        source_id: source.source_id,
+        persona:,
+        query:,
+        expected_code: source.expected_code,
+        expected_description: source.expected_description,
+        oracle_text: source.oracle_text,
+        generator: MODEL,
+      )
+      return if inserted.empty?
+
+      # The insert above skips the model, so it wrote no history. Record the generated
+      # text as version 1, so an operator's first edit can be compared with what the
+      # model wrote. A background job has no logged-in user, so the person who asked for
+      # the set is named instead.
+      Sequel::Plugins::HasPaperTrail.record_current_version!(EvaluationGoldQuery[inserted.first[:id]], whodunnit: set.created_by)
     end
   end
 end
