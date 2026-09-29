@@ -83,9 +83,10 @@ module SearchAnalytics
     end
 
     def stored_starts_sql
+      # CloudWatch buckets are UTC, including values without a timezone suffix.
       <<~SQL
         SELECT k.key,
-          date_trunc(#{db.literal(@period.bucket_size)}, (j.row->>'@timestamp')::timestamptz AT TIME ZONE 'UTC') AS bucket
+          date_trunc(#{db.literal(@period.bucket_size)}, (j.row->>'@timestamp')::timestamp) AS bucket
         FROM (#{records('search_journeys').select(:rows).sql}) r
         CROSS JOIN LATERAL jsonb_array_elements(r.rows) j(row)
         CROSS JOIN LATERAL jsonb_array_elements_text(j.row->'journey_keys') k(key)
