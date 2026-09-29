@@ -34,13 +34,13 @@ RSpec.describe SearchAnalytics::SelectionRates do
     expect(read.fetch(:views).values).to all(include('result_journeys' => 1, 'selected_result_journeys' => 1))
   end
 
-  it 'uses only dates covered by both compatible inputs and never mixes services' do
+  it 'does not report zero when a later page collection is missing' do
     store('selection_results', dates.first, [result('classic', 'a')])
-    store('selection_pages', dates.first, [selected('a')])
-    store('selection_results', dates.last, [result('classic', 'b', 'c')])
-    store('selection_pages', dates.last, [selected('b')], fingerprint: 'stale')
-    store('selection_pages', dates.last, [selected('c')], service: 'xi')
-    expect(read.dig(:views, 'all')).to include('result_journeys' => 1, 'selection_rate' => 1.0)
+    store('selection_pages', dates.first, [])
+    store('selection_results', dates.last, [result('classic', 'a')])
+    store('selection_pages', dates.last, [selected('a')], fingerprint: 'stale')
+    store('selection_pages', dates.last, [selected('a')], service: 'xi')
+    expect(read.dig(:views, 'classic')).to include('result_journeys' => nil, 'selected_result_journeys' => nil, 'selection_rate' => nil)
     expect(read.fetch(:coverage)).to include('complete' => false, 'collected_days' => 1, 'missing_dates' => [dates.last.iso8601])
   end
 

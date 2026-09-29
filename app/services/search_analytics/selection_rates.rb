@@ -17,7 +17,8 @@ module SearchAnalytics
 
     def call
       collected = SOURCE_NAMES.map { |name| records.select { |row| row.name == name }.map(&:reporting_date) }.reduce(:&).sort
-      totals = collected.any? ? counts(collected) : {}
+      # A later page visit must not be hidden by an uncollected day.
+      totals = collected == @dates ? counts(collected) : {}
       {
         records:,
         coverage: {
