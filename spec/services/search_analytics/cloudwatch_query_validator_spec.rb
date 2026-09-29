@@ -43,7 +43,7 @@ RSpec.describe SearchAnalytics::CloudwatchQueryValidator do
     expect(Aws::CloudWatchLogs::Client).not_to receive(:new)
     expect(SearchAnalyticsQueryResult).not_to receive(:fetch)
     validate
-    expect(output.string).to include('Validated daily/search_journeys', 'Validated daily/ai_cost_trend', 'Validated daily/classic_outcomes', 'Validated daily/search_actions', "Validated #{TradeTariffBackend.service == 'uk' ? 12 : 11} distinct CloudWatch queries")
+    expect(output.string).to include('Validated daily/search_journeys', 'Validated daily/ai_cost_trend', 'Validated daily/classic_outcomes', 'Validated daily/search_actions', 'Validated daily/search_results', "Validated #{TradeTariffBackend.service == 'uk' ? 13 : 12} distinct CloudWatch queries")
     expect(client).to have_received(:start_query).with(hash_including(query_string: a_string_including("request_source = 'frontend'", "worker-#{TradeTariffBackend.service}/"))).at_least(:once)
   end
 

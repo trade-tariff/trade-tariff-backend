@@ -5,6 +5,7 @@ module SearchAnalytics
   class DailyAggregate < CloudwatchSnapshotQuery::Aggregate
     def initialize(period:, results:, journeys: nil, cost_keys: nil, query_dates: nil)
       @query_dates = query_dates || {}
+      @search_results = results.fetch('search_results', [])
       @journeys = journeys || Period::VIEWS.index_with do |view|
         JourneyMetrics.new(rows: results.fetch('search_journeys'), period: period.with(view:))
       end
@@ -32,6 +33,8 @@ module SearchAnalytics
       payload_for(period.view).merge(
         'journeys' => { 'count' => @journeys.fetch(period.view).count },
         'availability' => {
+          'zero_result_rate_search_only' => true,
+          'zero_result_rate_coverage' => search_result_coverage,
           'journey_metrics' => query_present?('search_journeys'),
           'request_journeys' => query_present?('search_journeys'),
           'costs_match_view' => query_present?('ai_cost_trend'),
@@ -74,13 +77,44 @@ module SearchAnalytics
 
     def summary(view)
       original = super
-      original.merge('requests' => original.fetch('searches'), 'searches' => @journeys.fetch(view).count, 'journey_count' => @journeys.fetch(view).count)
+      original.merge(
+        'requests' => original.fetch('searches'), 'searches' => @journeys.fetch(view).count, 'journey_count' => @journeys.fetch(view).count,
+        'zero_result_rate' => search_result_rate(view),
+        'completed_searches' => search_result_count(view, 'searches'),
+        'zero_result_searches' => search_result_count(view, 'zero_results')
+      )
     end
 
     def comparison_for(view, request_source: nil)
       original = super
       count = request_source.nil? || request_source == 'frontend' ? @journeys.fetch(view).count : 0
-      original.merge('requests' => original.fetch('searches'), 'searches' => count)
+      original.merge('requests' => original.fetch('searches'), 'searches' => count, 'zero_result_rate' => search_result_rate(view, request_source:))
+    end
+
+    def search_result_coverage
+      collected = @query_dates.fetch('search_results', []).size
+      expected = (period.duration / 1.day).to_i
+      { 'complete' => collected == expected, 'collected_days' => collected, 'expected_days' => expected }
+    end
+
+    def search_result_count(view, field, request_source: nil)
+      return if @query_dates.fetch('search_results', []).empty?
+      return unless request_source.nil? || request_source == 'frontend'
+
+      filtered_rows(@search_results, view, request_source: 'frontend').sum { |row| integer(row[field]) }
+    end
+
+    def search_result_rate(view, request_source: nil)
+      completed = search_result_count(view, 'searches', request_source:)
+      return unless completed&.positive?
+
+      search_result_count(view, 'zero_results', request_source:).to_f / completed
+    end
+
+    def status_for_zero_result_rate(value)
+      return { 'level' => 'neutral', 'message' => 'No completed-search rate is available for these dates' } if value.nil?
+
+      super
     end
 
     def trends(view)
