@@ -66,6 +66,38 @@ RSpec.describe SearchAnalytics::DailyResults do
     expect(read('internal').payload.dig('actions', 'trend').pluck('search')).to eq([1, 1])
   end
 
+  context 'with CloudWatch UTC timestamps and a non-UTC database session' do
+    around do |example|
+      SearchAnalyticsQueryResult.db.transaction(rollback: :always) do
+        SearchAnalyticsQueryResult.db.run("SET LOCAL TIME ZONE 'Europe/London'")
+        example.run
+      end
+    end
+
+    before do
+      replace_rows(last_date, 'search_journeys', [
+        { '@timestamp' => '2026-09-14 00:00:00.000', 'search_type' => 'classic', 'request_source' => 'frontend', 'journey_keys' => %w[navigation] },
+        { '@timestamp' => '2026-09-14T00:00:00Z', 'search_type' => 'classic', 'request_source' => 'frontend', 'journey_keys' => %w[search] },
+      ])
+      replace_rows(last_date, 'search_actions', [
+        action(%w[navigation], 'classic', 'navigation'),
+        action(%w[search], 'classic', 'search'),
+      ])
+    end
+
+    it 'keeps hourly action buckets aligned with the journey totals' do
+      expect(read('classic', '24h').payload.dig('actions', 'trend')).to include(
+        'bucket' => '2026-09-14T00:00:00Z', 'total' => 2, 'navigation' => 1, 'search' => 1, 'unclassified' => 0,
+      )
+    end
+
+    it 'keeps daily action buckets on the UTC date at midnight' do
+      expect(read('classic', '7d').payload.dig('actions', 'trend')).to include(
+        'bucket' => '2026-09-14T00:00:00Z', 'total' => 2, 'navigation' => 1, 'search' => 1, 'unclassified' => 0,
+      )
+    end
+  end
+
   it 'keeps conflicting evidence unclassified' do
     replace_rows(first_date, 'search_actions', [action(%w[shared], 'interactive', 'search')])
     replace_rows(last_date, 'search_actions', [action(%w[shared], 'internal', 'navigation')])
