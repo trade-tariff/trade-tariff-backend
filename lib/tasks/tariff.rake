@@ -79,6 +79,30 @@ module_function
     end
   end
 
+  # Starts a gold query set from the command line. It calls the same service as the admin
+  # API, so the checks, the random sampling and the background job are identical.
+  #
+  #   NAME='Set A' SIZE=100 [ATAR_PERCENTAGE=100] bundle exec rake tariff:evaluation:generate_gold_queries
+  #
+  # ATAR_PERCENTAGE defaults to 100 (real ATaR rulings only), which is what this task did
+  # before gold query sets existed. It does not wait: generation runs on Sidekiq.
+  def generate_evaluation_gold_queries
+    abort 'NAME is required, for example NAME="Set A"' if ENV['NAME'].blank?
+    abort 'SIZE is required, for example SIZE=100' if ENV['SIZE'].blank?
+
+    set = Evaluation::GoldQuerySetCreator.call(
+      name: ENV['NAME'],
+      requested_size: ENV['SIZE'],
+      atar_percentage: ENV.fetch('ATAR_PERCENTAGE', '100'),
+      created_by: "rake:#{ENV.fetch('USER', 'unknown')}",
+    )
+    abort "Gold query set not created: #{set.errors.full_messages.join(', ')}" if set.errors.any?
+
+    puts "Created gold query set #{set.id} (#{set.name}): #{set.planned_count} items planned, #{set.requested_size} requested."
+    puts 'Generation runs in the background on Sidekiq.'
+    puts "Follow it in a Rails console with EvaluationGoldQuerySet[#{set.id}] (status, generated_count, failed_count)."
+  end
+
   def refresh
     require_relative '../../app/helpers/materialize_view_helper'
 
@@ -87,6 +111,11 @@ module_function
     puts "Refreshing materialized views#{' concurrently' if concurrently}..."
     MaterializeViewHelper.refresh_materialized_view(concurrently: concurrently)
   end
+end
+
+desc 'Create a gold query set and start generating it (NAME, SIZE and optionally ATAR_PERCENTAGE)'
+task 'tariff:evaluation:generate_gold_queries' => :environment do
+  TariffRakeTasks.generate_evaluation_gold_queries
 end
 
 desc 'Reindex relevant entities on ElasticSearch'
