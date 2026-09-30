@@ -86,7 +86,7 @@ GEM
       uri (>= 0.13.1)
     addressable (2.9.0)
       public_suffix (>= 2.0.2, < 8.0)
-    amazing_print (2.0.0)
+    amazing_print (3.0.0)
     ast (2.4.3)
     aws-actionmailer-ses (1.2.0)
       actionmailer (>= 7.1.0)
