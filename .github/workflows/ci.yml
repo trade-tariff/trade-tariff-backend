@@ -4,9 +4,12 @@ on:
   push:
     branches-ignore:
       - main
+      # Merge queue branches. The merge_group event runs CI for them.
+      - 'gh-readonly-queue/**'
   pull_request:
     branches-ignore:
       - main
+  merge_group:
   workflow_dispatch:
 
 env:
@@ -26,6 +29,8 @@ permissions:
 
 jobs:
   check-pr-lines:
+    # A merge queue run has no pull request to measure.
+    if: github.event_name != 'merge_group'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
