@@ -31,7 +31,18 @@ module Api
         dataset = EvaluationGoldQuery.where(active: true)
         dataset = dataset.where(persona: params[:persona]) if params[:persona].present?
         dataset = dataset.where(source_type: params[:source_type]) if params[:source_type].present?
+        dataset = filter_by_set(dataset)
         filter_by_source_ids(dataset)
+      end
+
+      # Without set_id every set's rows are returned, as before sets existed.
+      def filter_by_set(dataset)
+        return dataset unless params.key?(:set_id)
+
+        set_id = Integer(params[:set_id], exception: false)
+        raise ActionController::BadRequest, 'set_id must be a number' unless set_id
+
+        dataset.where(set_id:)
       end
 
       def filter_by_source_ids(dataset)

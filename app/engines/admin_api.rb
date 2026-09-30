@@ -176,6 +176,7 @@ AdminApi.routes.draw do
       namespace :search do
         namespace :evaluation do
           resources :experiments, only: %i[index show create update]
+          resources :gold_query_sets, only: %i[create]
           resources :runs, only: %i[index show create update]
           resources :results, only: %i[index show create]
           resource :configuration, only: [:show]

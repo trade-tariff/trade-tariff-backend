@@ -1,11 +1,18 @@
 class EvaluationGoldQuery < Sequel::Model(Sequel[:evaluation_gold_queries].qualify(:uk))
-  IDENTITY_COLUMNS = %i[source_type source_id persona].freeze
+  # A row is identified by its set, its source item and its persona. The same source item
+  # can appear in several sets, because each set owns its rows.
+  IDENTITY_COLUMNS = %i[set_id source_type source_id persona].freeze
+  SOURCE_TYPES = %w[atar synthetic_atar].freeze
 
   plugin :validation_helpers
+  plugin :has_paper_trail
+
+  many_to_one :evaluation_gold_query_set, key: :set_id
 
   def validate
     super
-    validates_presence %i[source_type source_id persona query expected_code]
+    validates_presence %i[set_id source_type source_id persona query expected_code oracle_text]
+    validates_includes SOURCE_TYPES, :source_type, allow_nil: true
   end
 
   # expected_code is stored at whatever granularity the source ruling actually published

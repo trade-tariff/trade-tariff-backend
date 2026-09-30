@@ -2,9 +2,11 @@
 require 'rails_helper'
 
 RSpec.describe Evaluation::GoldQueryGenerator do
-  subject(:result) { described_class.call(ruling, ai_client:) }
+  subject(:result) { described_class.call(source, set: gold_query_set, ai_client:) }
 
   let(:ai_client) { instance_double(OpenaiClient) }
+  let(:source) { Evaluation::GoldQuerySource.from_public_atar_ruling(ruling) }
+  let(:gold_query_set) { create(:evaluation_gold_query_set, created_by: 'user-123') }
   let(:ruling) do
     create(
       :tariff_knowledge_public_atar_ruling,
@@ -15,7 +17,8 @@ RSpec.describe Evaluation::GoldQueryGenerator do
       justification: 'Classified in accordance with GIR 1.',
     )
   end
-  let(:accepted_tiers) do
+
+  def accepted_tiers
     { 'generic' => 'bed linen', 'ordinary' => 'cotton bed sheets', 'specific' => 'printed cotton bed linen set' }
   end
 
@@ -64,6 +67,26 @@ RSpec.describe Evaluation::GoldQueryGenerator do
       expect(rows.map(&:generator).uniq).to eq(['gpt-5-mini-2025-08-07'])
     end
 
+    it 'stores each row in the set, with the source text as its oracle text' do
+      result
+
+      rows = EvaluationGoldQuery.where(source_id: '600014988').all
+      expect(rows.map(&:set_id).uniq).to eq([gold_query_set.id])
+      expect(rows.map(&:oracle_text).uniq).to eq(['Bed linen woven from cotton fabric, printed with a floral pattern.'])
+    end
+
+    it 'records the generated text as version 1 of each row, naming the person who asked for the set' do
+      result
+
+      rows = EvaluationGoldQuery.where(source_id: '600014988').all
+      expect(rows.size).to eq(3)
+      rows.each do |row|
+        expect(row.versions.map(&:event)).to eq(%w[create])
+        expect(row.versions.first.whodunnit).to eq('user-123')
+        expect(row.versions.first.object.to_h).to include('query' => row.query, 'set_id' => gold_query_set.id)
+      end
+    end
+
     context 'when the ATaR ruling only classified to heading level (8 digits, not a full 10-digit leaf)' do
       let(:ruling) do
         create(
@@ -92,63 +115,137 @@ RSpec.describe Evaluation::GoldQueryGenerator do
       end
     end
 
-    it 'calls the AI client once with the tiered prompt and the ATaR description' do
+    it 'calls the AI client once with the tiered prompt and the labelled ATaR description' do
       result
 
       expect(ai_client).to have_received(:call).once.with(
         array_including(
           hash_including(role: 'system', content: a_string_including('GENERIC tier', 'ORDINARY tier', 'SPECIFIC tier')),
-          hash_including(role: 'user', content: a_string_including('Bed linen woven from cotton fabric')),
+          hash_including(role: 'user', content: 'Description: Bed linen woven from cotton fabric, printed with a floral pattern.'),
         ),
         model: 'gpt-5-mini-2025-08-07',
         event_kind: 'evaluation_gold_query_generation',
         timeout: 60,
       )
     end
-  end
 
-  context 'when an existing row for a persona is inactive' do
-    before do
-      create(
-        :evaluation_gold_query,
-        source_type: 'atar',
-        source_id: '600014988',
-        persona: 'emu_specific',
-        query: 'stale rejected query',
-        expected_code: '0000000000',
-        active: false,
-      )
-      allow(ai_client).to receive(:call).and_return(accepted_tiers)
-    end
-
-    it 'reactivates the row and overwrites it with the fresh generation' do
+    it 'leaves out the real search paragraph, because an ATaR has no real user search' do
       result
 
-      row = EvaluationGoldQuery.where(source_type: 'atar', source_id: '600014988', persona: 'emu_specific').first
-      expect(row.active).to be(true)
-      expect(row.query).to eq('printed cotton bed linen set')
-      expect(row.expected_code).to eq('6302100000')
+      expect(ai_client).to have_received(:call) do |messages, **|
+        expect(messages.first[:content]).not_to include('real user typed')
+        expect(messages.last[:content]).not_to include('Real user search')
+      end
     end
   end
 
-  context 'when an existing row for a persona is already active' do
-    before do
+  context 'with a synthetic ATaR as the source' do
+    let(:synthetic_atar) do
+      create(
+        :tariff_knowledge_synthetic_atar,
+        real_user_search: 'lunch box',
+        description: 'Plastic lunch box with a lid, for carrying food.',
+        goods_nomenclature_item_id: '3924100000',
+      )
+    end
+    let(:source) { Evaluation::GoldQuerySource.from_synthetic_atar(synthetic_atar) }
+
+    def synthetic_tiers
+      { 'generic' => 'food box', 'ordinary' => 'plastic food container', 'specific' => 'plastic lunch box with clip lid' }
+    end
+
+    before { allow(ai_client).to receive(:call).and_return(synthetic_tiers) }
+
+    it 'sends the real user search and the description as two labelled lines' do
+      result
+
+      expect(ai_client).to have_received(:call).once.with(
+        array_including(
+          hash_including(role: 'user', content: "Real user search: lunch box\nDescription: Plastic lunch box with a lid, for carrying food."),
+        ),
+        model: 'gpt-5-mini-2025-08-07',
+        event_kind: 'evaluation_gold_query_generation',
+        timeout: 60,
+      )
+    end
+
+    it 'adds the real search paragraph to the system prompt, after the normal prompt' do
+      result
+
+      expect(ai_client).to have_received(:call) do |messages, **|
+        system_prompt = messages.first[:content]
+        expect(system_prompt).to start_with(described_class::SYSTEM_PROMPT)
+        expect(system_prompt).to end_with(described_class::REAL_SEARCH_NOTE)
+        expect(system_prompt).to include('a real user typed into the tariff search')
+      end
+    end
+
+    it 'persists 3 rows for the synthetic ATaR, using its id as the source id' do
+      result
+
+      rows = EvaluationGoldQuery.where(source_type: 'synthetic_atar', source_id: synthetic_atar.id.to_s).order(:persona).all
+      expect(rows.map(&:persona)).to eq(%w[emu_generic emu_ordinary emu_specific])
+      expect(rows.map(&:expected_code).uniq).to eq(%w[3924100000])
+    end
+
+    it 'does not count a phrase that repeats the real search as leaked source text' do
+      allow(ai_client).to receive(:call).and_return(synthetic_tiers.merge('generic' => 'lunch box'))
+
+      expect(result).to include('generic' => 'lunch box')
+    end
+
+    context 'when a phrase copies the start of the description' do
+      let(:synthetic_atar) do
+        create(:tariff_knowledge_synthetic_atar, real_user_search: 'lunch box', description: 'Plastic lunch box with a clip lid for food')
+      end
+
+      it 'is still rejected (the leak check reads the description, as it does for an ATaR)' do
+        allow(ai_client).to receive(:call).and_return(synthetic_tiers.merge('specific' => 'plastic lunch box with a clip lid for food'))
+
+        expect(result).to be_nil
+      end
+    end
+  end
+
+  context 'when the same set already has a row for one persona (a retried job)' do
+    let!(:existing) do
       create(
         :evaluation_gold_query,
+        evaluation_gold_query_set: gold_query_set,
         source_type: 'atar',
         source_id: '600014988',
         persona: 'emu_specific',
         query: 'previously approved query',
-        expected_code: '6302100000',
       )
+    end
+
+    before { allow(ai_client).to receive(:call).and_return(accepted_tiers) }
+
+    it 'leaves that row untouched, and its history, instead of overwriting it' do
+      expect { result }.not_to(change { existing.versions.count })
+
+      expect(existing.reload.query).to eq('previously approved query')
+    end
+
+    it 'still creates the other two rows, without duplicating the existing one' do
+      result
+
+      rows = EvaluationGoldQuery.where(source_id: '600014988').order(:persona).all
+      expect(rows.map(&:persona)).to eq(%w[emu_generic emu_ordinary emu_specific])
+    end
+  end
+
+  context 'when the same source item is already in another set' do
+    before do
+      create(:evaluation_gold_query, source_type: 'atar', source_id: '600014988', persona: 'emu_generic', query: 'another sets query')
       allow(ai_client).to receive(:call).and_return(accepted_tiers)
     end
 
-    it 'leaves the active row untouched instead of overwriting it with a new generation' do
+    it 'creates its own rows, because each set owns its rows' do
       result
 
-      row = EvaluationGoldQuery.where(source_type: 'atar', source_id: '600014988', persona: 'emu_specific').first
-      expect(row.query).to eq('previously approved query')
+      expect(EvaluationGoldQuery.where(source_id: '600014988').count).to eq(4)
+      expect(EvaluationGoldQuery.where(source_id: '600014988', set_id: gold_query_set.id).count).to eq(3)
     end
   end
 
@@ -211,7 +308,7 @@ RSpec.describe Evaluation::GoldQueryGenerator do
 
     it 'returns nil without raising, and logs a warning including the HTTP status' do
       expect(result).to be_nil
-      expect(Rails.logger).to have_received(:warn).with(/Gold query generation failed for ATaR 600014988/).exactly(3).times
+      expect(Rails.logger).to have_received(:warn).with(/Gold query generation failed for atar 600014988/).exactly(3).times
       expect(Rails.logger).to have_received(:warn).with(/status=500/).exactly(3).times
     end
   end
@@ -254,6 +351,7 @@ RSpec.describe Evaluation::GoldQueryGenerator do
     it 'rolls back the whole batch instead of leaving partial persona rows for a single generation' do
       expect { result }.to raise_error(Sequel::DatabaseError)
       expect(EvaluationGoldQuery.where(source_type: 'atar', source_id: '600014988').count).to eq(0)
+      expect(Version.where(item_type: 'EvaluationGoldQuery').count).to eq(0)
     end
   end
 

@@ -221,6 +221,17 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
       it { expect(json_response['data'].size).to eq(1) }
     end
 
+    context 'when the runs\' experiments have gold query sets' do
+      let(:gold_query_set) { create(:evaluation_gold_query_set) }
+      let(:experiment) { create(:evaluation_experiment, gold_query_set_id: gold_query_set.id) }
+
+      before { create(:evaluation_run, evaluation_experiment: experiment) }
+
+      it 'includes the set of each run' do
+        expect(json_response['data'].map { |run| run['attributes']['gold_query_set_id'] }).to eq([gold_query_set.id])
+      end
+    end
+
     context 'when filtering by status' do
       let(:filters) { { status: 'completed' } }
 
@@ -241,6 +252,28 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
       let(:id) { run.id }
 
       it { is_expected.to have_http_status :success }
+      it { expect(json_response['data']['attributes']['gold_query_set_id']).to be_nil }
+    end
+
+    context 'when the run\'s experiment has a gold query set' do
+      let(:experiment) { create(:evaluation_experiment, gold_query_set_id: gold_query_set.id) }
+      let(:id) { run.id }
+
+      # Memoised in a method, not a let, to stay within the memoized helper limit.
+      def gold_query_set
+        @gold_query_set ||= create(:evaluation_gold_query_set)
+      end
+
+      it 'reports the set of the experiment' do
+        expect(json_response['data']['attributes']['gold_query_set_id']).to eq(gold_query_set.id)
+      end
+
+      it 'follows the experiment if it is pointed at a different set later' do
+        other_set = create(:evaluation_gold_query_set)
+        experiment.update(gold_query_set_id: other_set.id)
+
+        expect(json_response['data']['attributes']['gold_query_set_id']).to eq(other_set.id)
+      end
     end
 
     context 'with an unknown run' do

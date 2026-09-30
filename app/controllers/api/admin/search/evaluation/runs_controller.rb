@@ -53,7 +53,7 @@ module Api
           end
 
           def filtered_runs
-            dataset = EvaluationRun.dataset
+            dataset = EvaluationRun.eager(:evaluation_experiment)
             dataset = dataset.where(experiment_id: params[:experiment_id]) if params[:experiment_id].present?
             dataset = dataset.where(status: params[:status]) if params[:status].present?
             dataset = dataset.where { created_at >= Date.parse(params[:from]) } if params[:from].present?

@@ -13,6 +13,7 @@ module Api
                      :enabled,
                      :configuration_overrides,
                      :default_scope,
+                     :gold_query_set_id,
                      :created_at,
                      :created_by
         end
