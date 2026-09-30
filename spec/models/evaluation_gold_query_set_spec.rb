@@ -1,4 +1,6 @@
 RSpec.describe EvaluationGoldQuerySet do
+  include GoldQueryItemHelper
+
   describe 'validations' do
     subject(:gold_query_set) { build(:evaluation_gold_query_set, **attrs) }
 
@@ -164,6 +166,71 @@ RSpec.describe EvaluationGoldQuerySet do
       # same fix in spec/models/evaluation_run_spec.rb.
       expect { gold_query_set.destroy }.to raise_error(Sequel::DatabaseError, /foreign key constraint/)
       expect(described_class[gold_query_set.id]).to be_present
+    end
+  end
+
+  describe '.item_counts' do
+    it 'counts source items, not rows, for each set and source type' do
+      first_set = create(:evaluation_gold_query_set)
+      second_set = create(:evaluation_gold_query_set)
+      create_gold_query_item(first_set, source_type: 'atar', source_id: '600000001')
+      create_gold_query_item(first_set, source_type: 'atar', source_id: '600000002')
+      create_gold_query_item(first_set, source_type: 'synthetic_atar', source_id: '7')
+      create_gold_query_item(second_set, source_type: 'atar', source_id: '600000001')
+
+      expect(described_class.item_counts([first_set.id, second_set.id])).to eq(
+        first_set.id => { 'atar' => 2, 'synthetic_atar' => 1 },
+        second_set.id => { 'atar' => 1 },
+      )
+    end
+
+    it 'leaves out a set that has no gold queries' do
+      empty_set = create(:evaluation_gold_query_set)
+
+      expect(described_class.item_counts([empty_set.id])).to eq({})
+    end
+  end
+
+  describe '#destroy' do
+    let(:gold_query_set) { create(:evaluation_gold_query_set) }
+
+    def gold_query_versions(gold_query_set)
+      ids = gold_query_set.evaluation_gold_queries_dataset.select_map(:id).map(&:to_s)
+      Version.where(item_type: 'EvaluationGoldQuery', item_id: ids)
+    end
+
+    before { create_gold_query_item(gold_query_set) }
+
+    it 'deletes the version history of its gold queries, so no orphaned history is left behind' do
+      ids = gold_query_set.evaluation_gold_queries_dataset.select_map(:id).map(&:to_s)
+      expect(Version.where(item_type: 'EvaluationGoldQuery', item_id: ids).count).to eq(3)
+
+      gold_query_set.destroy
+
+      expect(Version.where(item_type: 'EvaluationGoldQuery', item_id: ids).count).to eq(0)
+    end
+
+    it 'also deletes the history of items that were deleted from the set earlier' do
+      create_gold_query_item(gold_query_set, source_id: '600000002')
+      gold_query_set.evaluation_gold_queries_dataset.where(source_id: '600000002').all.each(&:destroy)
+
+      expect { gold_query_set.destroy }.to change { Version.where(item_type: 'EvaluationGoldQuery').count }.from(9).to(0)
+    end
+
+    it 'keeps the version history of another set' do
+      other_set = create(:evaluation_gold_query_set)
+      create_gold_query_item(other_set)
+
+      gold_query_set.destroy
+
+      expect(gold_query_versions(other_set).count).to eq(3)
+    end
+
+    it 'keeps the history when an experiment stops the delete' do
+      create(:evaluation_experiment, gold_query_set_id: gold_query_set.id)
+
+      expect { gold_query_set.destroy }.to raise_error(Sequel::DatabaseError, /foreign key constraint/)
+      expect(gold_query_versions(gold_query_set).count).to eq(3)
     end
   end
 end

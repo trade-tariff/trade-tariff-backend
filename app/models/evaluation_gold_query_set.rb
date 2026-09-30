@@ -21,6 +21,38 @@ class EvaluationGoldQuerySet < Sequel::Model(Sequel[:evaluation_gold_query_sets]
     validates_includes 0..100, :atar_percentage, allow_nil: true, message: 'must be between 0 and 100'
   end
 
+  # The database deletes a set's gold queries itself (ON DELETE CASCADE), which skips the
+  # model hooks that would write a 'destroy' version for each one. Their history is
+  # therefore removed here instead, so the versions table is not left holding history for
+  # rows that no longer exist. Sequel runs hooks inside the delete's transaction, so if
+  # the delete is then refused (an experiment still uses the set) the history is kept.
+  #
+  # History is found by the set_id inside each version's snapshot, not by the ids of the
+  # rows that exist now. Otherwise the history of an item that an operator deleted earlier
+  # would be missed, because its rows are already gone.
+  def before_destroy
+    Version
+      .where(item_type: EvaluationGoldQuery.name)
+      .where(Sequel.lit("object ->> 'set_id' = ?", id.to_s))
+      .delete
+
+    super
+  end
+
+  # How many source items each set holds now, by source type:
+  # { set_id => { 'atar' => 2, 'synthetic_atar' => 1 } }. A set with no gold queries is
+  # left out. Rows are counted by DISTINCT source_id because every item has one row per
+  # persona, so counting rows would triple the answer.
+  def self.item_counts(set_ids)
+    EvaluationGoldQuery
+      .where(set_id: set_ids)
+      .select_group(:set_id, :source_type)
+      .select_append(Sequel.lit('COUNT(DISTINCT source_id)').as(:items))
+      .each_with_object({}) do |row, counts|
+        (counts[row[:set_id]] ||= {})[row[:source_type]] = row[:items]
+      end
+  end
+
   # Adds one finished item to the set's counters. Call it once per item, when that item
   # has either produced its gold queries (no failure) or definitely failed (pass the
   # failure, a hash of source_type, source_id and error, which is added to the list).
