@@ -122,6 +122,32 @@ RSpec.describe VersionDiffService do
       end
     end
 
+    context 'with EvaluationGoldQuery changes' do
+      it 'reports only the fields an operator can edit' do
+        old_obj = {
+          'id' => 5,
+          'set_id' => 2,
+          'source_type' => 'atar',
+          'source_id' => '600000001',
+          'persona' => 'emu_generic',
+          'query' => 'bed sheets',
+          'expected_code' => '6302100000',
+          'expected_description' => 'Bed linen',
+          'oracle_text' => 'Woven cotton bed linen.',
+          'notes' => nil,
+          'generator' => 'gpt-5-mini',
+          'active' => true,
+          'created_at' => '2026-09-25T10:00:00Z',
+        }
+        new_obj = old_obj.merge('query' => 'cotton sheets', 'notes' => 'reworded', 'oracle_text' => 'changed', 'generator' => 'someone')
+
+        result = described_class.new('EvaluationGoldQuery', old_obj, new_obj).call
+
+        expect(result['changed_fields']).to contain_exactly('query', 'notes')
+        expect(result['changes']['query']).to include('old' => 'bed sheets', 'new' => 'cotton sheets')
+      end
+    end
+
     context 'with DescriptionIntercept changes' do
       it 'shows array diffs for sources and simple diffs for other fields' do
         old_obj = { 'id' => 1, 'term' => 'footwear', 'sources' => %w[guided_search], 'excluded' => false }
