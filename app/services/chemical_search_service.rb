@@ -22,20 +22,14 @@ private
 
     return unless cas
 
-    @chemicals = Rails.cache.fetch(cache_id, expires_in: cache_expiry) do
-      Chemical.where(Sequel.like(:cas, "%#{cas}%")).all
-    end
-    Rails.cache.delete(cache_id) if @chemicals.blank?
+    @chemicals = Chemical.where(Sequel.like(:cas, "%#{cas}%")).all
     custom_paginator(@chemicals)
   end
 
   def fetch_by_name
     return unless name
 
-    @chemicals = Rails.cache.fetch(cache_id, expires_in: cache_expiry) do
-      ChemicalName.where(Sequel.like(:name, "%#{name}%")).eager(:chemical).all.map(&:chemical).uniq
-    end
-    Rails.cache.delete(cache_id) if @chemicals.blank?
+    @chemicals = ChemicalName.where(Sequel.like(:name, "%#{name}%")).eager(:chemical).all.map(&:chemical).uniq
     custom_paginator(@chemicals)
   end
 
@@ -50,14 +44,6 @@ private
   def result_count(result)
     @pagination_record_count = result.count
     result
-  end
-
-  def cache_id
-    "chemical-search-#{cas_cleaned.presence || name.presence}"
-  end
-
-  def cache_expiry(seconds = nil)
-    seconds || 24.hours
   end
 
   def cas_cleaned

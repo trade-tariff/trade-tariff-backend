@@ -19,14 +19,7 @@ module Api
           end
 
           format.any do
-            cache_key = "_chapters-#{actual_date}/v#{CACHE_VERSION}"
-            cache_key = "#{cache_key}/jsonapi-#{jsonapi_options_cache_suffix}" if jsonapi_options_requested?
-
-            serialized_result = Rails.cache.fetch(cache_key, expires_at: actual_date.end_of_day) do
-              Api::V2::Chapters::ChapterListSerializer.new(chapters, jsonapi_serializer_options).serializable_hash.to_json
-            end
-
-            render json: serialized_result
+            render json: Api::V2::Chapters::ChapterListSerializer.new(chapters, jsonapi_serializer_options).serializable_hash
           end
         end
       end
@@ -48,18 +41,11 @@ module Api
       end
 
       def changes
-        cache_key = "_chapter-#{chapter_id}-#{actual_date}/changes-v#{CACHE_VERSION}"
-        default_include = [:record, 'record.geographical_area', 'record.measure_type']
-        cache_key = "#{cache_key}/jsonapi-#{jsonapi_options_cache_suffix(default_include:)}" if jsonapi_options_requested?
-        options = jsonapi_serializer_options(default_include:)
-        serialized_result = Rails.cache.fetch(cache_key, expires_at: actual_date.end_of_day) do
-          changes = chapter.changes.where { |o| o.operation_date <= actual_date }
-          change_log = ChangeLog.new(changes)
+        options = jsonapi_serializer_options(default_include: [:record, 'record.geographical_area', 'record.measure_type'])
+        changes = chapter.changes.where { |o| o.operation_date <= actual_date }
+        change_log = ChangeLog.new(changes)
 
-          Api::V2::Changes::ChangeSerializer.new(change_log.changes, options).serializable_hash.to_json
-        end
-
-        render json: serialized_result
+        render json: Api::V2::Changes::ChangeSerializer.new(change_log.changes, options).serializable_hash
       end
 
       def headings

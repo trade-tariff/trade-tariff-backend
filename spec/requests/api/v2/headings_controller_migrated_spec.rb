@@ -259,6 +259,27 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
       it { expect(api_response.body).to match_json_expression(pattern) }
     end
 
+    context 'when changes are made after a previous request on the same day' do
+      before do
+        allow(Rails).to receive(:cache).and_return(ActiveSupport::Cache::MemoryStore.new)
+        get "/uk/api/headings/#{heading.short_code}/changes", params: { as_of: }, headers: request_headers
+
+        create(
+          :measure,
+          :with_measure_type,
+          goods_nomenclature_sid: heading.goods_nomenclature_sid,
+          goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
+          operation_date: heading.operation_date,
+        )
+      end
+
+      it 'returns the new changes' do
+        model_names = JSON.parse(api_response.body)['data'].map { |change| change.dig('attributes', 'model_name') }
+
+        expect(model_names).to include('Measure')
+      end
+    end
+
     context 'when changes happened before requested date' do
       let(:as_of) { Time.zone.yesterday.iso8601 }
 
