@@ -12,7 +12,8 @@ module Api
                  :referenced_class,
                  :goods_nomenclature_item_id,
                  :productline_suffix,
-                 :goods_nomenclature_sid
+                 :goods_nomenclature_sid,
+                 :usage
 
       attribute :negated_title, &:title_indexed
     end

@@ -57,6 +57,10 @@ module Search
       }
     end
 
+    def dataset
+      SearchReference.indexable
+    end
+
     def dataset_page(page_number)
       TimeMachine.now do
         super(page_number)

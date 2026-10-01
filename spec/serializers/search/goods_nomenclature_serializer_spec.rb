@@ -56,6 +56,20 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
       end
     end
 
+    context 'with fpo search references' do
+      before do
+        create(:search_reference, referenced: commodity, title: 'ponies')
+        create(:search_reference, referenced: commodity, title: 'pony ride kit', usage: 'fpo')
+      end
+
+      it 'excludes fpo search reference titles' do
+        commodity.reload
+        result = described_class.new(commodity).serializable_hash
+
+        expect(result[:search_references]).to eq(%w[ponies])
+      end
+    end
+
     context 'with labels' do
       before do
         create(:goods_nomenclature_label,

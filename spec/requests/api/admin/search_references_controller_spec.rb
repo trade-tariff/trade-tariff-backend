@@ -37,5 +37,31 @@ RSpec.describe Api::Admin::SearchReferencesController, :admin do
         expect(search_ref_count).to eq(3)
       end
     end
+
+    context 'with a usage filter' do
+      let(:query_letter) { { filter: { usage: 'fpo' } } }
+
+      before { create :search_reference, referenced: create(:heading), title: 'cc', usage: 'fpo' }
+
+      it 'returns only references with the requested usage' do
+        api_response
+
+        titles = JSON.parse(response.body)['data'].map { |ref| ref.dig('attributes', 'title') }
+        expect(titles).to eq(%w[cc])
+      end
+    end
+
+    context 'without a usage filter' do
+      let(:query_letter) { {} }
+
+      before { create :search_reference, referenced: create(:heading), title: 'cc', usage: 'fpo' }
+
+      it 'excludes fpo references' do
+        api_response
+
+        titles = JSON.parse(response.body)['data'].map { |ref| ref.dig('attributes', 'title') }
+        expect(titles).not_to include('cc')
+      end
+    end
   end
 end

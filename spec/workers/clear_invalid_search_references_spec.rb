@@ -37,6 +37,22 @@ RSpec.describe ClearInvalidSearchReferences, type: :worker do
     end
   end
 
+  context 'when an expired search reference is used only by FPO' do
+    before do
+      TimeMachine.now { create(:search_reference, :with_non_current_commodity, title: 'fpo item', usage: 'fpo') }
+    end
+
+    it 'marks it as FPO only in the removal list' do
+      do_perform
+
+      expect(notify_double).to have_received(:send_email).with(
+        TradeTariffBackend.feedback_email,
+        ClearInvalidSearchReferences::TEMPLATE_ID,
+        hash_including(expired_list: a_string_including('fpo item [FPO only]')),
+      )
+    end
+  end
+
   context 'when a search reference has a buildable frontend link' do
     let(:commodity) { create(:commodity, goods_nomenclature_item_id: '0101110000', validity_end_date: Time.zone.yesterday) }
 

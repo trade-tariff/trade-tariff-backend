@@ -22,6 +22,7 @@ RSpec.shared_examples_for 'v2 search references controller' do
               goods_nomenclature_item_id: String,
               productline_suffix: String,
               goods_nomenclature_sid: Integer,
+              usage: 'search',
             },
           },
         ],
@@ -33,6 +34,30 @@ RSpec.shared_examples_for 'v2 search references controller' do
         get search_references_collection_path, headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
+      end
+    end
+
+    context 'with a usage filter' do
+      before do
+        create :search_reference, referenced: search_reference.referenced, title: 'fpo only', usage: 'fpo'
+      end
+
+      it 'excludes fpo references without a filter' do
+        get search_references_collection_path, headers: request_headers(format: :json)
+
+        expect(JSON.parse(response.body)['data'].map { |ref| ref.dig('attributes', 'usage') }).to eq(%w[search])
+      end
+
+      it 'returns every usage with the all filter' do
+        get search_references_collection_path, params: { filter: { usage: 'all' } }, headers: request_headers(format: :json)
+
+        expect(JSON.parse(response.body)['data'].map { |ref| ref.dig('attributes', 'usage') }).to contain_exactly('search', 'fpo')
+      end
+
+      it 'returns only references with the requested usage' do
+        get search_references_collection_path, params: { filter: { usage: 'fpo' } }, headers: request_headers(format: :json)
+
+        expect(JSON.parse(response.body)['data'].map { |ref| ref.dig('attributes', 'title') }).to eq(['fpo only'])
       end
     end
   end
@@ -51,6 +76,7 @@ RSpec.shared_examples_for 'v2 search references controller' do
               goods_nomenclature_item_id: String,
               productline_suffix: String,
               goods_nomenclature_sid: Integer,
+              usage: 'search',
             },
             relationships: {
               referenced: {
@@ -92,6 +118,7 @@ RSpec.shared_examples_for 'v2 search references controller' do
                 goods_nomenclature_item_id: String,
                 productline_suffix: String,
                 goods_nomenclature_sid: Integer,
+                usage: 'search',
               },
               relationships: Hash,
             },
@@ -160,6 +187,7 @@ RSpec.shared_examples_for 'v2 search references controller' do
                 goods_nomenclature_item_id: String,
                 productline_suffix: String,
                 goods_nomenclature_sid: Integer,
+                usage: 'search',
               },
               relationships: Hash,
             },
@@ -182,6 +210,32 @@ RSpec.shared_examples_for 'v2 search references controller' do
 
       it 'escapes the formula' do
         expect(SearchReference.first.title).to eq "'=SUM(A1:A2)"
+      end
+    end
+
+    context 'with an fpo usage' do
+      before do
+        post search_references_collection_path,
+             params: { data: { type: :search_reference, attributes: { title: search_reference.title, usage: 'fpo' } } },
+             headers: request_headers(format: :json),
+             as: :json
+      end
+
+      it 'persists the usage' do
+        expect(SearchReference.first.usage).to eq 'fpo'
+      end
+    end
+
+    context 'with an unknown usage' do
+      before do
+        post search_references_collection_path,
+             params: { data: { type: :search_reference, attributes: { title: search_reference.title, usage: 'other' } } },
+             headers: request_headers(format: :json),
+             as: :json
+      end
+
+      it 'returns unprocessable content' do
+        expect(response.status).to eq 422
       end
     end
   end
@@ -248,6 +302,45 @@ RSpec.shared_examples_for 'v2 search references controller' do
 
       it 'enqueues ScoreLabelBatchWorker' do
         expect(ScoreLabelBatchWorker).to have_received(:perform_async).at_least(:once)
+      end
+    end
+
+    context 'when the usage changes from search to fpo' do
+      before do
+        allow(TradeTariffBackend.search_client).to receive(:delete)
+        create :search_suggestion, :search_reference, id: search_reference.id.to_s, value: search_reference.title
+
+        put search_reference_resource_path,
+            params: { data: { type: search_reference, attributes: { title: search_reference.title, usage: 'fpo' } } },
+            headers: request_headers(format: :json),
+            as: :json
+      end
+
+      it 'updates the usage' do
+        expect(search_reference.reload.usage).to eq 'fpo'
+      end
+
+      it 'removes the search suggestion' do
+        expect(SearchSuggestion.where(id: search_reference.id.to_s)).to be_empty
+      end
+
+      it 'removes the reference from the search reference index' do
+        expect(TradeTariffBackend.search_client).to have_received(:delete).with(Search::SearchReferenceIndex, search_reference)
+      end
+    end
+
+    context 'when the usage is not provided' do
+      before do
+        search_reference.update(usage: 'fpo')
+
+        put search_reference_resource_path,
+            params: { data: { type: search_reference, attributes: { title: new_title } } },
+            headers: request_headers(format: :json),
+            as: :json
+      end
+
+      it 'keeps the existing usage' do
+        expect(search_reference.reload.usage).to eq 'fpo'
       end
     end
 

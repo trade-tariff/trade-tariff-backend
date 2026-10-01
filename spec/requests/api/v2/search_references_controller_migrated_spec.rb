@@ -23,6 +23,7 @@ RSpec.describe Api::V2::SearchReferencesController do
                 productline_suffix: String,
                 goods_nomenclature_item_id: String,
                 goods_nomenclature_sid: Integer,
+                usage: 'search',
               },
             },
             {
@@ -36,6 +37,7 @@ RSpec.describe Api::V2::SearchReferencesController do
                 productline_suffix: String,
                 goods_nomenclature_item_id: String,
                 goods_nomenclature_sid: Integer,
+                usage: 'search',
               },
             },
           ],

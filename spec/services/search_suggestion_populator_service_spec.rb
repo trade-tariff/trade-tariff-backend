@@ -82,4 +82,16 @@ RSpec.describe SearchSuggestionPopulatorService do
       expect { call }.to change { SearchSuggestion.where(id: search_suggestion.id).first }.to(nil)
     end
   end
+
+  context 'when a search suggestion belongs to an fpo search reference' do
+    let(:fpo_reference) { create(:search_reference, :with_heading, title: 'fpo only term', usage: 'fpo') }
+
+    let!(:search_suggestion) do
+      create(:search_suggestion, :search_reference, id: fpo_reference.id.to_s, value: fpo_reference.title)
+    end
+
+    it 'removes the search suggestion' do
+      expect { call }.to change { SearchSuggestion.where(id: search_suggestion.id).first }.to(nil)
+    end
+  end
 end
