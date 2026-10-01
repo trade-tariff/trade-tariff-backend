@@ -65,7 +65,7 @@ private
   # This method clears out search suggestions that are no longer valid
   def handle_expired_search_references
     current_suggestions = SearchSuggestion.search_reference_type.pluck(:id)
-    current_search_references = SearchReference.pluck(:id).map(&:to_s)
+    current_search_references = SearchReference.for_search.pluck(:id).map(&:to_s)
     expired_search_references = current_suggestions - current_search_references
 
     Rails.logger.info "Deleting #{expired_search_references.count} expired search references"

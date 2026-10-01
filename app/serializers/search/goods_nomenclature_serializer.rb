@@ -56,7 +56,7 @@ module Search
     end
 
     def search_references_part
-      all_refs = search_references + ancestor_search_references
+      all_refs = public_search_references + ancestor_search_references
       return if all_refs.empty?
 
       all_refs.map { |ref|
@@ -65,7 +65,7 @@ module Search
     end
 
     def ancestor_search_references
-      ancestors.flat_map(&:search_references)
+      ancestors.flat_map(&:public_search_references)
     end
 
     def labels_part

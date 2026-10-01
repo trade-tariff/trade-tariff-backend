@@ -30,6 +30,7 @@ private
 
   def build_search_references_search_suggestions
     SearchReference
+      .for_search
       .select(:id, :title, :goods_nomenclature_sid, :referenced_class)
       .eager(referenced: :children)
       .distinct(:title)

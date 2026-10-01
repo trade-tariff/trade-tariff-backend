@@ -48,6 +48,12 @@ class GoodsNomenclature < Sequel::Model
 
   one_to_many :search_references, key: :goods_nomenclature_sid
 
+  one_to_many :public_search_references,
+              class: 'SearchReference',
+              key: :goods_nomenclature_sid,
+              read_only: true,
+              conditions: { usage: SearchReference::SEARCH_USAGE }
+
   one_to_many :full_chemicals, key: :goods_nomenclature_sid
 
   one_to_many :public_atar_rulings,

@@ -87,4 +87,33 @@ RSpec.describe SearchReference do
 
     it { expect(search_reference.title_indexed).to eq('foo') }
   end
+
+  describe 'usage' do
+    it 'defaults to search' do
+      expect(create(:search_reference).usage).to eq('search')
+    end
+
+    it 'accepts fpo' do
+      expect(create(:search_reference, usage: 'fpo')).to be_fpo
+    end
+
+    it 'rejects an unknown usage' do
+      search_reference = build(:search_reference, usage: 'other')
+      search_reference.validate
+
+      expect(search_reference.errors[:usage]).to eq(['must be one of search, fpo'])
+    end
+  end
+
+  describe 'usage datasets' do
+    let!(:search_usage) { create(:search_reference, usage: 'search') }
+    let!(:fpo_usage) { create(:search_reference, usage: 'fpo') }
+
+    it { expect(described_class.for_search.all).to eq([search_usage]) }
+    it { expect(described_class.for_fpo.all).to eq([fpo_usage]) }
+    it { expect(described_class.indexable.all).to eq([search_usage]) }
+    it { expect(described_class.for_usage('fpo').all).to eq([fpo_usage]) }
+    it { expect(described_class.for_usage(nil).all).not_to include(fpo_usage) }
+    it { expect(described_class.for_usage('all').count).to eq(2) }
+  end
 end

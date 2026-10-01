@@ -65,6 +65,7 @@ private
 
   def format_line(result)
     line = "#{result[:goods_nomenclature_item_id]} — #{result[:title]}"
+    line += ' [FPO only]' if result[:usage] == SearchReference::FPO_USAGE
     line += " (#{result[:goods_nomenclature_url]})" if result[:goods_nomenclature_url].present?
     line += " (successors: #{result[:successor_ids].join(', ')})" if result[:successor_ids].present?
     line

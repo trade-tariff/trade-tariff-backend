@@ -8348,7 +8348,9 @@ CREATE TABLE uk.search_references (
     referenced_class character varying(10),
     productline_suffix text DEFAULT '80'::text NOT NULL,
     goods_nomenclature_sid integer,
-    goods_nomenclature_item_id text
+    goods_nomenclature_item_id text,
+    usage text DEFAULT 'search'::text NOT NULL,
+    CONSTRAINT search_references_usage_check CHECK ((usage = ANY (ARRAY['search'::text, 'fpo'::text])))
 );
 
 
@@ -14908,6 +14910,13 @@ CREATE INDEX search_references_goods_nomenclature_sid_index ON uk.search_referen
 
 
 --
+-- Name: search_references_usage_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX search_references_usage_index ON uk.search_references USING btree (usage);
+
+
+--
 -- Name: search_suggestions_declarable_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -15661,3 +15670,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260925100000_create_tari
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260925110000_create_evaluation_gold_query_sets.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260925120000_create_search_analytics_outcome_rate_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260928170000_drop_classic_outcome_row_reader.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260930120000_add_usage_to_search_references.rb');

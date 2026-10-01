@@ -51,6 +51,12 @@ RSpec.describe SuggestionsService do
 
   it { expect(call.map(&:goods_nomenclature_class)).to eq(expected_goods_nomenclature_classes) }
 
+  context 'with an fpo search reference' do
+    before { create(:search_reference, referenced: Chapter.first, title: 'fpo only term', usage: 'fpo') }
+
+    it { expect(call.map(&:value)).not_to include('fpo only term') }
+  end
+
   context 'with label-based suggestions' do
     before do
       commodity = create(:commodity, :declarable, goods_nomenclature_item_id: '0303110000')

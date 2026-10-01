@@ -51,8 +51,9 @@ RSpec.describe Search::GoodsNomenclatureIndex do
         :goods_nomenclature_indents,
         :goods_nomenclature_descriptions,
         :goods_nomenclature_label,
-        :search_references,
+        :public_search_references,
       )
+      expect(associations).not_to include(:search_references)
       expect(associations).not_to include(:public_atar_rulings)
     end
 
