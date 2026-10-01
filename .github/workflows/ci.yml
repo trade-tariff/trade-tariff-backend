@@ -82,7 +82,7 @@ jobs:
       - uses: actions/setup-python@v7.0.0
         with:
           python-version: '3'
-      - uses: ruby/setup-ruby@v1.324.0
+      - uses: ruby/setup-ruby@v1.326.0
         with:
           bundler-cache: true
       - uses: hashicorp/setup-terraform@v4
@@ -127,7 +127,7 @@ jobs:
 
       - run: echo "127.0.0.1 host.docker.internal" | sudo tee -a /etc/hosts
 
-      - uses: ruby/setup-ruby@v1.324.0
+      - uses: ruby/setup-ruby@v1.326.0
         with:
           bundler-cache: true
 
