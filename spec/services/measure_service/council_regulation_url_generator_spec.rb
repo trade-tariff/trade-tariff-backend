@@ -11,6 +11,8 @@ RSpec.describe MeasureService::CouncilRegulationUrlGenerator do
       'D7807980' => nil,
       # A decision that isn't listed keeps its working CELEX link
       'D0203090' => 'https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32002D0309',
+      # Listed because its CELEX link opens a different act (EEA Decision 138/2004, not 2004/138/EC)
+      'D0401380' => 'https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv%3AOJ.L_.2004.342.01.0030.01.ENG',
       # Agreements, notices, TARIC notices and Joint Committee acts that aren't listed get no link
       'A7300020' => nil,
       'C0101000' => nil,
