@@ -1,18 +1,18 @@
 RSpec.describe ApplicationHelper do
   describe '#regulation_url' do
     context 'for base_regulation' do
-      context 'for Official Journal - C (Information and Notices) seria' do
+      context 'for a legal base linked by Official Journal citation' do
         let(:base_regulation) do
-          create(:base_regulation, base_regulation_id: 'I1703530',
+          create(:base_regulation, base_regulation_id: 'D9601421',
                                    base_regulation_role: 1,
-                                   published_date: Date.new(2017, 10, 20),
-                                   officialjournal_number: 'C 353',
-                                   officialjournal_page: 19)
+                                   published_date: Date.new(1996, 2, 13),
+                                   officialjournal_number: 'L 35',
+                                   officialjournal_page: 1)
         end
 
         let(:measure) do
-          create(:measure, goods_nomenclature_item_id: '8711601000',
-                           measure_generating_regulation_id: 'I1703530',
+          create(:measure, goods_nomenclature_item_id: '7324900090',
+                           measure_generating_regulation_id: 'D9601421',
                            base_regulation:)
         end
 
@@ -21,7 +21,7 @@ RSpec.describe ApplicationHelper do
         end
 
         it 'generates council regulation url' do
-          expect(regulation_url(measure.generating_regulation)).to eql('https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32017I0353')
+          expect(regulation_url(measure.generating_regulation)).to eql('https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv%3AOJ.L_.1996.035.01.0001.01.ENG')
         end
       end
 
