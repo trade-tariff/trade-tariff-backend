@@ -17,6 +17,16 @@ RSpec.describe ChemicalSearchService do
       expect(results).to contain_exactly(citric_acid, acetic_acid)
     end
 
+    it 'returns chemicals created since the previous search' do
+      allow(Rails).to receive(:cache).and_return(ActiveSupport::Cache::MemoryStore.new)
+      described_class.new({ 'name' => 'acid' }, 1, 20).perform
+
+      formic_acid = create(:chemical)
+      create(:chemical_name, chemical: formic_acid, name: 'formic acid')
+
+      expect(results).to include(formic_acid)
+    end
+
     it 'loads the chemicals for all matching names in one query' do
       queries = sql_queries { results }
 
