@@ -51,4 +51,35 @@ RSpec.describe EvaluationExperiment do
     expect(experiment.configuration_overrides).to eq({})
     expect(experiment.default_scope).to eq({})
   end
+
+  describe '#destroy' do
+    let!(:experiment) { create(:evaluation_experiment) }
+
+    it 'deletes the experiment when it has no runs' do
+      expect { experiment.destroy }.to change(described_class, :count).by(-1)
+    end
+
+    it 'deletes its runs and their results too' do
+      run = create(:evaluation_run, evaluation_experiment: experiment)
+      create(:evaluation_result, evaluation_run: run)
+      create(:evaluation_result, evaluation_run: run)
+
+      expect { experiment.destroy }
+        .to change(described_class, :count).by(-1)
+        .and change(EvaluationRun, :count).by(-1)
+        .and change(EvaluationResult, :count).by(-2)
+    end
+
+    it 'leaves other experiments, runs and results untouched' do
+      other_experiment = create(:evaluation_experiment)
+      other_run = create(:evaluation_run, evaluation_experiment: other_experiment)
+      create(:evaluation_result, evaluation_run: other_run)
+
+      experiment.destroy
+
+      expect(described_class[other_experiment.id]).not_to be_nil
+      expect(EvaluationRun[other_run.id]).not_to be_nil
+      expect(EvaluationResult.where(run_id: other_run.id).count).to eq(1)
+    end
+  end
 end

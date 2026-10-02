@@ -175,4 +175,28 @@ RSpec.describe Api::Admin::Search::Evaluation::ExperimentsController, :admin do
       it { is_expected.to have_http_status :not_found }
     end
   end
+
+  describe 'DELETE #destroy' do
+    let(:make_request) { authenticated_delete api_admin_search_evaluation_experiment_path(experiment.id, format: :json) }
+    let!(:experiment) { create(:evaluation_experiment) }
+
+    it { is_expected.to have_http_status :no_content }
+    it { expect { api_response }.to change(EvaluationExperiment, :count).by(-1) }
+
+    context 'when the experiment has runs' do
+      before { create(:evaluation_run, evaluation_experiment: experiment) }
+
+      it 'deletes the experiment and its runs' do
+        expect { api_response }
+          .to change(EvaluationExperiment, :count).by(-1)
+          .and change(EvaluationRun, :count).by(-1)
+      end
+    end
+
+    context 'when the experiment does not exist' do
+      let(:make_request) { authenticated_delete api_admin_search_evaluation_experiment_path(0, format: :json) }
+
+      it { is_expected.to have_http_status :not_found }
+    end
+  end
 end

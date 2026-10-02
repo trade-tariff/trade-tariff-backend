@@ -31,6 +31,11 @@ module Api
             end
           end
 
+          def destroy
+            experiment.destroy
+            head :no_content
+          end
+
         private
 
           def serializer_class = Api::Admin::Search::Evaluation::ExperimentSerializer
