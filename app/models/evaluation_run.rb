@@ -75,7 +75,7 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
     effective_configuration = EvaluationConfiguration::Merger.call(baseline, overrides)
     digest = EvaluationConfiguration::DigestCalculator.call(effective_configuration)
 
-    create(
+    run = create(
       evaluation_experiment: experiment,
       status: 'queued',
       triggered_by:,
@@ -86,12 +86,21 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
       idempotency_key:,
       run_time_overrides:,
     )
+    trigger_eval_app!(run)
+    run
   rescue Sequel::UniqueConstraintViolation
     winner = find_by_idempotency_key(idempotency_key)
     raise unless winner
 
     resolve_reused_key!(winner, idempotency_key:, experiment:, triggered_by:, run_time_overrides:)
   end
+
+  def self.trigger_eval_app!(run)
+    EvalAppClient.start_run!(run.id)
+  rescue EvalAppClient::Error => e
+    run.update(status: 'failed', error_summary: e.message)
+  end
+  private_class_method :trigger_eval_app!
 
   def self.find_by_idempotency_key(idempotency_key)
     where(idempotency_key:).first

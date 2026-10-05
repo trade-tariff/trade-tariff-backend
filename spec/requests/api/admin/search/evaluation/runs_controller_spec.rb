@@ -16,6 +16,8 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
                          params: params, headers: { 'Idempotency-Key' => idempotency_key }
     end
 
+    before { allow(EvalAppClient).to receive(:start_run!) }
+
     context 'without an Idempotency-Key header' do
       let(:params) { { data: { type: :run, attributes: { experiment_id: experiment.id, triggered_by: 'operator' } } } }
       let(:make_request) { authenticated_post api_admin_search_evaluation_runs_path(format: :json), params: params }

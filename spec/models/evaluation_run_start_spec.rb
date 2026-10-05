@@ -10,6 +10,8 @@ RSpec.describe EvaluationRun do
       )
     end
 
+    before { allow(EvalAppClient).to receive(:start_run!) }
+
     it 'creates a run with an effective_configuration merging baseline and experiment overrides' do
       run = described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: SecureRandom.uuid)
       expect(run.effective_configuration['simulator_model']).to eq('gpt-4o-mini')
@@ -185,6 +187,30 @@ RSpec.describe EvaluationRun do
       expect {
         described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: key)
       }.to raise_error(EvaluationRun::IdempotencyKeyConflict, /triggered_by/)
+    end
+
+    it 'calls EvalAppClient.start_run! with the new run id once it is created' do
+      run = described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: SecureRandom.uuid)
+
+      expect(EvalAppClient).to have_received(:start_run!).with(run.id)
+    end
+
+    it 'marks the run failed, with an error_summary, if the eval app cannot be reached' do
+      allow(EvalAppClient).to receive(:start_run!).and_raise(EvalAppClient::Error, 'could not reach the eval app: connection refused')
+
+      run = described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: SecureRandom.uuid)
+
+      expect(run.status).to eq('failed')
+      expect(run.error_summary).to eq('could not reach the eval app: connection refused')
+    end
+
+    it 'does not call EvalAppClient again when the same idempotency key is replayed' do
+      key = SecureRandom.uuid
+      described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: key)
+
+      described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: key)
+
+      expect(EvalAppClient).to have_received(:start_run!).once
     end
   end
 end
