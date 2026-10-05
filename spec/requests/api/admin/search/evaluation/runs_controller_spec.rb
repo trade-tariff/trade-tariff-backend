@@ -320,6 +320,18 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
       it { is_expected.to have_http_status :unprocessable_content }
     end
 
+    context 'when the run was already cancelled' do
+      let(:run) { create(:evaluation_run, evaluation_experiment: experiment, status: 'cancelled') }
+      let(:params) { { data: { type: :run, attributes: { status: 'running' } } } }
+
+      it { is_expected.to have_http_status :unprocessable_content }
+
+      it 'leaves the run cancelled' do
+        api_response
+        expect(run.reload.status).to eq('cancelled')
+      end
+    end
+
     context 'with an unknown run' do
       let(:make_request) { authenticated_patch api_admin_search_evaluation_run_path(999_999, format: :json), params: { data: { type: :run, attributes: { status: 'completed' } } } }
 

@@ -56,6 +56,40 @@ RSpec.describe EvaluationRun do
     }.to raise_error(Sequel::UniqueConstraintViolation)
   end
 
+  describe 'cancelled is a final status' do
+    # The eval app checks a run's status, then (a request later) acts on what it saw — a run
+    # cancelled in that gap must not have its cancellation silently overwritten by the eval app's
+    # own "running"/"completed" write, or the run executes in full (and spends real OpenAI calls)
+    # on a run the operator already cancelled. This is scoped to 'cancelled' specifically, not
+    # every terminal status — re-running an already-completed run is unrelated, already-tested,
+    # intentional behaviour (see "re-stamps to the new time if a completed run is re-executed..."
+    # above), not something this guard should touch.
+    it 'rejects a status change away from cancelled' do
+      run = create(:evaluation_run, evaluation_experiment: experiment, status: 'cancelled', triggered_by: 'operator')
+
+      run.status = 'running'
+
+      expect(run.valid?).to be false
+      expect(run.errors[:status]).to include('cannot change once a run has been cancelled')
+    end
+
+    it 'still allows other fields to be updated on a cancelled run' do
+      run = create(:evaluation_run, evaluation_experiment: experiment, status: 'cancelled', triggered_by: 'operator')
+
+      run.error_summary = 'noted after the fact'
+
+      expect(run.valid?).to be true
+    end
+
+    it 'allows saving the same cancelled status again' do
+      run = create(:evaluation_run, evaluation_experiment: experiment, status: 'cancelled', triggered_by: 'operator')
+
+      run.status = 'cancelled'
+
+      expect(run.valid?).to be true
+    end
+  end
+
   describe 'started_at' do
     it 'stays nil while a run is queued' do
       run = create(:evaluation_run, evaluation_experiment: experiment, status: 'queued', triggered_by: 'operator')

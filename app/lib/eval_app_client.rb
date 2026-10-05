@@ -19,6 +19,14 @@ class EvalAppClient
   end
 
   def start_run!(run_id)
+    # Checked up front, not left to whatever Faraday happens to do with a blank URL (an
+    # Addressable::URI::InvalidURIError that isn't even a Faraday::Error, so it would escape this
+    # method's own rescue below and crash the whole create request with a 500) — and not worth
+    # retrying, since a missing env var won't fix itself between attempts. A deployment that
+    # forgot to add EVAL_APP_URL to Secrets Manager gets a `failed` run with a message that says
+    # exactly what's missing, same as any other EvalAppClient::Error.
+    raise Error, 'EVAL_APP_URL is not configured' if TradeTariffBackend.eval_app_url.blank?
+
     response = with_retry(
       max_attempts: MAX_ATTEMPTS,
       retryable_errors: RETRYABLE_ERRORS,
@@ -44,6 +52,8 @@ class EvalAppClient
       faraday.adapter Faraday.default_adapter
       faraday.headers['Authorization'] = "Bearer #{TradeTariffBackend.eval_app_auth_token}"
       faraday.headers['User-Agent'] = TradeTariffBackend.user_agent
+      faraday.options.timeout = TradeTariffBackend.eval_app_timeout
+      faraday.options.open_timeout = TradeTariffBackend.eval_app_open_timeout
     end
   end
 end
