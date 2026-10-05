@@ -191,6 +191,27 @@ RSpec.describe EvaluationGoldQuerySet do
     end
   end
 
+  describe '.gold_query_counts' do
+    it 'counts every gold query row, one per persona per item, for each set' do
+      first_set = create(:evaluation_gold_query_set)
+      second_set = create(:evaluation_gold_query_set)
+      create_gold_query_item(first_set, source_type: 'atar', source_id: '600000001')
+      create_gold_query_item(first_set, source_type: 'atar', source_id: '600000002')
+      create_gold_query_item(second_set, source_type: 'atar', source_id: '600000001')
+
+      expect(described_class.gold_query_counts([first_set.id, second_set.id])).to eq(
+        first_set.id => 6,
+        second_set.id => 3,
+      )
+    end
+
+    it 'leaves out a set that has no gold queries' do
+      empty_set = create(:evaluation_gold_query_set)
+
+      expect(described_class.gold_query_counts([empty_set.id])).to eq({})
+    end
+  end
+
   describe '#destroy' do
     let(:gold_query_set) { create(:evaluation_gold_query_set) }
 
