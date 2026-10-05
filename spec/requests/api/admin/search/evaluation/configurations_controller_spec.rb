@@ -41,7 +41,15 @@ RSpec.describe Api::Admin::Search::Evaluation::ConfigurationsController, :admin 
       expect(overrides.map { |o| o['name'] }).to include('question_model', 'candidate_limit', 'search_non_declarables')
       expect(overrides.find { |o| o['name'] == 'question_model' }['config_type']).to eq('options')
       expect(overrides.find { |o| o['name'] == 'candidate_limit' }).to include('config_type' => 'integer', 'min' => 1, 'max' => 250)
-      expect(overrides.find { |o| o['name'] == 'search_non_declarables' }).to eq('name' => 'search_non_declarables', 'config_type' => 'boolean')
+      expect(overrides.find { |o| o['name'] == 'search_non_declarables' }).to include('name' => 'search_non_declarables', 'config_type' => 'boolean')
+    end
+
+    it 'includes a plain-language description for every allowed override' do
+      overrides = json_response['allowed_overrides']
+
+      overrides.each do |override|
+        expect(override['description']).to be_present, "#{override['name']} has no description"
+      end
     end
   end
 end
