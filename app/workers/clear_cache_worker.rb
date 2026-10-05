@@ -14,7 +14,6 @@ class ClearCacheWorker
     )
 
     Sidekiq::Client.enqueue(PrecacheHeadingsWorker, Time.zone.today.to_formatted_s(:db))
-    Sidekiq::Client.enqueue(PrewarmQuotaOrderNumbersWorker)
     Sidekiq::Client.enqueue(PrewarmCommoditiesWorker)
     Sidekiq::Client.enqueue(ReindexModelsWorker)
 
