@@ -214,12 +214,20 @@ private
       Rails.logger.debug "OpenaiClient call took #{duration.round(2)} seconds"
     end
 
+    def api_base_url
+      TradeTariffBackend.openai_api_base_url
+    end
+
+    def api_key
+      TradeTariffBackend.openai_api_key
+    end
+
     def client
-      @client ||= Faraday.new(url: TradeTariffBackend.openai_api_base_url) do |faraday|
+      @client ||= Faraday.new(url: api_base_url) do |faraday|
         faraday.adapter Faraday.default_adapter
         faraday.headers['Accept'] = 'application/json'
         faraday.headers['Content-Type'] = 'application/json'
-        faraday.headers['Authorization'] = "Bearer #{TradeTariffBackend.openai_api_key}"
+        faraday.headers['Authorization'] = "Bearer #{api_key}"
         faraday.headers['User-Agent'] = TradeTariffBackend.user_agent
         faraday.response :json, content_type: /\bjson$/
         faraday.options.timeout = TradeTariffBackend.openai_api_timeout

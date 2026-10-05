@@ -84,4 +84,23 @@ RSpec.describe TradeTariffBackend::Clients do
       expect(backend.number_formatter).to be(first)
     end
   end
+
+  describe '.search_ai_client' do
+    around do |example|
+      original = ENV['BEDROCK_SEARCH_ENABLED']
+      example.run
+    ensure
+      ENV['BEDROCK_SEARCH_ENABLED'] = original
+    end
+
+    it 'returns OpenaiClient when Bedrock search is disabled' do
+      ENV['BEDROCK_SEARCH_ENABLED'] = 'false'
+      expect(backend.search_ai_client).to be(OpenaiClient)
+    end
+
+    it 'returns BedrockOpenaiClient when Bedrock search is enabled' do
+      ENV['BEDROCK_SEARCH_ENABLED'] = 'true'
+      expect(backend.search_ai_client).to be(BedrockOpenaiClient)
+    end
+  end
 end

@@ -59,7 +59,7 @@ private
       attempt_number: 1,
       operation: 'search_query_expansion',
     ) do
-      OpenaiClient.call(
+      TradeTariffBackend.search_ai_client.call(
         context_for(query),
         model: configured_model,
         reasoning_effort: configured_reasoning_effort,
