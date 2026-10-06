@@ -38,6 +38,12 @@ RSpec.describe Api::Admin::Search::Evaluation::GoldQuerySetsController, :admin d
       )
     end
 
+    it 'includes the real total number of gold queries, one per persona per item, not the deduplicated item count' do
+      counts = json_response['data'].to_h { |row| [row['attributes']['name'], row['attributes']['gold_query_count']] }
+
+      expect(counts).to eq('Older set' => 9, 'Newer set' => 0)
+    end
+
     it 'includes the progress counters and the failures' do
       expect(json_response['data'].first['attributes']).to include('status', 'planned_count', 'generated_count', 'failed_count', 'failures')
     end
@@ -69,6 +75,7 @@ RSpec.describe Api::Admin::Search::Evaluation::GoldQuerySetsController, :admin d
         'name' => gold_query_set.name,
         'atar_count' => 1,
         'synthetic_atar_count' => 0,
+        'gold_query_count' => 3,
         'failures' => [a_hash_including('source_id' => '600000009')],
       )
     end

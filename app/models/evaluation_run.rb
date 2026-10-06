@@ -1,5 +1,6 @@
 class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
   plugin :validation_helpers
+  plugin :dirty
 
   STATUSES = %w[queued running completed partially_failed failed cancelled].freeze
 
@@ -12,6 +13,15 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
     super
     validates_includes STATUSES, :status
     validates_presence :experiment_id
+
+    # Cancelling is a one-way door. Without this, a cancel that lands in the brief window between
+    # the eval app's own get_run check and its update_run(status="running")/completed write gets
+    # silently overwritten — the run keeps executing (and spending real OpenAI calls) on a run the
+    # operator already cancelled. column_change(:status) (plugin :dirty, above) is nil whenever
+    # status wasn't touched by this save at all, so unrelated updates to an already-cancelled run
+    # (e.g. the eval app's own error_summary) are untouched by this check.
+    previous_status, = column_change(:status)
+    errors.add(:status, 'cannot change once a run has been cancelled') if previous_status == 'cancelled' && status != 'cancelled'
   end
 
   # Stamped from the transition itself, not sent by the caller (unlike completed_at,
@@ -75,7 +85,7 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
     effective_configuration = EvaluationConfiguration::Merger.call(baseline, overrides)
     digest = EvaluationConfiguration::DigestCalculator.call(effective_configuration)
 
-    create(
+    run = create(
       evaluation_experiment: experiment,
       status: 'queued',
       triggered_by:,
@@ -86,12 +96,21 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
       idempotency_key:,
       run_time_overrides:,
     )
+    trigger_eval_app!(run)
+    run
   rescue Sequel::UniqueConstraintViolation
     winner = find_by_idempotency_key(idempotency_key)
     raise unless winner
 
     resolve_reused_key!(winner, idempotency_key:, experiment:, triggered_by:, run_time_overrides:)
   end
+
+  def self.trigger_eval_app!(run)
+    EvalAppClient.start_run!(run.id)
+  rescue EvalAppClient::Error => e
+    run.update(status: 'failed', error_summary: e.message)
+  end
+  private_class_method :trigger_eval_app!
 
   def self.find_by_idempotency_key(idempotency_key)
     where(idempotency_key:).first

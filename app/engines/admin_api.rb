@@ -175,7 +175,7 @@ AdminApi.routes.draw do
 
       namespace :search do
         namespace :evaluation do
-          resources :experiments, only: %i[index show create update]
+          resources :experiments, only: %i[index show create update destroy]
           resources :gold_query_sets, only: %i[index show create destroy] do
             resources :items, controller: 'gold_query_set_items', only: %i[index show update destroy] do
               member do

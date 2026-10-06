@@ -33,14 +33,20 @@ module Api
             render json: serialize(evaluation_run), status: :created
           end
 
+          # Locks the row before validating: the cancelled-is-final check compares against whatever
+          # status was loaded, so without the lock a cancel saved by another request after this one
+          # loaded the run would be silently overwritten.
           def update
-            run.set(update_params)
+            EvaluationRun.db.transaction do
+              run.lock!
+              run.set(update_params)
 
-            if run.valid? && run.save
-              run.reconcile_aggregates! if RECONCILING_STATUSES.include?(run.status)
-              render json: serialize(run.reload), status: :ok
-            else
-              render json: serialize_errors(run), status: :unprocessable_content
+              if run.valid? && run.save
+                run.reconcile_aggregates! if RECONCILING_STATUSES.include?(run.status)
+                render json: serialize(run.reload), status: :ok
+              else
+                render json: serialize_errors(run), status: :unprocessable_content
+              end
             end
           end
 

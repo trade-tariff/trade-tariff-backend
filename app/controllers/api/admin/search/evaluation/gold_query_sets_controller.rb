@@ -9,13 +9,13 @@ module Api
             render json: serialize(
               gold_query_sets,
               is_collection: true,
-              params: { item_counts: item_counts_for(gold_query_sets) },
+              params: { item_counts: item_counts_for(gold_query_sets), gold_query_counts: gold_query_counts_for(gold_query_sets) },
               meta: pagination_meta,
             )
           end
 
           def show
-            render json: serialize(gold_query_set, params: { item_counts: item_counts_for([gold_query_set]) })
+            render json: serialize(gold_query_set, params: { item_counts: item_counts_for([gold_query_set]), gold_query_counts: gold_query_counts_for([gold_query_set]) })
           end
 
           # Answers 409 Conflict while an experiment uses the set. The database would
@@ -57,6 +57,10 @@ module Api
 
           def item_counts_for(gold_query_sets)
             EvaluationGoldQuerySet.item_counts(gold_query_sets.map(&:id))
+          end
+
+          def gold_query_counts_for(gold_query_sets)
+            EvaluationGoldQuerySet.gold_query_counts(gold_query_sets.map(&:id))
           end
 
           def pagination_meta
