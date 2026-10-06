@@ -183,14 +183,41 @@ RSpec.describe Api::Admin::Search::Evaluation::ExperimentsController, :admin do
     it { is_expected.to have_http_status :no_content }
     it { expect { api_response }.to change(EvaluationExperiment, :count).by(-1) }
 
-    context 'when the experiment has runs' do
-      before { create(:evaluation_run, evaluation_experiment: experiment) }
+    context 'when its runs have all finished' do
+      before do
+        create(:evaluation_run, evaluation_experiment: experiment, status: 'completed')
+        create(:evaluation_run, evaluation_experiment: experiment, status: 'cancelled')
+      end
 
-      it 'deletes the experiment and its runs' do
+      it { is_expected.to have_http_status :no_content }
+
+      it 'deletes the experiment and its finished runs' do
         expect { api_response }
           .to change(EvaluationExperiment, :count).by(-1)
-          .and change(EvaluationRun, :count).by(-1)
+          .and change(EvaluationRun, :count).by(-2)
       end
+    end
+
+    context 'when one of its runs is queued' do
+      before { create(:evaluation_run, evaluation_experiment: experiment, status: 'queued') }
+
+      it { is_expected.to have_http_status :conflict }
+      it { expect { api_response }.not_to change(EvaluationExperiment, :count) }
+      it { expect { api_response }.not_to change(EvaluationRun, :count) }
+
+      it 'says why and what to do next' do
+        expect(json_response.dig('errors', 0, 'detail')).to eq(
+          'This experiment cannot be deleted while one of its runs is queued or running. ' \
+          'Wait for the run to finish, or cancel it, then try again.',
+        )
+      end
+    end
+
+    context 'when one of its runs is running' do
+      before { create(:evaluation_run, evaluation_experiment: experiment, status: 'running') }
+
+      it { is_expected.to have_http_status :conflict }
+      it { expect { api_response }.not_to change(EvaluationExperiment, :count) }
     end
 
     context 'when the experiment does not exist' do
