@@ -332,6 +332,29 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
       end
     end
 
+    context 'when another request cancels the run after this one has loaded it' do
+      let(:run) { create(:evaluation_run, evaluation_experiment: experiment, status: 'queued') }
+      let(:params) { { data: { type: :run, attributes: { status: 'running' } } } }
+
+      before do
+        allow(EvaluationRun).to receive(:with_pk!).and_wrap_original do |original, id|
+          loaded = original.call(id)
+          allow(loaded).to receive(:lock!).and_wrap_original do |lock, *args|
+            EvaluationRun.where(id: loaded.id).update(status: 'cancelled')
+            lock.call(*args)
+          end
+          loaded
+        end
+      end
+
+      it { is_expected.to have_http_status :unprocessable_content }
+
+      it 'keeps the cancellation rather than overwriting it with running' do
+        api_response
+        expect(run.reload.status).to eq('cancelled')
+      end
+    end
+
     context 'with an unknown run' do
       let(:make_request) { authenticated_patch api_admin_search_evaluation_run_path(999_999, format: :json), params: { data: { type: :run, attributes: { status: 'completed' } } } }
 
