@@ -20,6 +20,11 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
     # operator already cancelled. column_change(:status) (plugin :dirty, above) is nil whenever
     # status wasn't touched by this save at all, so unrelated updates to an already-cancelled run
     # (e.g. the eval app's own error_summary) are untouched by this check.
+    #
+    # This check only sees the status the instance was loaded with. It is atomic only because
+    # RunsController#update reloads the row under lock! inside a transaction before setting the
+    # status. Any other code path that changes a run's status must take the same lock, or a
+    # concurrent cancel can be silently overwritten.
     previous_status, = column_change(:status)
     errors.add(:status, 'cannot change once a run has been cancelled') if previous_status == 'cancelled' && status != 'cancelled'
   end
