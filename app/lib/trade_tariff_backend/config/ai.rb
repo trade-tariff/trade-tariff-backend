@@ -29,11 +29,7 @@ module TradeTariffBackend
         Rails.application.config.x.openai_model_pricing || {}
       end
 
-      # Spike: route guided-search LLM calls to OpenAI models on Amazon Bedrock.
-      def bedrock_search_enabled?
-        ENV.fetch('BEDROCK_SEARCH_ENABLED', 'false') == 'true'
-      end
-
+      # Spike: OpenAI models on Amazon Bedrock, selected per model (see BedrockOpenaiClient).
       def bedrock_api_key
         ENV['AWS_BEARER_TOKEN_BEDROCK']
       end
@@ -44,10 +40,6 @@ module TradeTariffBackend
 
       def bedrock_api_base_url
         "https://bedrock-runtime.#{bedrock_region}.amazonaws.com/openai/v1"
-      end
-
-      def bedrock_search_model
-        ENV.fetch('BEDROCK_SEARCH_MODEL', 'global.openai.gpt-5.6-terra')
       end
     end
   end

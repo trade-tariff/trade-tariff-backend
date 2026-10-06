@@ -121,7 +121,7 @@ module InteractiveSearch
         effective_query: effective_query,
         operation: 'duplicate_question_validator',
       ) do
-        TradeTariffBackend.search_ai_client.call(
+        TradeTariffBackend.search_ai_client(model_config[:selected]).call(
           validator_prompt,
           model: model_config[:selected],
           reasoning_effort: model_config[:sub_values]['reasoning_effort'],

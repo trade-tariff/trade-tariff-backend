@@ -50,6 +50,10 @@ RSpec.describe EvaluationConfiguration::AllowlistValidator do
   end
 
   describe 'question_model / simulator_model' do
+    it 'accepts a Bedrock model as question_model' do
+      expect(described_class.call({ 'question_model' => 'bedrock/gpt-5.6-terra' })).to be true
+    end
+
     %w[question_model simulator_model].each do |key|
       it "accepts any model listed in OpenaiClient::MODEL_CONFIGS for #{key}" do
         OpenaiClient::MODEL_CONFIGS.each_key do |model|

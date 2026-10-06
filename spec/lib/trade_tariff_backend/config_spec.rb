@@ -737,15 +737,10 @@ RSpec.describe TradeTariffBackend::Config do
       end
     end
 
-    describe '.bedrock_search_enabled?' do
-      it 'defaults to false' do
-        ENV.delete('BEDROCK_SEARCH_ENABLED')
-        expect(config.bedrock_search_enabled?).to be(false)
-      end
-
-      it 'is true when BEDROCK_SEARCH_ENABLED is true' do
-        ENV['BEDROCK_SEARCH_ENABLED'] = 'true'
-        expect(config.bedrock_search_enabled?).to be(true)
+    describe '.bedrock_api_key' do
+      it 'reads AWS_BEARER_TOKEN_BEDROCK from ENV' do
+        ENV['AWS_BEARER_TOKEN_BEDROCK'] = 'bedrock-api-key-test'
+        expect(config.bedrock_api_key).to eq('bedrock-api-key-test')
       end
     end
 
@@ -758,18 +753,6 @@ RSpec.describe TradeTariffBackend::Config do
       it 'uses BEDROCK_REGION' do
         ENV['BEDROCK_REGION'] = 'us-east-1'
         expect(config.bedrock_api_base_url).to eq('https://bedrock-runtime.us-east-1.amazonaws.com/openai/v1')
-      end
-    end
-
-    describe '.bedrock_search_model' do
-      it 'defaults to the GPT-5.6 Terra global inference profile' do
-        ENV.delete('BEDROCK_SEARCH_MODEL')
-        expect(config.bedrock_search_model).to eq('global.openai.gpt-5.6-terra')
-      end
-
-      it 'reads BEDROCK_SEARCH_MODEL from ENV' do
-        ENV['BEDROCK_SEARCH_MODEL'] = 'global.openai.gpt-5.6-luna'
-        expect(config.bedrock_search_model).to eq('global.openai.gpt-5.6-luna')
       end
     end
 

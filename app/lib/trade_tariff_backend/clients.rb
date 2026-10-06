@@ -37,8 +37,8 @@ module TradeTariffBackend
       @ai_client ||= OpenaiClient.new
     end
 
-    def search_ai_client
-      bedrock_search_enabled? ? BedrockOpenaiClient : OpenaiClient
+    def search_ai_client(model)
+      BedrockOpenaiClient.bedrock_model?(model) ? BedrockOpenaiClient : OpenaiClient
     end
 
     def number_formatter

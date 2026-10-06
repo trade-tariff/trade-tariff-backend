@@ -46,6 +46,13 @@ development: &pricing
     <<: *gpt_5_6_terra
   global.openai.gpt-5.6-luna:
     <<: *gpt_5_6_luna
+  # Selectable model keys that route to Bedrock (OpenaiClient::MODEL_CONFIGS).
+  bedrock/gpt-5.6-sol:
+    <<: *gpt_5_6_sol
+  bedrock/gpt-5.6-terra:
+    <<: *gpt_5_6_terra
+  bedrock/gpt-5.6-luna:
+    <<: *gpt_5_6_luna
   gpt-5.5:
     input_per_million_tokens: 5.0
     cached_input_per_million_tokens: 0.5
