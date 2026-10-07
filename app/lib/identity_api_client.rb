@@ -48,13 +48,6 @@ module IdentityApiClient
   end
 
   def self.ssl_options
-    pem = TradeTariffBackend.internal_ca_pem
-    return {} if pem.blank?
-
-    store = OpenSSL::X509::Store.new
-    store.set_default_paths
-    store.add_cert(OpenSSL::X509::Certificate.new(pem))
-
-    { cert_store: store }
+    InternalSsl.options
   end
 end
