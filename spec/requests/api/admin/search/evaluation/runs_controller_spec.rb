@@ -234,6 +234,16 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
       end
     end
 
+    context 'when listing runs' do
+      let(:experiment) { create(:evaluation_experiment, name: 'Baseline search') }
+
+      before { create(:evaluation_run, evaluation_experiment: experiment) }
+
+      it "includes each run's experiment name, so a run list doesn't have to look it up separately" do
+        expect(json_response['data'].map { |run| run['attributes']['experiment_name'] }).to eq(['Baseline search'])
+      end
+    end
+
     context 'when filtering by status' do
       let(:filters) { { status: 'completed' } }
 

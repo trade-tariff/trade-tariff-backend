@@ -38,6 +38,14 @@ module Api
             run.evaluation_experiment&.gold_query_set_id
           end
 
+          # The run list (spec section 9.1) names each row by its experiment, not a bare run id.
+          # Reads the same already-eager-loaded association gold_query_set_id does above, so this
+          # adds no extra query — RunsController#filtered_runs already calls
+          # EvaluationRun.eager(:evaluation_experiment) for every index request.
+          attribute :experiment_name do |run|
+            run.evaluation_experiment&.name
+          end
+
           # One small EvaluationResult[id] primary-key lookup per populated outlier — at most
           # four, each a single-row indexed fetch, only on show, never on index's list of many
           # runs. result.nil? is a genuine possibility to guard, not defensive paranoia:
