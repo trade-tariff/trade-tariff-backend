@@ -60,7 +60,7 @@ RSpec.describe SearchAnalytics::DailyQuery do
     client.stub_responses(:get_query_results, empty)
     described_class.call(**options, queries: %w[selection_pages])
     sql = starts.first[:params][:query_string]
-    expect(sql).to include("`@logStream` LIKE '%ecs/frontend/%'", "`@timestamp` >= CAST('2026-09-14 00:00:00'", "`@timestamp` < CAST('2026-09-14 03:00:00'")
+    expect(sql).to include("`@logStream` LIKE '%ecs/frontend/%'", 'UNIX_TIMESTAMP(`@timestamp`) >= 1789344000', 'UNIX_TIMESTAMP(`@timestamp`) < 1789354800')
     expect(sql).to include('REGEXP_EXTRACT', '$.params.request_id', "page_status IN ('200', '304')")
     expect(sql).not_to include('backend-uk/', "event = 'result_selected'")
   end

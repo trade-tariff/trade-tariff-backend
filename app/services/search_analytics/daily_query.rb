@@ -6,6 +6,9 @@ module SearchAnalytics
     ROW_LIMIT = 10_000
     MAX_PARTITIONS = 127
     PROCESSING_VERSION = 1
+    # Recollect classic counts from the broken timestamp rewrite without
+    # invalidating unrelated query groups that still contain valid history.
+    QUERY_PROCESSING_VERSIONS = { 'classic_outcomes' => 2 }.freeze
     IDENTIFIER_QUERIES = %w[search_journeys journey_outcomes search_actions selection_results selection_pages].freeze
 
     attr_reader :reporting_date
@@ -31,7 +34,10 @@ module SearchAnalytics
     end
 
     def fingerprints
-      query_definitions.to_h { |name, sql| [name, Digest::SHA256.hexdigest([PROCESSING_VERSION, @service, @region, sql].to_json)] }
+      query_definitions.to_h do |name, sql|
+        version = QUERY_PROCESSING_VERSIONS.fetch(name, PROCESSING_VERSION)
+        [name, Digest::SHA256.hexdigest([version, @service, @region, sql].to_json)]
+      end
     end
 
     def plan
@@ -80,6 +86,18 @@ module SearchAnalytics
       definitions['selection_results'] = SelectionQuery.results(source:, log_stream_filter:, request_exclusion_filter:)
       definitions['selection_pages'] = SelectionQuery.selections(source:)
       definitions
+    end
+
+    # Shared by collection and syntax validation so both compile the same bounds.
+    def bounded_query(sql, start_at:, end_at:)
+      # Keep failure cohorts scoped to the full day while partitioning metrics.
+      metric_scope = true
+      stream_filter = sql.include?(FrontendEventsQuery::STREAM_FILTER) ? FrontendEventsQuery::STREAM_FILTER : log_stream_filter
+      sql.gsub(stream_filter) do
+        bounds = metric_scope ? window_filter(start_at, end_at) : window_filter(now - 1.day, now)
+        metric_scope = false
+        "#{stream_filter} AND #{bounds}"
+      end
     end
 
   private
@@ -185,14 +203,7 @@ module SearchAnalytics
 
     def execute_window(sql, start_at, end_at)
       query_id = response = nil
-      # Keep failure cohorts scoped to the full day while partitioning metrics.
-      metric_scope = true
-      stream_filter = sql.include?(FrontendEventsQuery::STREAM_FILTER) ? FrontendEventsQuery::STREAM_FILTER : log_stream_filter
-      bounded = sql.gsub(stream_filter) do
-        bounds = metric_scope ? window_filter(start_at, end_at) : window_filter(now - 1.day, now)
-        metric_scope = false
-        "#{stream_filter} AND #{bounds}"
-      end
+      bounded = bounded_query(sql, start_at:, end_at:)
       scan_start, scan_end = sql.include?(request_exclusion_filter) ? [now - 1.day, now] : [start_at, end_at]
       query_id = client.start_query(query_language: 'SQL', start_time: scan_start.to_i, end_time: scan_end.to_i, query_string: bounded).query_id
       QUERY_MAX_POLLS.times do
@@ -216,7 +227,9 @@ module SearchAnalytics
     end
 
     def window_filter(start_at, end_at)
-      "`@timestamp` >= CAST('#{start_at.utc.strftime('%F %T')}' AS TIMESTAMP) AND `@timestamp` < CAST('#{end_at.utc.strftime('%F %T')}' AS TIMESTAMP)"
+      # CloudWatch can rewrite SQL timestamp literals into QL string comparisons
+      # that match no events. Numeric bounds retain the half-open second windows.
+      "UNIX_TIMESTAMP(`@timestamp`) >= #{start_at.to_i} AND UNIX_TIMESTAMP(`@timestamp`) < #{end_at.to_i}"
     end
 
     def log_stream_filter

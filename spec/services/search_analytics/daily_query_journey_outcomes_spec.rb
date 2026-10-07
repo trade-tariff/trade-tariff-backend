@@ -37,14 +37,14 @@ RSpec.describe SearchAnalytics::DailyQuery do
     expect(result.first).to include('journey_keys' => %w[one two].map { |id| Digest::SHA256.hexdigest(id) }, 'window_start' => '2026-09-14T00:00:00Z', 'window_end' => '2026-09-14T03:00:00Z')
     expect(result.first).not_to have_key('request_ids')
     expect(starts.size).to eq(8)
-    expect(starts.first[:params][:query_string]).to include("`@timestamp` < CAST('2026-09-14 03:00:00'")
+    expect(starts.first[:params][:query_string]).to include('UNIX_TIMESTAMP(`@timestamp`) < 1789354800')
   end
 
   it 'splits truncated identifier sets even if event totals and the row count look complete' do
     client.stub_responses(:get_query_results, [response(row.merge('request_ids' => '["one"]')), response(row), empty, *Array.new(7) { empty }])
     expect(collect.first['window_end']).to eq('2026-09-14T01:30:00Z')
     expect(starts.size).to eq(10)
-    expect(starts[2][:params][:query_string]).to include("`@timestamp` >= CAST('2026-09-14 01:30:00'")
+    expect(starts[2][:params][:query_string]).to include('UNIX_TIMESTAMP(`@timestamp`) >= 1789349400')
   end
 
   it 'splits malformed identifier arrays and never saves the malformed parent' do
