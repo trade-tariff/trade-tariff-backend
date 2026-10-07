@@ -46,8 +46,11 @@ module SearchAnalytics
     def distinct_queries
       @distinct_queries ||= Hash.new { |hash, query| hash[query] = [] }.tap do |queries|
         daily = DailyQuery.new(reporting_date: now.utc.to_date - 1, region: ENV.fetch('AWS_REGION', 'eu-west-2'), log_group_name:, now:)
-        daily.query_definitions.each do |name, query_string|
-          queries[{ query_string:, query_language: 'SQL' }] << "daily/#{name}"
+        end_at = now.utc.beginning_of_day
+        start_at = end_at - LOOKBACK
+        daily.query_definitions.each do |name, sql|
+          query_string = daily.bounded_query(sql, start_at:, end_at:)
+          queries[{ query_string:, query_language: 'SQL', start_time: start_at.to_i, end_time: end_at.to_i }] << "daily/#{name}"
         end
         dashboard_queries.each { |name, query| queries[query.symbolize_keys] << name }
       end
@@ -63,8 +66,8 @@ module SearchAnalytics
       source = query_language == 'SQL' ? {} : { log_group_name: }
       query_id = client.start_query(
         **source,
-        start_time: (now - LOOKBACK).to_i,
-        end_time: now.to_i,
+        start_time: query.fetch(:start_time, (now - LOOKBACK).to_i),
+        end_time: query.fetch(:end_time, now.to_i),
         query_language:,
         query_string:,
       ).query_id

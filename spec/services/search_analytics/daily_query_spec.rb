@@ -76,6 +76,32 @@ RSpec.describe SearchAnalytics::DailyQuery do
     expect(collector.fingerprints).not_to eq(baseline)
   end
 
+  it 'recollects only legacy classic outcomes' do
+    previous = collector.query_definitions.to_h do |name, sql|
+      [name, Digest::SHA256.hexdigest([1, 'uk', 'eu-west-2', sql].to_json)]
+    end
+    previous.each do |name, fingerprint|
+      SearchAnalyticsQueryResult.fetch(service: 'uk', reporting_date: options[:reporting_date], name:, fingerprint:) { [] }
+    end
+
+    expect(collector.plan).to eq(previous.transform_values { 'reuse' }.merge('classic_outcomes' => 'run'))
+    expect(collector.fingerprints.except('classic_outcomes')).to eq(previous.except('classic_outcomes'))
+
+    completion = encoded('request_id' => 'classic-search', 'observed_at' => '2026-09-14 10:00:00', 'result_count' => '3', 'event_count' => '1')
+    client.stub_responses(:get_query_results, complete.merge(results: [completion], statistics: { records_matched: 1.0 }))
+    result = collect.fetch('classic_outcomes')
+
+    expect(result).to eq([
+      { 'outcome' => 'results', 'searches' => 1, 'event_count' => 1 },
+      { 'outcome' => 'no_results', 'searches' => 0, 'event_count' => 0 },
+    ])
+    expect(starts.size).to eq(1)
+    expect(starts.first[:params][:query_string]).to include('UNIX_TIMESTAMP(`@timestamp`) >= 1789344000', 'UNIX_TIMESTAMP(`@timestamp`) < 1789430400')
+    expect(starts.first[:params][:query_string]).not_to include("CAST('")
+    expect(collect.fetch('classic_outcomes')).to eq(result)
+    expect(starts.size).to eq(1)
+  end
+
   it 'uses both selected-service streams without changing the rolling collector' do
     allow(TradeTariffBackend).to receive(:service).and_return('xi')
     expect(collector.query_definitions.except('selection_pages').values).to all(include('backend-xi/', 'worker-xi/'))
@@ -88,20 +114,20 @@ RSpec.describe SearchAnalytics::DailyQuery do
   it 'uses half-open calendar bounds for metric scans and full-day failure cohorts' do
     collect
     expect(starts.first[:params]).to include(start_time: Time.utc(2026, 9, 14).to_i, end_time: Time.utc(2026, 9, 15).to_i, query_language: 'SQL')
-    expect(starts.first[:params][:query_string]).to include("`@timestamp` >= CAST('2026-09-14 00:00:00'", "`@timestamp` < CAST('2026-09-15 00:00:00'")
+    expect(starts.first[:params][:query_string]).to include('UNIX_TIMESTAMP(`@timestamp`) >= 1789344000', 'UNIX_TIMESTAMP(`@timestamp`) < 1789430400')
     journey_sql = starts[14][:params][:query_string]
-    expect(journey_sql).to include("`@timestamp` >= CAST('2026-09-14 21:00:00'", "request_source = 'frontend'")
+    expect(journey_sql).to include('UNIX_TIMESTAMP(`@timestamp`) >= 1789419600', "request_source = 'frontend'")
   end
 
   it 'gives each initial journey scan one distinct three-hour metric window' do
     collect
-    bounds = starts[7, 8].map { |request| request[:params][:query_string].scan(/`@timestamp` (?:>=|<) CAST\('([^']+)'/).flatten }
+    bounds = starts[7, 8].map { |request| request[:params][:query_string].scan(/UNIX_TIMESTAMP\(`@timestamp`\) (?:>=|<) (\d+)/).flatten.map(&:to_i) }
     expected = Array.new(8) do |index|
       start_at = Time.utc(2026, 9, 14) + index * 3.hours
-      [start_at.strftime('%F %T'), (start_at + 3.hours).strftime('%F %T')]
+      [start_at.to_i, (start_at + 3.hours).to_i]
     end
     expect(bounds).to eq(expected)
-    expect(starts[7, 8].map { |request| request[:params].values_at(:start_time, :end_time) }).to eq(expected.map { |pair| pair.map { |value| Time.find_zone!('UTC').parse(value).to_i } })
+    expect(starts[7, 8].map { |request| request[:params].values_at(:start_time, :end_time) }).to eq(expected)
   end
 
   it 'retains all model and embedding calls without token or failure-cohort filtering' do
@@ -147,8 +173,8 @@ RSpec.describe SearchAnalytics::DailyQuery do
     client.stub_responses(:get_query_results, [*Array.new(7) { complete }, complete.merge(statistics: { records_matched: 2.0 }), *Array.new(9) { complete }])
     collect
     expect(starts.size).to eq(52)
-    expect(starts[8][:params][:query_string]).to include('2026-09-14 01:30:00')
-    expect(starts[9][:params][:query_string]).to include('2026-09-14 01:30:00')
+    expect(starts[8][:params][:query_string]).to include('UNIX_TIMESTAMP(`@timestamp`) < 1789349400')
+    expect(starts[9][:params][:query_string]).to include('UNIX_TIMESTAMP(`@timestamp`) >= 1789349400')
   end
 
   it 'fails safely without matched-event statistics for journey completeness' do
@@ -173,10 +199,10 @@ RSpec.describe SearchAnalytics::DailyQuery do
     expect(result.map { |row| row['query'] }).to eq(%w[keep keep])
     expect(starts[6][:params].values_at(:start_time, :end_time)).to eq([Time.utc(2026, 9, 14).to_i, Time.utc(2026, 9, 15).to_i])
     child_sql = starts[6][:params][:query_string]
-    expect(child_sql).to include("`@timestamp` < CAST('2026-09-14 12:00:00'")
-    expect(child_sql).to match(/request_id NOT IN \(.*2026-09-14 00:00:00.*2026-09-15 00:00:00/m)
-    expect(child_sql.scan(/`@timestamp` (?:>=|<) CAST\('([^']+)'/).flatten).to eq([
-      '2026-09-14 00:00:00', '2026-09-14 12:00:00', '2026-09-14 00:00:00', '2026-09-15 00:00:00'
+    expect(child_sql).to include('UNIX_TIMESTAMP(`@timestamp`) < 1789387200')
+    expect(child_sql).to match(/request_id NOT IN \(.*1789344000.*1789430400/m)
+    expect(child_sql.scan(/UNIX_TIMESTAMP\(`@timestamp`\) (?:>=|<) (\d+)/).flatten.map(&:to_i)).to eq([
+      1_789_344_000, 1_789_387_200, 1_789_344_000, 1_789_430_400
     ])
   end
 

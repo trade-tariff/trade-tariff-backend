@@ -22,7 +22,7 @@ RSpec.describe SearchAnalytics::DailyQuery do
     expect(result).not_to have_key('request_id')
     expect(result).not_to have_key('browser_session_id')
     sql = starts.first[:params][:query_string]
-    expect(sql).to include('ecs/frontend/', "event = 'guided_search.journey'", 'schema_version = 1', '2026-09-14 00:00:00', '2026-09-15 00:00:00')
+    expect(sql).to include('ecs/frontend/', "event = 'guided_search.journey'", 'schema_version = 1', 'UNIX_TIMESTAMP(`@timestamp`) >= 1789344000', 'UNIX_TIMESTAMP(`@timestamp`) < 1789430400')
     expect(sql).not_to include('backend-uk/', 'worker-uk/', 'search_degraded')
     expect(sql).to include("GET_JSON_OBJECT(REGEXP_EXTRACT(`@message`, '([{].*[}])', 1), '$.request_id')", "'$.schema_version'", "'$.browser_session_id'", "'$.result_rank'", "'$.confidence'")
     expect(sql).to include('GROUP BY request_id', 'event_id', 'question_id', 'response_source', 'MIN(`@timestamp`) AS observed_at')
@@ -80,8 +80,8 @@ RSpec.describe SearchAnalytics::DailyQuery do
     client.stub_responses(:get_query_results, [response([row], matched: 2), response([row]), response([row])])
     expect(collect.fetch('frontend_events').size).to eq(2)
     expect(starts.size).to eq(3)
-    expect(starts[1][:params][:query_string]).to include("`@timestamp` < CAST('2026-09-14 12:00:00'")
-    expect(starts[2][:params][:query_string]).to include("`@timestamp` >= CAST('2026-09-14 12:00:00'")
+    expect(starts[1][:params][:query_string]).to include('UNIX_TIMESTAMP(`@timestamp`) < 1789387200')
+    expect(starts[2][:params][:query_string]).to include('UNIX_TIMESTAMP(`@timestamp`) >= 1789387200')
   end
 
   it 'splits capped output into disjoint metric windows' do
