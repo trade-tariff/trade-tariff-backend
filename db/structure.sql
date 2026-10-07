@@ -2732,7 +2732,8 @@ CREATE TABLE uk.evaluation_results (
     provider_calls integer DEFAULT 0 NOT NULL,
     error text,
     trace jsonb DEFAULT '{}'::jsonb NOT NULL,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    pricing_known boolean DEFAULT true NOT NULL
 );
 
 
@@ -2781,6 +2782,7 @@ CREATE TABLE uk.evaluation_runs (
     min_cost_result_id integer,
     max_latency_result_id integer,
     min_latency_result_id integer,
+    unpriced_result_count integer DEFAULT 0 NOT NULL,
     CONSTRAINT evaluation_runs_status_check CHECK ((status = ANY (ARRAY['queued'::text, 'running'::text, 'completed'::text, 'partially_failed'::text, 'failed'::text, 'cancelled'::text])))
 );
 
@@ -15678,3 +15680,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260925120000_create_sear
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260928170000_drop_classic_outcome_row_reader.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260930120000_add_usage_to_search_references.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261007120000_add_summary_aggregates_to_evaluation_runs.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20261007140000_add_pricing_known_to_evaluation_results.rb');

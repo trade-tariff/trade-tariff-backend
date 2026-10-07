@@ -93,5 +93,13 @@ RSpec.describe EvaluationRun do
       expect(run.max_latency_result_id).to be_nil
       expect(run.min_latency_result_id).to be_nil
     end
+
+    it 'counts results priced against a model missing from the pricing table, so totals can be flagged as incomplete' do
+      EvaluationResult.ingest!(run:, source_type: 'atar', source_id: 'A1', persona: 'original', attrs: { expected_code: '1', cost_usd: 0.01, pricing_known: true })
+      EvaluationResult.ingest!(run:, source_type: 'atar', source_id: 'A2', persona: 'original', attrs: { expected_code: '2', cost_usd: 0, pricing_known: false })
+
+      run.reconcile_aggregates!
+      expect(run.unpriced_result_count).to eq(1)
+    end
   end
 end

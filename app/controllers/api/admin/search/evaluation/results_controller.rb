@@ -15,6 +15,7 @@ module Api
             latency_seconds
             cost_usd
             provider_calls
+            pricing_known
             error
           ].freeze
 

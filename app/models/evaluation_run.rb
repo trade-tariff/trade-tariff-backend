@@ -171,6 +171,7 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
       total_provider_calls: results.sum(:provider_calls) || 0,
       gold_in_top1_count: results.where(gold_in_top1: true).count,
       gold_in_top5_count: results.where(gold_in_top5: true).count,
+      unpriced_result_count: results.exclude(pricing_known: true).count,
       max_cost_result_id: max_cost_result&.id,
       min_cost_result_id: min_cost_result&.id,
       max_latency_result_id: max_latency_result&.id,
