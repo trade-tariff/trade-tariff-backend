@@ -64,8 +64,45 @@ RSpec.describe CustomJobLogger do
             'queries' => 0,
             'queue' => 'default',
             'status' => 'fail',
+            'backtrace' => ['line 1', 'line 2'],
           ),
         )
+      end
+
+      context 'when the backtrace is longer than 50 lines' do
+        let(:error) do
+          StandardError.new('Something went wrong').tap do |e|
+            e.set_backtrace((1..60).map { |number| "line #{number}" })
+          end
+        end
+
+        it 'logs only the first 50 lines' do
+          expect {
+            logger.call(item, queue) { raise error }
+          }.to raise_error(StandardError)
+
+          expect(Sidekiq.logger).to have_received(:warn).with(
+            hash_including('backtrace' => (1..50).map { |number| "line #{number}" }),
+          )
+        end
+      end
+
+      context 'when the error has no backtrace' do
+        let(:error) do
+          StandardError.new('Something went wrong').tap do |e|
+            allow(e).to receive(:backtrace).and_return(nil)
+          end
+        end
+
+        it 'logs an empty backtrace' do
+          expect {
+            logger.call(item, queue) { raise error }
+          }.to raise_error(StandardError)
+
+          expect(Sidekiq.logger).to have_received(:warn).with(
+            hash_including('backtrace' => []),
+          )
+        end
       end
     end
   end
