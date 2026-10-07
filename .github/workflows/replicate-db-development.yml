@@ -45,7 +45,9 @@ jobs:
           echo "SG=$SG" >> "$GITHUB_ENV"
       - name: Run ECS task
         run: |
-          aws ecs run-task \
+          set -euo pipefail
+
+          TASK_ARN=$(aws ecs run-task \
             --cluster "${{ env.CLUSTER }}" \
             --launch-type FARGATE \
             --region "${{ env.AWS_REGION }}" \
@@ -53,9 +55,32 @@ jobs:
             --task-definition "${{ env.SERVICE_NAME }}" \
             --started-by github-action \
             --count 1 \
+            --query 'tasks[0].taskArn' \
+            --output text \
             --overrides '{
                 "containerOverrides": [{
                   "name": "${{ env.CONTAINER_NAME }}",
-                  "command": ["/bin/sh", "-c", "./bin/db-replicate"]
+                  "command": ["/bin/sh", "-c", "exec ./bin/db-replicate"]
                 }]
-              }'
+              }')
+
+          echo "Replication task ARN: ${TASK_ARN}"
+
+          aws ecs wait tasks-stopped \
+            --cluster "${{ env.CLUSTER }}" \
+            --region "${{ env.AWS_REGION }}" \
+            --tasks "${TASK_ARN}"
+
+          EXIT_CODE=$(aws ecs describe-tasks \
+            --cluster "${{ env.CLUSTER }}" \
+            --region "${{ env.AWS_REGION }}" \
+            --tasks "${TASK_ARN}" \
+            --query 'tasks[0].containers[0].exitCode' \
+            --output text)
+
+          if [[ "${EXIT_CODE}" != "0" ]]; then
+            echo "Replication task failed with exit code ${EXIT_CODE}: ${TASK_ARN}" >&2
+            exit 1
+          fi
+
+          echo "Replication task completed successfully."
