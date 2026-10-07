@@ -6,6 +6,9 @@ module SearchAnalytics
     ROW_LIMIT = 10_000
     MAX_PARTITIONS = 127
     PROCESSING_VERSION = 1
+    # Recollect classic counts from the broken timestamp rewrite without
+    # invalidating unrelated query groups that still contain valid history.
+    QUERY_PROCESSING_VERSIONS = { 'classic_outcomes' => 2 }.freeze
     IDENTIFIER_QUERIES = %w[search_journeys journey_outcomes search_actions selection_results selection_pages].freeze
 
     attr_reader :reporting_date
@@ -31,7 +34,10 @@ module SearchAnalytics
     end
 
     def fingerprints
-      query_definitions.to_h { |name, sql| [name, Digest::SHA256.hexdigest([PROCESSING_VERSION, @service, @region, sql].to_json)] }
+      query_definitions.to_h do |name, sql|
+        version = QUERY_PROCESSING_VERSIONS.fetch(name, PROCESSING_VERSION)
+        [name, Digest::SHA256.hexdigest([version, @service, @region, sql].to_json)]
+      end
     end
 
     def plan
@@ -216,7 +222,9 @@ module SearchAnalytics
     end
 
     def window_filter(start_at, end_at)
-      "`@timestamp` >= CAST('#{start_at.utc.strftime('%F %T')}' AS TIMESTAMP) AND `@timestamp` < CAST('#{end_at.utc.strftime('%F %T')}' AS TIMESTAMP)"
+      # CloudWatch can rewrite SQL timestamp literals into QL string comparisons
+      # that match no events. Numeric bounds retain the half-open second windows.
+      "UNIX_TIMESTAMP(`@timestamp`) >= #{start_at.to_i} AND UNIX_TIMESTAMP(`@timestamp`) < #{end_at.to_i}"
     end
 
     def log_stream_filter
