@@ -291,7 +291,7 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
         attributes = json_response['data']['attributes']
 
         expect(attributes).to include('gold_in_top1_count' => 3, 'gold_in_top5_count' => 4)
-        expect(attributes['max_cost_result']).to include('id' => expensive_result.id.to_s, 'source_id' => 'A2', 'cost_usd' => '0.05')
+        expect(attributes['max_cost_result']).to include('id' => expensive_result.id.to_s, 'source_type' => 'atar', 'source_id' => 'A2', 'expected_code' => '8471300000', 'cost_usd' => '0.05')
       end
     end
 

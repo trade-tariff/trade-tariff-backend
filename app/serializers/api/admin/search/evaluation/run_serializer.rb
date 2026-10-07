@@ -62,7 +62,7 @@ module Api
               result = EvaluationResult[result_id]
               next nil if result.nil?
 
-              { id: result.id.to_s, source_type: result.source_type, source_id: result.source_id, cost_usd: result.cost_usd, latency_seconds: result.latency_seconds }
+              { id: result.id.to_s, source_type: result.source_type, source_id: result.source_id, expected_code: result.expected_code, cost_usd: result.cost_usd, latency_seconds: result.latency_seconds }
             end
           end
         end
