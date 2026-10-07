@@ -47,18 +47,28 @@ module SearchAnalytics
       ids = SOURCE_NAMES.index_with do |name|
         records.select { |row| row.name == name && dates.include?(row.reporting_date) }.map(&:id)
       end
+      # Each stored row holds thousands of journey keys. Read the search type in
+      # a MATERIALIZED CTE before the keys are expanded. Otherwise PostgreSQL
+      # carries the whole JSONB row with every key into the grouping step, and
+      # a 7-day read spills gigabytes to disk. Keys are hex, so "C" collation
+      # compares them as bytes without locale rules.
       SearchAnalyticsQueryResult.db.fetch(<<~SQL).first
-        WITH eligible AS MATERIALIZED (
-          SELECT identity.journey_key,
-            bool_or(observation->>'search_type' = 'classic') AS classic,
-            bool_or(observation->>'search_type' IN ('internal', 'interactive')) AS internal
+        WITH result_groups AS MATERIALIZED (
+          SELECT observation->>'search_type' = 'classic' AS classic,
+            observation->>'search_type' IN ('internal', 'interactive') AS internal,
+            observation->'journey_keys' AS keys
           FROM search_analytics_query_results result,
-            LATERAL jsonb_array_elements(result.rows) observation,
-            LATERAL jsonb_array_elements_text(observation->'journey_keys') identity(journey_key)
+            LATERAL jsonb_array_elements(result.rows) observation
           WHERE result.id IN (#{ids.fetch('selection_results').join(',')})
-          GROUP BY identity.journey_key
+        ), eligible AS MATERIALIZED (
+          SELECT identity.journey_key COLLATE "C" AS journey_key,
+            bool_or(result_groups.classic) AS classic,
+            bool_or(result_groups.internal) AS internal
+          FROM result_groups,
+            LATERAL jsonb_array_elements_text(result_groups.keys) identity(journey_key)
+          GROUP BY 1
         ), selected AS (
-          SELECT DISTINCT identity.journey_key
+          SELECT DISTINCT identity.journey_key COLLATE "C" AS journey_key
           FROM search_analytics_query_results result,
             LATERAL jsonb_array_elements(result.rows) observation,
             LATERAL jsonb_array_elements_text(observation->'journey_keys') identity(journey_key)
