@@ -48,7 +48,7 @@ class EvalAppClient
   end
 
   def self.client
-    @client ||= Faraday.new(url: TradeTariffBackend.eval_app_url) do |faraday|
+    @client ||= Faraday.new(url: TradeTariffBackend.eval_app_url, ssl: InternalSsl.options) do |faraday|
       faraday.adapter Faraday.default_adapter
       faraday.headers['Authorization'] = "Bearer #{TradeTariffBackend.eval_app_auth_token}"
       faraday.headers['User-Agent'] = TradeTariffBackend.user_agent

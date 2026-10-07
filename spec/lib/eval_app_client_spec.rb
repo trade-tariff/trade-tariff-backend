@@ -17,6 +17,38 @@ RSpec.describe EvalAppClient do
       expect(described_class.client.options.open_timeout).to eq(TradeTariffBackend.eval_app_open_timeout)
       expect(described_class.client.options.timeout).to eq(TradeTariffBackend.eval_app_timeout)
     end
+
+    context 'when an internal CA is configured' do
+      let(:certificate) do
+        key = OpenSSL::PKey::RSA.new(2048)
+        name = OpenSSL::X509::Name.parse('/CN=*.tariff.internal')
+
+        OpenSSL::X509::Certificate.new.tap do |cert|
+          cert.version = 2
+          cert.serial = 1
+          cert.subject = name
+          cert.issuer = name
+          cert.public_key = key.public_key
+          cert.not_before = Time.zone.now
+          cert.not_after = 1.hour.from_now
+          cert.sign(key, OpenSSL::Digest.new('SHA256'))
+        end
+      end
+
+      before { allow(TradeTariffBackend).to receive(:internal_ca_pem).and_return(certificate.to_pem) }
+
+      it 'trusts the eval app presenting that certificate, not just the public CA bundle' do
+        expect(described_class.client.ssl.cert_store.verify(certificate)).to be true
+      end
+    end
+
+    context 'when no internal CA is configured' do
+      before { allow(TradeTariffBackend).to receive(:internal_ca_pem).and_return(nil) }
+
+      it 'behaves as before: ordinary certificate checking, nothing extra trusted' do
+        expect(described_class.client.ssl.cert_store).to be_nil
+      end
+    end
   end
 
   describe '.start_run!' do
