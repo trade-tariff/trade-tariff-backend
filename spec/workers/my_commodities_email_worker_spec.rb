@@ -29,7 +29,17 @@ RSpec.describe MyCommoditiesEmailWorker, type: :worker do
       )
     end
 
-    before { create(:tariff_changes_job_status, :with_emails_sent, operation_date: Date.new(2025, 12, 8)) }
+    before do
+      allow(Sidekiq.logger).to receive(:error)
+      create(:tariff_changes_job_status, :with_emails_sent, operation_date: Date.new(2025, 12, 8))
+    end
+
+    it 'logs the date and the failure' do
+      exhaust_retries
+
+      expect(Sidekiq.logger).to have_received(:error)
+        .with('MyCommoditiesEmailWorker exhausted retries for 08/12/2025: Notify is down')
+    end
 
     it 'returns the date to the pending_emails redrive set' do
       expect { exhaust_retries }
