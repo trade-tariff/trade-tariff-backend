@@ -88,6 +88,18 @@ module SearchAnalytics
       definitions
     end
 
+    # Shared by collection and syntax validation so both compile the same bounds.
+    def bounded_query(sql, start_at:, end_at:)
+      # Keep failure cohorts scoped to the full day while partitioning metrics.
+      metric_scope = true
+      stream_filter = sql.include?(FrontendEventsQuery::STREAM_FILTER) ? FrontendEventsQuery::STREAM_FILTER : log_stream_filter
+      sql.gsub(stream_filter) do
+        bounds = metric_scope ? window_filter(start_at, end_at) : window_filter(now - 1.day, now)
+        metric_scope = false
+        "#{stream_filter} AND #{bounds}"
+      end
+    end
+
   private
 
     def client = @client ||= Aws::CloudWatchLogs::Client.new(region: @region, retry_limit: 0)
@@ -191,14 +203,7 @@ module SearchAnalytics
 
     def execute_window(sql, start_at, end_at)
       query_id = response = nil
-      # Keep failure cohorts scoped to the full day while partitioning metrics.
-      metric_scope = true
-      stream_filter = sql.include?(FrontendEventsQuery::STREAM_FILTER) ? FrontendEventsQuery::STREAM_FILTER : log_stream_filter
-      bounded = sql.gsub(stream_filter) do
-        bounds = metric_scope ? window_filter(start_at, end_at) : window_filter(now - 1.day, now)
-        metric_scope = false
-        "#{stream_filter} AND #{bounds}"
-      end
+      bounded = bounded_query(sql, start_at:, end_at:)
       scan_start, scan_end = sql.include?(request_exclusion_filter) ? [now - 1.day, now] : [start_at, end_at]
       query_id = client.start_query(query_language: 'SQL', start_time: scan_start.to_i, end_time: scan_end.to_i, query_string: bounded).query_id
       QUERY_MAX_POLLS.times do
