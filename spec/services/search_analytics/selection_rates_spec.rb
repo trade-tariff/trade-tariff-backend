@@ -82,4 +82,28 @@ RSpec.describe SearchAnalytics::SelectionRates do
     expect(payload.dig('request_sources', 'backend_only')).to include('selection_rate' => nil)
     expect(SearchAnalyticsQueryResult.order(:id).all.map(&:values)).to eq(stored)
   end
+
+  # Each stored row holds thousands of journey keys. If the grouping step
+  # carries the whole JSONB row with every key, a 7-day read spills gigabytes
+  # to disk and takes about 30 seconds in production.
+  it 'counts selections without large temporary files' do
+    classic = Array.new(3000) { |index| "classic-#{index}" }
+    internal = Array.new(3000) { |index| "internal-#{index}" }
+    dates.each do |date|
+      store('selection_results', date, [result('classic', *classic), result('internal', *internal)])
+      store('selection_pages', date, [selected(*classic.first(1000), *internal.first(500))])
+    end
+
+    views = SearchAnalyticsQueryResult.db.transaction do
+      SearchAnalyticsQueryResult.db.run("SET LOCAL work_mem = '64kB'")
+      SearchAnalyticsQueryResult.db.run("SET LOCAL temp_file_limit = '8MB'")
+      read.fetch(:views)
+    end
+
+    expect(views.transform_values { |view| view.slice('result_journeys', 'selected_result_journeys') }).to eq(
+      'all' => { 'result_journeys' => 6000, 'selected_result_journeys' => 1500 },
+      'classic' => { 'result_journeys' => 3000, 'selected_result_journeys' => 1000 },
+      'internal' => { 'result_journeys' => 3000, 'selected_result_journeys' => 500 },
+    )
+  end
 end
