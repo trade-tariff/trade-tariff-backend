@@ -28,6 +28,7 @@ module Api
 
           def create
             outcomes = bulk_items.map.with_index { |item, index| ingest_item(item, index) }
+            reconcile_touched_runs(outcomes)
 
             render json: { data: outcomes.map { |outcome| outcome[:body] } }, status: bulk_status(outcomes)
           end
@@ -66,9 +67,19 @@ module Api
               attrs: attrs.except('run_id', 'source_type', 'source_id', 'persona'),
             )
 
-            { success: true, body: serialize(ingested)[:data] }
+            { success: true, body: serialize(ingested)[:data], run: }
           rescue Sequel::NoMatchingRow, Sequel::Error => e
             { success: false, body: { error: e.message, index: } }
+          end
+
+          # Keeps result_count/error_count live while a run is still "running", not just once it
+          # reaches a terminal status (RunsController#update's own reconcile, gated on
+          # RECONCILING_STATUSES) — otherwise the admin tracking page's "N of M done" is stuck at
+          # 0 for the run's entire execution. Deduped by id: one bulk POST can carry several
+          # results for the same run, and each is a handful of aggregate queries plus an UPDATE,
+          # not worth repeating per item.
+          def reconcile_touched_runs(outcomes)
+            outcomes.filter_map { |outcome| outcome[:run] if outcome[:success] }.uniq(&:id).each(&:reconcile_aggregates!)
           end
 
           def bulk_status(outcomes)

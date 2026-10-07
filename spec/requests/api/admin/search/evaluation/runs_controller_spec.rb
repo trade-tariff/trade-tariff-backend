@@ -16,6 +16,8 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
                          params: params, headers: { 'Idempotency-Key' => idempotency_key }
     end
 
+    before { allow(EvalAppClient).to receive(:start_run!) }
+
     context 'without an Idempotency-Key header' do
       let(:params) { { data: { type: :run, attributes: { experiment_id: experiment.id, triggered_by: 'operator' } } } }
       let(:make_request) { authenticated_post api_admin_search_evaluation_runs_path(format: :json), params: params }
@@ -316,6 +318,41 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
       let(:params) { { data: { type: :run, attributes: { status: 'bogus' } } } }
 
       it { is_expected.to have_http_status :unprocessable_content }
+    end
+
+    context 'when the run was already cancelled' do
+      let(:run) { create(:evaluation_run, evaluation_experiment: experiment, status: 'cancelled') }
+      let(:params) { { data: { type: :run, attributes: { status: 'running' } } } }
+
+      it { is_expected.to have_http_status :unprocessable_content }
+
+      it 'leaves the run cancelled' do
+        api_response
+        expect(run.reload.status).to eq('cancelled')
+      end
+    end
+
+    context 'when another request cancels the run after this one has loaded it' do
+      let(:run) { create(:evaluation_run, evaluation_experiment: experiment, status: 'queued') }
+      let(:params) { { data: { type: :run, attributes: { status: 'running' } } } }
+
+      before do
+        allow(EvaluationRun).to receive(:with_pk!).and_wrap_original do |original, id|
+          loaded = original.call(id)
+          allow(loaded).to receive(:lock!).and_wrap_original do |lock, *args|
+            EvaluationRun.where(id: loaded.id).update(status: 'cancelled')
+            lock.call(*args)
+          end
+          loaded
+        end
+      end
+
+      it { is_expected.to have_http_status :unprocessable_content }
+
+      it 'keeps the cancellation rather than overwriting it with running' do
+        api_response
+        expect(run.reload.status).to eq('cancelled')
+      end
     end
 
     context 'with an unknown run' do

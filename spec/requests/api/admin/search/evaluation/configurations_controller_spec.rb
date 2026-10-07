@@ -26,13 +26,30 @@ RSpec.describe Api::Admin::Search::Evaluation::ConfigurationsController, :admin 
       )
     end
 
-    it 'returns exactly the 10 allowed override keys' do
+    it 'returns exactly the 10 allowed override keys, each with its own type metadata' do
       api_response
-      expect(json_response['allowed_overrides']).to contain_exactly(
+      expect(json_response['allowed_overrides'].map { |o| o['name'] }).to contain_exactly(
         'question_model', 'simulator_model', 'candidate_limit', 'max_rounds', 'rrf_k',
         'vector_score_threshold', 'vector_ef_search', 'search_non_declarables',
         'search_compressed_notes_enabled', 'search_general_rules_enabled'
       )
+    end
+
+    it 'describes each allowed override with its type' do
+      overrides = json_response['allowed_overrides']
+
+      expect(overrides.map { |o| o['name'] }).to include('question_model', 'candidate_limit', 'search_non_declarables')
+      expect(overrides.find { |o| o['name'] == 'question_model' }['config_type']).to eq('options')
+      expect(overrides.find { |o| o['name'] == 'candidate_limit' }).to include('config_type' => 'integer', 'min' => 1, 'max' => 250)
+      expect(overrides.find { |o| o['name'] == 'search_non_declarables' }).to include('name' => 'search_non_declarables', 'config_type' => 'boolean')
+    end
+
+    it 'includes a plain-language description for every allowed override' do
+      overrides = json_response['allowed_overrides']
+
+      overrides.each do |override|
+        expect(override['description']).to be_present, "#{override['name']} has no description"
+      end
     end
   end
 end

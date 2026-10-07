@@ -53,6 +53,18 @@ class EvaluationGoldQuerySet < Sequel::Model(Sequel[:evaluation_gold_query_sets]
       end
   end
 
+  # How many gold query rows each set holds now — every item has one row per persona (see
+  # item_counts above), and this is the real total a run of this set iterates over
+  # (execute_run.py fetches every row, not one per item), unlike item_counts' deliberately
+  # deduplicated "N items" figure.
+  def self.gold_query_counts(set_ids)
+    EvaluationGoldQuery
+      .where(set_id: set_ids)
+      .select_group(:set_id)
+      .select_append(Sequel.lit('COUNT(*)').as(:count))
+      .each_with_object({}) { |row, counts| counts[row[:set_id]] = row[:count] }
+  end
+
   # Adds one finished item to the set's counters. Call it once per item, when that item
   # has either produced its gold queries (no failure) or definitely failed (pass the
   # failure, a hash of source_type, source_id and error, which is added to the list).

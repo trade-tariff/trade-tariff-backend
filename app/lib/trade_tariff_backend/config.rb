@@ -2,6 +2,7 @@ require_relative 'config/ai'
 require_relative 'config/alcohol'
 require_relative 'config/authentication'
 require_relative 'config/email'
+require_relative 'config/eval_app'
 require_relative 'config/goods_nomenclature'
 require_relative 'config/green_lanes'
 require_relative 'config/infrastructure'
@@ -19,6 +20,7 @@ module TradeTariffBackend
     include Alcohol
     include Authentication
     include Email
+    include EvalApp
     include GoodsNomenclature
     include GreenLanes
     include Infrastructure

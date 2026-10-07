@@ -28,6 +28,26 @@ RSpec.describe Api::Admin::Search::Evaluation::ResultsController, :admin do
         api_response
         expect(json_response['data'].map { |item| item['attributes']['source_id'] }).to eq(%w[A1 A2])
       end
+
+      it "updates the run's own progress count immediately, not just once the run finishes" do
+        expect { api_response }.to change { run.reload.result_count }.from(0).to(2)
+      end
+    end
+
+    context 'with an error on one item, while the run is still running' do
+      let(:items) do
+        [
+          { run_id: run.id, source_type: 'atar', source_id: 'A1', persona: 'original', expected_code: '8471300000', final_code: '8471300000' },
+          { run_id: run.id, source_type: 'atar', source_id: 'A2', persona: 'original', expected_code: '8471300000', error: 'simulator exhausted its retries' },
+        ]
+      end
+
+      it 'reflects both the successful and the failed item in the live counts' do
+        api_response
+        run.reload
+        expect(run.result_count).to eq(2)
+        expect(run.error_count).to eq(1)
+      end
     end
 
     context 'with a provider_calls value' do
