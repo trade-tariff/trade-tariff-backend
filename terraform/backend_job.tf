@@ -139,38 +139,12 @@ resource "aws_cloudwatch_metric_alarm" "database_backup_freshness" {
 }
 
 resource "aws_cloudwatch_event_rule" "database_replication" {
-  count = var.enable_database_replication ? 1 : 0
+  count = 1
 
   name                = "backend-database-replication-${var.environment}"
   description         = "Triggers weekday database replication for ${var.environment}"
   schedule_expression = "cron(30 23 ? * MON-FRI *)"
   state               = "ENABLED"
-}
-
-resource "aws_cloudwatch_event_target" "database_replication" {
-  count = var.enable_database_replication ? 1 : 0
-
-  rule     = aws_cloudwatch_event_rule.database_replication[0].name
-  arn      = data.aws_ecs_cluster.this.arn
-  role_arn = aws_iam_role.eventbridge_ecs.arn
-
-  input = jsonencode({
-    containerOverrides = [{
-      name    = "backend-job"
-      command = ["/bin/sh", "-c", "exec ./bin/db-replicate"]
-    }]
-  })
-
-  ecs_target {
-    task_count          = 1
-    task_definition_arn = data.aws_ecs_task_definition.backend_job.arn
-    launch_type         = "FARGATE"
-    network_configuration {
-      subnets          = data.aws_subnets.private.ids
-      security_groups  = [data.aws_security_group.this.id]
-      assign_public_ip = false
-    }
-  }
 }
 
 data "aws_iam_policy_document" "eventbridge_assume_role" {

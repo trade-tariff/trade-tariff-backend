@@ -47,12 +47,6 @@ variable "enable_alarms" {
   default     = false
 }
 
-variable "enable_database_replication" {
-  description = "Whether to enable the scheduled database replication job."
-  type        = bool
-  default     = false
-}
-
 variable "enable_observability_alerts" {
   type    = bool
   default = false

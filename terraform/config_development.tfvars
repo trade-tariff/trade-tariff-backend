@@ -4,5 +4,3 @@ cpu          = 1024
 memory       = 2048
 min_capacity = 1
 max_capacity = 1
-
-enable_database_replication = true
