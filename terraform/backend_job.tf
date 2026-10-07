@@ -139,7 +139,7 @@ resource "aws_cloudwatch_metric_alarm" "database_backup_freshness" {
 }
 
 resource "aws_cloudwatch_event_rule" "database_replication" {
-  count = 0
+  count = 1
 
   name                = "backend-database-replication-${var.environment}"
   description         = "Triggers weekday database replication for ${var.environment}"
