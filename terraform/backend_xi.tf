@@ -36,7 +36,7 @@ module "backend_xi" {
   container_user           = local.container_user
 
   has_autoscaler     = local.has_autoscaler
-  min_capacity       = var.min_capacity
+  min_capacity       = var.min_capacity_xi
   max_capacity       = var.max_capacity
   scale_in_cooldown  = var.scale_in_cooldown
   scale_out_cooldown = var.scale_out_cooldown

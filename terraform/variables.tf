@@ -19,7 +19,13 @@ variable "service_count" {
   default     = 1
 }
 
-variable "min_capacity" {
+variable "min_capacity_uk" {
+  description = "Smallest number of tasks the backend-uk service can scale-in to."
+  type        = number
+  default     = 1
+}
+
+variable "min_capacity_xi" {
   description = "Smallest number of tasks the backend-xi service can scale-in to."
   type        = number
   default     = 1
