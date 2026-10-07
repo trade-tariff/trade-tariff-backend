@@ -266,6 +266,33 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
       end
     end
 
+    context 'when the run has accuracy counts and a costliest result' do
+      let(:run) { create(:evaluation_run, evaluation_experiment: experiment, gold_in_top1_count: 3, gold_in_top5_count: 4) }
+      let(:id) { run.id }
+
+      before { run.update(max_cost_result_id: expensive_result.id) }
+
+      # Memoised in a method, not a let, to stay within the memoized helper limit.
+      def expensive_result
+        @expensive_result ||= create(:evaluation_result, evaluation_run: run, source_id: 'A2', cost_usd: 0.05)
+      end
+
+      it 'includes the accuracy counts and a summary of the costliest and slowest results' do
+        attributes = json_response['data']['attributes']
+
+        expect(attributes).to include('gold_in_top1_count' => 3, 'gold_in_top5_count' => 4)
+        expect(attributes['max_cost_result']).to include('id' => expensive_result.id.to_s, 'source_id' => 'A2', 'cost_usd' => '0.05')
+      end
+    end
+
+    context 'when the run has no results yet' do
+      let(:id) { run.id }
+
+      it 'gives nil for an outlier summary' do
+        expect(json_response['data']['attributes']['max_cost_result']).to be_nil
+      end
+    end
+
     context 'when the run\'s experiment has a gold query set' do
       let(:experiment) { create(:evaluation_experiment, gold_query_set_id: gold_query_set.id) }
       let(:id) { run.id }

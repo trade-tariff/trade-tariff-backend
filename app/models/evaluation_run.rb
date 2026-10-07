@@ -158,6 +158,10 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
   # rows unless a future decision extends it to live runs too.
   def reconcile_aggregates!
     results = evaluation_results_dataset
+    max_cost_result = results.exclude(cost_usd: nil).order(Sequel.desc(:cost_usd)).first
+    min_cost_result = results.exclude(cost_usd: nil).order(:cost_usd).first
+    max_latency_result = results.exclude(latency_seconds: nil).order(Sequel.desc(:latency_seconds)).first
+    min_latency_result = results.exclude(latency_seconds: nil).order(:latency_seconds).first
 
     update(
       result_count: results.count,
@@ -165,6 +169,12 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
       total_cost_usd: results.sum(:cost_usd) || 0,
       total_latency_seconds: results.sum(:latency_seconds) || 0,
       total_provider_calls: results.sum(:provider_calls) || 0,
+      gold_in_top1_count: results.where(gold_in_top1: true).count,
+      gold_in_top5_count: results.where(gold_in_top5: true).count,
+      max_cost_result_id: max_cost_result&.id,
+      min_cost_result_id: min_cost_result&.id,
+      max_latency_result_id: max_latency_result&.id,
+      min_latency_result_id: min_latency_result&.id,
     )
   end
 end
