@@ -13,6 +13,7 @@ module Api
                      :triggered_by,
                      :configuration_digest,
                      :effective_configuration,
+                     :run_time_overrides,
                      :question_model,
                      :simulator_model,
                      :started_at,

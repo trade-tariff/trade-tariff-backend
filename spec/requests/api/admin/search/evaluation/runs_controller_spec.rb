@@ -257,6 +257,15 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
       it { expect(json_response['data']['attributes']['gold_query_set_id']).to be_nil }
     end
 
+    context 'when the run has run-time overrides' do
+      let(:run) { create(:evaluation_run, evaluation_experiment: experiment, run_time_overrides: { 'max_rounds' => 3 }) }
+      let(:id) { run.id }
+
+      it 'includes the run-time overrides actually used, separate from the experiment default' do
+        expect(json_response['data']['attributes']['run_time_overrides']).to eq({ 'max_rounds' => 3 })
+      end
+    end
+
     context 'when the run\'s experiment has a gold query set' do
       let(:experiment) { create(:evaluation_experiment, gold_query_set_id: gold_query_set.id) }
       let(:id) { run.id }
