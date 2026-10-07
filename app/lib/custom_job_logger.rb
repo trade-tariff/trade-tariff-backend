@@ -2,6 +2,8 @@ require 'sidekiq/component'
 require 'sidekiq/job_logger'
 
 class CustomJobLogger < ::Sidekiq::JobLogger
+  MAXIMUM_BACKTRACE_LINES = 50
+
   def call(item, queue)
     start = ::Process.clock_gettime(::Process::CLOCK_MONOTONIC)
     reset_query_count
@@ -30,6 +32,7 @@ class CustomJobLogger < ::Sidekiq::JobLogger
       'status' => 'fail',
       'error_class' => e.class.name,
       'error_message' => e.message,
+      'backtrace' => Array(e.backtrace).first(MAXIMUM_BACKTRACE_LINES),
     )
 
     raise e
