@@ -13,6 +13,7 @@ module Api
                      :triggered_by,
                      :configuration_digest,
                      :effective_configuration,
+                     :run_time_overrides,
                      :question_model,
                      :simulator_model,
                      :started_at,
@@ -22,6 +23,10 @@ module Api
                      :total_latency_seconds,
                      :result_count,
                      :error_count,
+                     :gold_in_top1_count,
+                     :gold_in_top5_count,
+                     :unpriced_result_count,
+                     :persona_breakdown,
                      :error_summary,
                      :aggregate_metrics,
                      :created_at,
@@ -33,6 +38,34 @@ module Api
           # have used the new one.
           attribute :gold_query_set_id do |run|
             run.evaluation_experiment&.gold_query_set_id
+          end
+
+          # The run list (spec section 9.1) names each row by its experiment, not a bare run id.
+          # Reads the same already-eager-loaded association gold_query_set_id does above, so this
+          # adds no extra query — RunsController#filtered_runs already calls
+          # EvaluationRun.eager(:evaluation_experiment) for every index request.
+          attribute :experiment_name do |run|
+            run.evaluation_experiment&.name
+          end
+
+          # One small EvaluationResult[id] primary-key lookup per populated outlier — at most
+          # four, each a single-row indexed fetch, only on show, never on index's list of many
+          # runs. result.nil? is a genuine possibility to guard, not defensive paranoia:
+          # reconcile_aggregates! could in principle run again after a result it pointed at was
+          # somehow removed — nothing in this codebase deletes an individual EvaluationResult
+          # today, but the lookup should degrade to nil rather than raise if that ever changes.
+          OUTLIER_RESULT_FIELDS = %i[max_cost_result min_cost_result max_latency_result min_latency_result].freeze
+
+          OUTLIER_RESULT_FIELDS.each do |field|
+            attribute(field) do |run|
+              result_id = run.public_send(:"#{field}_id")
+              next nil if result_id.nil?
+
+              result = EvaluationResult[result_id]
+              next nil if result.nil?
+
+              { id: result.id.to_s, source_type: result.source_type, source_id: result.source_id, expected_code: result.expected_code, cost_usd: result.cost_usd, latency_seconds: result.latency_seconds }
+            end
           end
         end
       end

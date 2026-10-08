@@ -68,6 +68,37 @@ RSpec.describe Api::Admin::Search::Evaluation::ResultsController, :admin do
       end
     end
 
+    context 'with a pricing_known value' do
+      let(:items) do
+        [
+          { run_id: run.id, source_type: 'atar', source_id: 'A1', persona: 'original', expected_code: '8471300000', cost_usd: 0.002, pricing_known: false },
+        ]
+      end
+
+      it 'persists pricing_known' do
+        api_response
+        expect(EvaluationResult.first(run_id: run.id, source_id: 'A1', persona: 'original').pricing_known).to be(false)
+      end
+
+      it 'returns pricing_known in the serialized response' do
+        api_response
+        expect(json_response['data'][0]['attributes']['pricing_known']).to be(false)
+      end
+    end
+
+    context 'without a pricing_known value' do
+      let(:items) do
+        [
+          { run_id: run.id, source_type: 'atar', source_id: 'A1', persona: 'original', expected_code: '8471300000' },
+        ]
+      end
+
+      it 'defaults to true, since every call before this feature shipped used a priced model' do
+        api_response
+        expect(EvaluationResult.first(run_id: run.id, source_id: 'A1', persona: 'original').pricing_known).to be(true)
+      end
+    end
+
     context 'with a mix of valid and invalid items' do
       let(:items) do
         [

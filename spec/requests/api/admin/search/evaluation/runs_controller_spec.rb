@@ -234,6 +234,16 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
       end
     end
 
+    context 'when listing runs' do
+      let(:experiment) { create(:evaluation_experiment, name: 'Baseline search') }
+
+      before { create(:evaluation_run, evaluation_experiment: experiment) }
+
+      it "includes each run's experiment name, so a run list doesn't have to look it up separately" do
+        expect(json_response['data'].map { |run| run['attributes']['experiment_name'] }).to eq(['Baseline search'])
+      end
+    end
+
     context 'when filtering by status' do
       let(:filters) { { status: 'completed' } }
 
@@ -255,6 +265,42 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
 
       it { is_expected.to have_http_status :success }
       it { expect(json_response['data']['attributes']['gold_query_set_id']).to be_nil }
+    end
+
+    context 'when the run has run-time overrides' do
+      let(:run) { create(:evaluation_run, evaluation_experiment: experiment, run_time_overrides: { 'max_rounds' => 3 }) }
+      let(:id) { run.id }
+
+      it 'includes the run-time overrides actually used, separate from the experiment default' do
+        expect(json_response['data']['attributes']['run_time_overrides']).to eq({ 'max_rounds' => 3 })
+      end
+    end
+
+    context 'when the run has accuracy counts and a costliest result' do
+      let(:run) { create(:evaluation_run, evaluation_experiment: experiment, gold_in_top1_count: 3, gold_in_top5_count: 4) }
+      let(:id) { run.id }
+
+      before { run.update(max_cost_result_id: expensive_result.id) }
+
+      # Memoised in a method, not a let, to stay within the memoized helper limit.
+      def expensive_result
+        @expensive_result ||= create(:evaluation_result, evaluation_run: run, source_id: 'A2', cost_usd: 0.05)
+      end
+
+      it 'includes the accuracy counts and a summary of the costliest and slowest results' do
+        attributes = json_response['data']['attributes']
+
+        expect(attributes).to include('gold_in_top1_count' => 3, 'gold_in_top5_count' => 4)
+        expect(attributes['max_cost_result']).to include('id' => expensive_result.id.to_s, 'source_type' => 'atar', 'source_id' => 'A2', 'expected_code' => '8471300000', 'cost_usd' => '0.05')
+      end
+    end
+
+    context 'when the run has no results yet' do
+      let(:id) { run.id }
+
+      it 'gives nil for an outlier summary' do
+        expect(json_response['data']['attributes']['max_cost_result']).to be_nil
+      end
     end
 
     context 'when the run\'s experiment has a gold query set' do
