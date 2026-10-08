@@ -119,6 +119,8 @@ RSpec.describe Api::User::PublicUsersController do
         allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('development'))
         allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(verify_result)
         allow(IdentityApiClient).to receive(:get_email).and_return('dummy@user.com')
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with('MYOTT_AUTH_BYPASS').and_return(nil)
       end
 
       it 'uses dummy user service to create/find dummy user' do
@@ -136,6 +138,63 @@ RSpec.describe Api::User::PublicUsersController do
       end
 
       it { is_expected.to have_http_status :ok }
+
+      context 'when the development bypass is disabled' do
+        before do
+          allow(ENV).to receive(:[]).with('MYOTT_AUTH_BYPASS').and_return('false')
+          allow(Api::User::DummyUserService).to receive(:find_or_create)
+        end
+
+        it 'rejects requests without a token instead of returning the dummy user' do
+          expect(api_response).to have_http_status(:unauthorized)
+          expect(Api::User::DummyUserService).not_to have_received(:find_or_create)
+        end
+
+        context 'with a rejected token' do
+          let(:token) { 'rejected-token' }
+
+          %i[not_in_group invalid_token missing_token].each do |reason|
+            it "does not create an account for #{reason}" do
+              allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(
+                CognitoTokenVerifier::Result.new(valid: false, payload: nil, reason: reason),
+              )
+              expect { api_response }.not_to change(PublicUsers::User, :count)
+              expect(response).to have_http_status(:unauthorized)
+              expect(Api::User::DummyUserService).not_to have_received(:find_or_create)
+
+              expect { post '/uk/user/users', headers: request_headers }.not_to change(PublicUsers::User, :count)
+              expect(response).not_to have_http_status(:created)
+            end
+          end
+        end
+
+        context 'with a new token account' do
+          let(:token) { { 'sub' => 'new-local-account', 'email' => 'local@example.test' } }
+          let(:verify_result) { CognitoTokenVerifier::Result.new(valid: true, payload: token, reason: nil) }
+
+          before { allow(IdentityApiClient).to receive(:get_email).and_return('local@example.test') }
+
+          it 'looks up then creates the real account' do
+            expect(api_response).to have_http_status(:not_found)
+            expect { post '/uk/user/users', headers: request_headers }.to change(PublicUsers::User, :count).by(1)
+            expect(response).to have_http_status(:created)
+            expect(PublicUsers::User.last.external_id).to eq('new-local-account')
+            expect(Api::User::DummyUserService).not_to have_received(:find_or_create)
+          end
+        end
+
+        context 'with a valid token' do
+          let!(:user) { create(:public_user) }
+          let(:token) { { 'sub' => user.external_id, 'email' => 'alice@example.com' } }
+          let(:verify_result) { CognitoTokenVerifier::Result.new(valid: true, payload: token, reason: nil) }
+
+          it 'returns the account from the token' do
+            expect(api_response).to have_http_status(:ok)
+            expect(response.parsed_body.dig('data', 'attributes', 'email')).to eq('alice@example.com')
+            expect(Api::User::DummyUserService).not_to have_received(:find_or_create)
+          end
+        end
+      end
     end
   end
 
