@@ -22,9 +22,17 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
       { '@timestamp' => bucket, 'search_type' => 'interactive', 'request_source' => 'frontend', 'journey_keys' => [key('shared'), key("question-#{date}")] },
       { '@timestamp' => bucket, 'search_type' => 'classification', 'request_source' => 'frontend', 'journey_keys' => [key("classification-#{date}")] },
     ]
+    groups['search_actions'] = [
+      { 'search_type' => 'classic', 'request_source' => 'frontend', 'search_action' => 'navigation', 'journey_keys' => [key("classic-#{date}")] },
+      { 'search_type' => 'internal', 'request_source' => 'frontend', 'search_action' => 'search', 'journey_keys' => [key('shared')] },
+    ]
     groups['volume'] = %w[classic interactive classification].map do |type|
       { '@timestamp' => bucket, 'search_type' => type, 'request_source' => 'frontend', 'event' => 'search_completed', 'searches' => '5', 'zero_results' => '1' }
     end
+    groups['search_results'] = [
+      { 'search_type' => 'classic', 'request_source' => 'frontend', 'searches' => 4, 'zero_results' => 2 },
+      { 'search_type' => 'interactive', 'request_source' => 'frontend', 'searches' => 2, 'zero_results' => 0 },
+    ]
     groups['journey_outcomes'] = [
       outcome(date, [key("classic-#{date}"), key("classification-#{date}"), key("admin-#{date}")], 'completed', 'selected' => '1', 'total_questions' => '0'),
       outcome(date, [key('shared')], date == first_date ? 'failed' : 'completed', 'zero_result' => '1', 'total_questions' => date == first_date ? '1' : '2'),
@@ -91,6 +99,104 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
         expect(result.available).to be(true)
         expect(result.value).to be_nil
       end
+    end
+
+    it 'reads regenerated search-only rates without refreshing journey views or changing other metrics' do
+      previous = described_class.call(**arguments).value.payload
+      untouched = SearchAnalyticsQueryResult.exclude(name: 'search_results').order(:id).all.map(&:values)
+      SearchAnalyticsQueryResult.where(name: 'search_results', reporting_date: first_date).delete
+      SearchAnalyticsQueryResult.where(name: 'search_results').update(rows: Sequel.pg_jsonb([
+        { 'search_type' => 'classic', 'request_source' => 'frontend', 'searches' => 5, 'zero_results' => 3 },
+      ]))
+      %w[all classic internal].each { |view| expect_parity(view:) }
+      payload = described_class.call(**arguments).value.payload
+      expect(payload['summary']).to include('completed_searches' => 5, 'zero_result_searches' => 3, 'zero_result_rate' => 0.6)
+      expect(payload.dig('availability', 'zero_result_rate_coverage')).to include('collected_days' => 1, 'complete' => false)
+      expect(payload['summary'].except('zero_result_rate', 'completed_searches', 'zero_result_searches')).to eq(previous['summary'].except('zero_result_rate', 'completed_searches', 'zero_result_searches'))
+      expect(payload.slice('actions', 'trends', 'ai_costs', 'coverage')).to eq(previous.slice('actions', 'trends', 'ai_costs', 'coverage'))
+      expect(SearchAnalyticsQueryResult.exclude(name: 'search_results').order(:id).all.map(&:values)).to eq(untouched)
+    end
+
+    it 'reads deduplicated selection journeys through both readers without refreshing views or changing other data' do
+      previous = described_class.call(**arguments).value.payload
+      names = SearchAnalytics::SelectionRates::SOURCE_NAMES
+      untouched = SearchAnalyticsQueryResult.exclude(name: names).order(:id).all.map(&:values)
+      [first_date, first_date + 1].each do |date|
+        SearchAnalyticsQueryResult.where(name: 'selection_results', reporting_date: date).update(rows: Sequel.pg_jsonb([
+          { 'search_type' => 'classic', 'journey_keys' => [key("classic-#{date}")] },
+          { 'search_type' => 'interactive', 'journey_keys' => [key('shared')] },
+        ]))
+      end
+      SearchAnalyticsQueryResult.where(name: 'selection_pages', reporting_date: first_date + 1).update(rows: Sequel.pg_jsonb([
+        { 'journey_keys' => [key("classic-#{first_date}"), key('shared'), key('shared'), key('navigation')] },
+      ]))
+      %w[all classic internal].each { |view| expect_parity(view:) }
+      payload = described_class.call(**arguments).value.payload
+      expect(payload['summary']).to include('result_journeys' => 3, 'selected_result_journeys' => 2, 'selection_rate' => 2.0 / 3)
+      expect(payload.dig('comparisons', 'classic', 'selection_rate')).to eq(0.5)
+      expect(payload.dig('comparisons', 'internal', 'selection_rate')).to eq(1.0)
+      expect(payload.dig('availability', 'selection_rate_coverage')).to include('complete' => true, 'collected_days' => 2)
+      expect(payload.slice('actions', 'trends', 'ai_costs', 'coverage')).to eq(previous.slice('actions', 'trends', 'ai_costs', 'coverage'))
+      expect(SearchAnalyticsQueryResult.exclude(name: names).order(:id).all.map(&:values)).to eq(untouched)
+    end
+
+    it 'falls back to standalone search results when no view inputs remain' do
+      SearchAnalyticsQueryResult.exclude(name: 'search_results').delete
+      stored = SearchAnalyticsQueryResult.order(:id).all.map(&:values)
+      %w[all classic internal].each do |view|
+        args = arguments(view:)
+        expect(described_class.call(**args).available).to be(false)
+        expected = SearchAnalytics::DailyResults.legacy_call(**args)
+        expect(expected).not_to be_nil
+        expect(SearchAnalytics::DailyResults.call(**args)).to eq(expected)
+        expect(expected.payload['summary']).to include('searches' => nil, 'failure_rate' => nil, 'selection_rate' => nil)
+      end
+      expect(SearchAnalyticsQueryResult.order(:id).all.map(&:values)).to eq(stored)
+    end
+
+    it 'keeps readers consistent without search-only history' do
+      SearchAnalyticsQueryResult.where(name: 'search_results').delete
+      expect_parity
+      expect(described_class.call(**arguments).value.payload.dig('summary', 'zero_result_rate')).to be_nil
+    end
+
+    it 'reads action updates without refreshing journey views' do
+      SearchAnalyticsQueryResult.where(name: 'search_actions', reporting_date: first_date).delete
+      expect_parity
+      result = described_class.call(**arguments).value.payload
+      expect(result.dig('actions', 'summary')).to eq('total' => 7, 'navigation' => 1, 'search' => 1, 'unclassified' => 5)
+      expect(result.dig('actions', 'coverage')).to include('collected_days' => 1, 'complete' => false)
+      expect(result.dig('actions', 'trend').first).to include('navigation' => nil, 'search' => nil, 'unclassified' => 4)
+    end
+
+    it 'retains earlier recorded classifications without changing other analytics or stored rows' do
+      previous_payloads = %w[all classic internal].index_with do |view|
+        described_class.call(**arguments(view:)).value.payload.except('actions')
+      end
+      record = SearchAnalyticsQueryResult.where(name: 'search_actions', reporting_date: first_date).first
+      earlier_rows = record.rows.map { |row| row.merge('search_action' => 'search') }
+      record.update(rows: Sequel.pg_jsonb(earlier_rows))
+      stored_rows = SearchAnalyticsQueryResult.order(:id).all.map(&:values)
+
+      previous_payloads.each do |view, previous|
+        expect_parity(view:)
+        payload = described_class.call(**arguments(view:)).value.payload
+        expect(payload.except('actions')).to eq(previous)
+        expect(payload.dig('actions', 'available')).to be(true)
+      end
+      expect(described_class.call(**arguments(view: 'classic')).value.payload.dig('actions', 'summary')).to eq(
+        'total' => 2, 'navigation' => 1, 'search' => 1, 'unclassified' => 0,
+      )
+      expect(SearchAnalyticsQueryResult.order(:id).all.map(&:values)).to eq(stored_rows)
+    end
+
+    it 'keeps legacy headlines without actions' do
+      SearchAnalyticsQueryResult.where(name: 'search_actions').delete
+      expect_parity
+      result = described_class.call(**arguments).value.payload
+      expect(result.dig('summary', 'searches')).to eq(7)
+      expect(result.dig('actions', 'summary')).to eq('total' => 7, 'navigation' => nil, 'search' => nil, 'unclassified' => 7)
+      expect(result.dig('actions', 'available')).to be(false)
     end
 
     it 'preserves partial range coverage without counting missing days as zero' do
@@ -166,8 +272,8 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
       expect(terms.count { |row| row['term_type'] == 'search_terms' }).to eq(100)
     end
 
-    it 'declines the fast path inside an existing caller transaction' do
-      SearchAnalyticsQueryResult.db.transaction do
+    it 'declines the fast path inside a caller-owned snapshot' do
+      SearchAnalyticsQueryResult.db.transaction(isolation: :repeatable) do
         expect(described_class.call(**arguments).available).to be(false)
         expect(SearchAnalytics::DailyResults.call(**arguments)).to eq(SearchAnalytics::DailyResults.legacy_call(**arguments))
       end

@@ -8,6 +8,14 @@ class SearchReference < Sequel::Model
     Commodity
   ].freeze
 
+  # search: shown in public search and used by FPO training
+  # fpo: used only by FPO training and hidden from public search
+  SEARCH_USAGE = 'search'.freeze
+  FPO_USAGE = 'fpo'.freeze
+  USAGES = [SEARCH_USAGE, FPO_USAGE].freeze
+  ALL_USAGES_FILTER = 'all'.freeze
+  USAGE_FILTERS = (USAGES + [ALL_USAGES_FILTER]).freeze
+
   plugin :has_paper_trail
 
   referenced_setter = proc do |referenced|
@@ -43,7 +51,21 @@ class SearchReference < Sequel::Model
     end
 
     def indexable
-      self
+      for_search
+    end
+
+    def for_search
+      where(usage: SEARCH_USAGE)
+    end
+
+    def for_fpo
+      where(usage: FPO_USAGE)
+    end
+
+    # A blank filter excludes FPO references. Use 'all' to include every usage.
+    def for_usage(filter)
+      filter = filter.presence || SEARCH_USAGE
+      filter == ALL_USAGES_FILTER ? self : where(usage: filter)
     end
   end
 
@@ -59,11 +81,21 @@ class SearchReference < Sequel::Model
     SearchNegationService.new(title).call
   end
 
+  def initialize_set(values)
+    super
+    self.usage ||= SEARCH_USAGE
+  end
+
   def validate
     super
 
     errors.add(:referenced_class, 'has to be associated to Chapter/Heading/Subheading/Commodity') unless VALID_REFERENCED_CLASSES.include?(referenced_class)
     errors.add(:title, 'missing title') if title.blank?
     errors.add(:productline_suffix, 'missing productline suffix') if productline_suffix.blank?
+    errors.add(:usage, "must be one of #{USAGES.join(', ')}") unless USAGES.include?(usage)
+  end
+
+  def fpo?
+    usage == FPO_USAGE
   end
 end

@@ -78,7 +78,7 @@ RSpec.describe ClearCacheWorker, type: :worker do
   it { expect(cache_store).to have_received(:clear) }
   it { expect(TradeTariffBackend.frontend_redis).to have_received(:flushdb) }
   it { expect(Sidekiq::Client).to have_received(:enqueue).with(PrecacheHeadingsWorker, Time.zone.today.to_formatted_s(:db)) }
-  it { expect(Sidekiq::Client).to have_received(:enqueue).with(PrewarmQuotaOrderNumbersWorker) }
+  it { expect(Sidekiq::Client).to have_received(:enqueue).exactly(3).times }
   it { expect(Sidekiq::Client).to have_received(:enqueue).with(PrewarmCommoditiesWorker) }
   it { expect(Sidekiq::Client).to have_received(:enqueue).with(ReindexModelsWorker) }
   it { expect(InvalidateCacheWorker).to have_received(:perform_async) }

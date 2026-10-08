@@ -56,8 +56,8 @@ module Search
         :goods_nomenclature_descriptions,
         :goods_nomenclature_label,
         :goods_nomenclature_self_text,
-        :search_references,
-        { ancestors: %i[goods_nomenclature_descriptions search_references] },
+        :public_search_references,
+        { ancestors: %i[goods_nomenclature_descriptions public_search_references] },
         { heading: [:goods_nomenclature_descriptions] },
       ]
       associations << :public_atar_rulings if search_atars_enabled?

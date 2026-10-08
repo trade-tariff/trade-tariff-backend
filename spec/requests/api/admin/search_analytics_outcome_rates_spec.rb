@@ -13,7 +13,10 @@ RSpec.describe 'Search analytics outcome rates API', :truncation do
     groups['search_journeys'] = [{ '@timestamp' => '2026-09-15T08:00:00Z', 'search_type' => 'classic', 'request_source' => 'frontend', 'journey_keys' => [key] }]
     groups['volume'] = [{ '@timestamp' => '2026-09-15T08:00:00Z', 'search_type' => 'classic', 'event' => 'search_completed', 'searches' => '1', 'zero_results' => '0' }]
     groups['journey_outcomes'] = [{ 'journey_keys' => [key], 'terminal_state' => 'completed', 'window_end' => '2026-09-15T09:00:00Z', 'selected' => '1', 'zero_result' => '0', 'questions_seen' => '0', 'unknown_seen' => '0' }]
-    groups['classic_outcomes'] = [{ 'journey_key' => Digest::SHA256.hexdigest('classic-search'), 'result_count' => '0', 'commodity_result_count' => '2', 'observed_at' => '2026-09-15T08:00:00Z', 'event_count' => '1' }]
+    groups['classic_outcomes'] = [
+      { 'outcome' => 'no_results', 'searches' => '1', 'event_count' => '1' },
+      { 'journey_key' => Digest::SHA256.hexdigest('classic-search'), 'result_count' => '0', 'observed_at' => '2026-09-15T08:00:00Z', 'event_count' => '1' },
+    ]
     groups.each do |name, rows|
       SearchAnalyticsQueryResult.create(service: 'uk', reporting_date: date, name:, fingerprint: definitions.fetch(name), rows: Sequel.pg_jsonb(rows), collected_at: now)
     end

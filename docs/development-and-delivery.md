@@ -9,7 +9,7 @@ The repo README is the source of truth for this application's setup. The wider O
 - Xcode command-line tools and Homebrew on macOS.
 - GitHub SSH setup and organisation access.
 - AWS IAM access and MFA for operational work.
-- Docker Desktop, docker-compose, and `trade-tariff-development-stack` for multi-service development.
+- Docker and backing services for multi-service development. Use the [README](../README.md#run-locally) for this repository's prerequisites.
 - Signon/admin access through the relevant team channels.
 - The `ecsexec` helper for opening ECS Exec sessions.
 - `asdf` as the wider team version-manager convention.
@@ -27,6 +27,7 @@ Confluence path-to-live guidance and this repo's PR template agree on the basics
 - Call out API documentation changes and environment variable changes.
 - Resolve review conversations and wait for the required checks before merging.
 
+Start with [CONTRIBUTING.md](../CONTRIBUTING.md) for the fork and contribution workflow.
 This repo's current PR template is `.github/pull_request_template.md`.
 
 ## Merge Style

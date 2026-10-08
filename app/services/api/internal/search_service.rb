@@ -72,6 +72,11 @@ module Api
 
       def search_result
         exact = find_exact_match
+        ::Search::Instrumentation.search_action_classified(
+          request_id:,
+          search_type: @search_type,
+          search_action: exact ? 'navigation' : 'search',
+        )
         return exact_match_response(exact) if exact
 
         retrieval = retrieve_short_list

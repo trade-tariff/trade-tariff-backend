@@ -23,6 +23,7 @@ module Api
       def create
         @search_reference = SearchReference.new(
           title: sanitized_title,
+          usage: usage_param || SearchReference::SEARCH_USAGE,
           referenced: search_reference_resource_association_hash[:referenced],
         )
 
@@ -39,9 +40,12 @@ module Api
 
       def update
         @search_reference = search_reference_resource
+        previous_usage = @search_reference.usage
         @search_reference.set(title: sanitized_title)
+        @search_reference.set(usage: usage_param) if usage_param
 
         if @search_reference.save
+          remove_from_public_search(previous_usage)
           enqueue_embedding_refresh
           respond_with @search_reference
         else
@@ -61,11 +65,11 @@ module Api
     private
 
       def search_references
-        @search_references ||= search_reference_collection.by_title.all
+        @search_references ||= search_reference_collection.for_usage(usage_filter).by_title.all
       end
 
       def search_reference_params
-        params.require(:data).permit(:type, attributes: [:title])
+        params.require(:data).permit(:type, attributes: %i[title usage])
       end
 
       def search_reference_collection
@@ -93,6 +97,26 @@ module Api
 
       def title
         @title ||= search_reference_params.dig(:attributes, :title)
+      end
+
+      def usage_param
+        search_reference_params.dig(:attributes, :usage).presence
+      end
+
+      def usage_filter
+        usage = params.dig(:filter, :usage)
+        SearchReference::USAGE_FILTERS.include?(usage) ? usage : SearchReference::SEARCH_USAGE
+      end
+
+      # The search reference index and search suggestions are rebuilt on a schedule.
+      # Remove a reference straight away when it stops being a public search reference.
+      def remove_from_public_search(previous_usage)
+        return unless previous_usage == SearchReference::SEARCH_USAGE && @search_reference.fpo?
+
+        SearchSuggestion.search_reference_type.where(id: @search_reference.id.to_s).delete
+        TradeTariffBackend.search_client.delete(::Search::SearchReferenceIndex, @search_reference)
+      rescue OpenSearch::Transport::Transport::Errors::NotFound
+        nil
       end
     end
   end

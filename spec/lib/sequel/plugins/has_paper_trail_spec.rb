@@ -85,12 +85,14 @@ RSpec.describe Sequel::Plugins::HasPaperTrail do
         CustomsTariffChapterNote
         CustomsTariffSectionNote
         DescriptionIntercept
+        EvaluationGoldQuery
         GoodsNomenclatureIntercept
         GoodsNomenclatureLabel
         GoodsNomenclatureSelfText
         SearchReference
         SectionNote
         TariffKnowledge::Node
+        TariffKnowledge::SyntheticAtar
       ])
     end
   end

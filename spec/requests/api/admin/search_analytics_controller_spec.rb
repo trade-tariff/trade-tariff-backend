@@ -44,6 +44,62 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
     expect(attributes['bucket_size']).to eq('hour')
   end
 
+  context 'with only search-result collection' do
+    before do
+      SearchAnalyticsQueryResult.exclude(name: 'search_results').delete
+      SearchAnalyticsQueryResult.where(name: 'search_results').update(rows: Sequel.pg_jsonb([
+        { 'search_type' => 'classic', 'request_source' => 'frontend', 'searches' => 100, 'zero_results' => 60 },
+        { 'search_type' => 'internal', 'request_source' => 'frontend', 'searches' => 20, 'zero_results' => 5 },
+      ]))
+    end
+
+    { 'all' => 65.0 / 120, 'classic' => 0.6, 'internal' => 0.25 }.each do |view, rate|
+      it "serves the #{view} rate without fabricating other metrics" do
+        expect { request_analytics(period: '24h', view:) }.not_to change(SearchAnalyticsQueryResult, :count)
+        expect(response).to have_http_status(:ok)
+        expect(attributes['summary']).to include('zero_result_rate' => rate, 'searches' => nil, 'requests' => nil, 'failure_rate' => nil, 'selection_rate' => nil, 'p90_latency_ms' => nil)
+        expect(attributes.dig('journeys', 'count')).to be_nil
+        expect(attributes.dig('actions', 'summary')).to be_nil
+        expect(attributes.dig('comparisons', view, 'searches')).to be_nil unless view == 'all'
+        expect(attributes.dig('availability', 'zero_result_rate_coverage')).to include('complete' => true, 'collected_days' => 1)
+        expect(attributes['availability']).to include('journey_metrics' => false, 'costs_match_view' => false)
+      end
+    end
+
+    it 'serves a collected empty population without claiming a zero-percent rate' do
+      SearchAnalyticsQueryResult.where(name: 'search_results').update(rows: Sequel.pg_jsonb([]))
+      request_analytics(period: '24h', view: 'classic')
+      expect(response).to have_http_status(:ok)
+      expect(attributes['summary']).to include('completed_searches' => 0, 'zero_result_searches' => 0, 'zero_result_rate' => nil)
+    end
+
+    it 'does not serve an obsolete search-result collection' do
+      SearchAnalyticsQueryResult.where(name: 'search_results').update(fingerprint: 'stale')
+      request_analytics
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
+  it 'retains legacy totals without inventing a split' do
+    SearchAnalyticsQueryResult.where(name: 'search_actions').delete
+    request_analytics(period: '24h', view: 'internal')
+
+    expect(attributes.dig('summary', 'searches')).to eq(1)
+    expect(attributes.dig('actions', 'summary')).to eq('total' => 1, 'navigation' => nil, 'search' => nil, 'unclassified' => 1)
+    expect(attributes.dig('actions', 'available')).to be(false)
+    expect(attributes.dig('coverage', 'complete')).to be(true)
+  end
+
+  it 'exposes the separately stored action split' do
+    rows = [{ 'request_source' => 'frontend', 'search_type' => 'internal', 'search_action' => 'search', 'journey_keys' => %w[same-journey] }]
+    SearchAnalyticsQueryResult.where(name: 'search_actions').update(rows: Sequel.pg_jsonb(rows))
+    request_analytics(period: '24h', view: 'internal')
+
+    expect(attributes.dig('actions', 'summary')).to eq('total' => 1, 'navigation' => 0, 'search' => 1, 'unclassified' => 0)
+    expect(attributes.dig('actions', 'coverage', 'complete')).to be(true)
+    expect(attributes.dig('actions', 'trend')).to contain_exactly(include('bucket' => (date.to_time(:utc) + 8.hours).iso8601, 'search' => 1))
+  end
+
   it 'deduplicates journeys across collected days while adding every call and cost' do
     create_results(date - 1)
     request_analytics(period: '7d', view: 'internal')
@@ -76,13 +132,13 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
     Sidekiq::Testing.fake! do
       SearchAnalyticsQueryWorker.clear
       SearchAnalyticsQueryWorker.new.perform
-      expect(SearchAnalyticsQueryWorker.jobs.size).to eq(TradeTariffBackend.service == 'uk' ? 11 : 10)
+      expect(SearchAnalyticsQueryWorker.jobs.size).to eq(TradeTariffBackend.service == 'uk' ? 15 : 14)
       SearchAnalyticsQueryWorker.drain
     end
     request_analytics
     expect(response).to have_http_status(:ok)
     expect(attributes['coverage']).to include('complete' => true, 'collected_days' => 1)
-    expect(SearchAnalyticsQueryResult.count).to eq(TradeTariffBackend.service == 'uk' ? 11 : 10)
+    expect(SearchAnalyticsQueryResult.count).to eq(TradeTariffBackend.service == 'uk' ? 15 : 14)
   end
 
   it 'normalises unknown period and view values' do
@@ -94,8 +150,10 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
     SearchAnalyticsQueryResult.where(name: 'search_journeys').delete
     request_analytics
     expect(response).to have_http_status(:ok)
-    expect(attributes['summary']).to include('searches' => 0, 'requests' => 3)
+    expect(attributes['summary']).to include('searches' => nil, 'requests' => 3)
     expect(attributes['availability']).to include('journey_metrics' => false)
+    expect(attributes.dig('actions', 'summary')).to be_nil
+    expect(attributes.dig('actions', 'available')).to be(false)
     expect(attributes['coverage']).to include('complete' => false, 'collected_days' => 1)
   end
 

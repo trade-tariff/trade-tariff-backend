@@ -31,7 +31,26 @@ module Api
             end
           end
 
+          # Refused while a run is still executing: deleting it would remove the run out from under
+          # the eval app, which would then fail every result post and its final status write.
+          # Finished runs don't block the delete and are removed with the experiment.
+          def destroy
+            return render_in_use if experiment.evaluation_runs_dataset.where(status: %w[queued running]).any?
+
+            experiment.destroy
+            head :no_content
+          end
+
         private
+
+          IN_USE_DETAIL = 'This experiment cannot be deleted while one of its runs is queued or running. ' \
+                          'Wait for the run to finish, or cancel it, then try again.'.freeze
+
+          def render_in_use
+            render json: {
+              errors: [{ status: '409', title: 'Experiment is in use', detail: IN_USE_DETAIL }],
+            }, status: :conflict
+          end
 
           def serializer_class = Api::Admin::Search::Evaluation::ExperimentSerializer
 
@@ -45,14 +64,14 @@ module Api
 
           def experiment_params
             params.require(:data).require(:attributes).permit(
-              :name, :description, :enabled,
+              :name, :description, :enabled, :gold_query_set_id,
               configuration_overrides: {}, default_scope: {}
             ).to_h
           end
 
           def update_params
             params.require(:data).require(:attributes).permit(
-              :description, :enabled,
+              :description, :enabled, :gold_query_set_id,
               configuration_overrides: {}, default_scope: {}
             ).to_h
           end

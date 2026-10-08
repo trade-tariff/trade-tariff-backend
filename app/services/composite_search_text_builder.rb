@@ -45,14 +45,14 @@ class CompositeSearchTextBuilder
 
     gns_by_sid = GoodsNomenclature
       .where(goods_nomenclature_sid: sids)
-      .eager(:search_references, ancestors: [:search_references])
+      .eager(:public_search_references, ancestors: [:public_search_references])
       .all
       .index_by(&:goods_nomenclature_sid)
 
     self_text_records.each_with_object({}) do |record, hash|
       sid = record.goods_nomenclature_sid
       gn = gns_by_sid[sid]
-      all_refs = (gn&.search_references || []) + (gn&.ancestors&.flat_map(&:search_references) || [])
+      all_refs = (gn&.public_search_references || []) + (gn&.ancestors&.flat_map(&:public_search_references) || [])
       builder = new(
         record,
         labels: labels_by_sid[sid],

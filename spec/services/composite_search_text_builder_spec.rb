@@ -208,6 +208,26 @@ RSpec.describe CompositeSearchTextBuilder do
       expect(result[commodity.goods_nomenclature_sid]).to include('References: fridges')
     end
 
+    it 'excludes fpo search references' do
+      heading = create(:heading, goods_nomenclature_item_id: '8418000000')
+      commodity = create(:commodity, :with_description, :declarable,
+                         parent: heading,
+                         goods_nomenclature_item_id: '8418215190')
+      self_text = create(:goods_nomenclature_self_text,
+                         goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+                         goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+                         self_text: 'A fridge commodity')
+
+      create(:search_reference, title: 'fridges', referenced: commodity)
+      create(:search_reference, title: 'smeg fab28', referenced: commodity, usage: 'fpo')
+      create(:search_reference, title: 'fridge magnet kit', referenced: heading, usage: 'fpo')
+
+      result = described_class.batch([self_text])
+
+      expect(result[commodity.goods_nomenclature_sid]).to include('References: fridges')
+      expect(result[commodity.goods_nomenclature_sid]).not_to include('smeg', 'magnet')
+    end
+
     it 'omits public ATAR search terms by default' do
       commodity = create(:commodity, :with_description, :declarable,
                          goods_nomenclature_item_id: '6302100000')

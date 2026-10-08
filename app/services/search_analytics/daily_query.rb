@@ -6,6 +6,10 @@ module SearchAnalytics
     ROW_LIMIT = 10_000
     MAX_PARTITIONS = 127
     PROCESSING_VERSION = 1
+    # Recollect classic counts from the broken timestamp rewrite without
+    # invalidating unrelated query groups that still contain valid history.
+    QUERY_PROCESSING_VERSIONS = { 'classic_outcomes' => 2 }.freeze
+    IDENTIFIER_QUERIES = %w[search_journeys journey_outcomes search_actions selection_results selection_pages].freeze
 
     attr_reader :reporting_date
 
@@ -30,7 +34,10 @@ module SearchAnalytics
     end
 
     def fingerprints
-      query_definitions.to_h { |name, sql| [name, Digest::SHA256.hexdigest([PROCESSING_VERSION, @service, @region, sql].to_json)] }
+      query_definitions.to_h do |name, sql|
+        version = QUERY_PROCESSING_VERSIONS.fetch(name, PROCESSING_VERSION)
+        [name, Digest::SHA256.hexdigest([version, @service, @region, sql].to_json)]
+      end
     end
 
     def plan
@@ -69,12 +76,28 @@ module SearchAnalytics
         'search_term_improvements' => improvement_terms_query(term_filter: "query NOT RLIKE '^[0-9 .-]+$'"),
         'item_id_improvements' => improvement_terms_query(term_filter: "query RLIKE '^[0-9 .-]+$'"),
         'search_journeys' => JourneyQueries.new(source:, log_stream_filter:).journeys,
+        'search_actions' => ActionQuery.call(source:, log_stream_filter:),
       }
       # Guided frontend events have no service field and are emitted for UK only.
       definitions['frontend_events'] = FrontendEventsQuery.call(source:, service: @service) if @service == 'uk'
       definitions['journey_outcomes'] = JourneyOutcomesQuery.call(source:, log_stream_filter:, zero_result_condition:)
       definitions['classic_outcomes'] = ClassicOutcomesQuery.call(source:, log_stream_filter:)
+      definitions['search_results'] = search_results_query
+      definitions['selection_results'] = SelectionQuery.results(source:, log_stream_filter:, request_exclusion_filter:)
+      definitions['selection_pages'] = SelectionQuery.selections(source:)
       definitions
+    end
+
+    # Shared by collection and syntax validation so both compile the same bounds.
+    def bounded_query(sql, start_at:, end_at:)
+      # Keep failure cohorts scoped to the full day while partitioning metrics.
+      metric_scope = true
+      stream_filter = sql.include?(FrontendEventsQuery::STREAM_FILTER) ? FrontendEventsQuery::STREAM_FILTER : log_stream_filter
+      sql.gsub(stream_filter) do
+        bounds = metric_scope ? window_filter(start_at, end_at) : window_filter(now - 1.day, now)
+        metric_scope = false
+        "#{stream_filter} AND #{bounds}"
+      end
     end
 
   private
@@ -84,7 +107,7 @@ module SearchAnalytics
 
     def collect(name, sql)
       @partition_count = 0
-      rows = if %w[search_journeys journey_outcomes].include?(name)
+      rows = if IDENTIFIER_QUERIES.include?(name)
                8.times.flat_map do |index|
                  start_at = now - 1.day + index * 3.hours
                  partition(name, sql, start_at, start_at + 3.hours)
@@ -92,7 +115,7 @@ module SearchAnalytics
              else
                partition(name, sql, now - 1.day, now)
              end
-      if %w[search_journeys journey_outcomes].include?(name)
+      if IDENTIFIER_QUERIES.include?(name)
         rows.map do |row|
           ids = JSON.parse(row.fetch('request_ids'))
           unless ids.is_a?(Array) && ids.all? { |id| id.is_a?(String) && id.present? } && ids.uniq.size == Integer(row.fetch('journey_count'))
@@ -148,13 +171,15 @@ module SearchAnalytics
 
       rows, matched = execute_window(sql, start_at, end_at)
       complete = rows.size < ROW_LIMIT
-      if %w[search_journeys frontend_events journey_outcomes classic_outcomes].include?(name)
+      # CloudWatch reports the failure subquery's records_matched for this query,
+      # not its result cohort. Its exact distinct-ID count is checked below.
+      if (IDENTIFIER_QUERIES + %w[frontend_events classic_outcomes] - %w[selection_results]).include?(name)
         raise QueryError, 'Missing journey completeness statistics' if matched.nil?
 
         count_field = name == 'search_journeys' ? 'started_events' : 'event_count'
         complete &&= rows.sum { |row| Integer(row.fetch(count_field)) } == matched
       end
-      complete &&= rows.all? { |row| complete_identifier_set?(row) } if name == 'journey_outcomes'
+      complete &&= rows.all? { |row| complete_identifier_set?(row) } if (IDENTIFIER_QUERIES - %w[search_journeys]).include?(name)
       if complete
         return rows unless name == 'journey_outcomes'
 
@@ -178,14 +203,7 @@ module SearchAnalytics
 
     def execute_window(sql, start_at, end_at)
       query_id = response = nil
-      # Keep failure cohorts scoped to the full day while partitioning metrics.
-      metric_scope = true
-      stream_filter = sql.include?(FrontendEventsQuery::STREAM_FILTER) ? FrontendEventsQuery::STREAM_FILTER : log_stream_filter
-      bounded = sql.gsub(stream_filter) do
-        bounds = metric_scope ? window_filter(start_at, end_at) : window_filter(now - 1.day, now)
-        metric_scope = false
-        "#{stream_filter} AND #{bounds}"
-      end
+      bounded = bounded_query(sql, start_at:, end_at:)
       scan_start, scan_end = sql.include?(request_exclusion_filter) ? [now - 1.day, now] : [start_at, end_at]
       query_id = client.start_query(query_language: 'SQL', start_time: scan_start.to_i, end_time: scan_end.to_i, query_string: bounded).query_id
       QUERY_MAX_POLLS.times do
@@ -209,7 +227,9 @@ module SearchAnalytics
     end
 
     def window_filter(start_at, end_at)
-      "`@timestamp` >= CAST('#{start_at.utc.strftime('%F %T')}' AS TIMESTAMP) AND `@timestamp` < CAST('#{end_at.utc.strftime('%F %T')}' AS TIMESTAMP)"
+      # CloudWatch can rewrite SQL timestamp literals into QL string comparisons
+      # that match no events. Numeric bounds retain the half-open second windows.
+      "UNIX_TIMESTAMP(`@timestamp`) >= #{start_at.to_i} AND UNIX_TIMESTAMP(`@timestamp`) < #{end_at.to_i}"
     end
 
     def log_stream_filter
@@ -225,6 +245,22 @@ module SearchAnalytics
           SUM(CASE WHEN event = 'search_completed' AND #{zero_result_condition} THEN 1 ELSE 0 END) AS zero_results
         FROM #{source} WHERE #{log_stream_filter} AND #{base_search_filter} AND #{request_exclusion_filter}
         GROUP BY #{bucket_expression}, search_type, event, COALESCE(request_source, 'unknown')
+      SQL
+    end
+
+    def search_results_query
+      <<~SQL
+        SELECT search_type, request_source, COUNT(*) AS searches,
+          SUM(CASE WHEN result_count = 0 THEN 1 ELSE 0 END) AS zero_results
+        FROM #{source}
+        WHERE #{log_stream_filter} AND service = 'search' AND event = 'search_completed'
+          AND request_source = 'frontend' AND result_count >= 0
+          AND (search_degraded IS NULL OR search_degraded = false)
+          AND ((search_type = 'classic' AND results_type = 'fuzzy_search')
+            OR (search_type IN ('internal', 'interactive') AND results_type IN ('opensearch', 'vector', 'hybrid')
+              AND (final_result_type IS NULL OR final_result_type = '' OR final_result_type = 'answers')))
+          AND #{request_exclusion_filter}
+        GROUP BY search_type, request_source
       SQL
     end
 

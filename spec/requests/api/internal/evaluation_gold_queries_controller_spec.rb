@@ -31,6 +31,7 @@ RSpec.describe Api::Internal::EvaluationGoldQueriesController do
 
       attrs = response.parsed_body['data'].find { |row| row['id'] == generic.id.to_s }.fetch('attributes')
       expect(attrs).to eq(
+        'set_id' => generic.set_id,
         'source_type' => 'atar',
         'source_id' => '600000001',
         'persona' => 'emu_generic',
@@ -38,6 +39,7 @@ RSpec.describe Api::Internal::EvaluationGoldQueriesController do
         'expected_code' => '6302100000',
         'expected_code_digits' => 10,
         'expected_description' => 'Bed linen, of cotton',
+        'oracle_text' => 'Bed linen woven from cotton fabric, printed with a floral pattern.',
         'notes' => 'ported emulator',
         'generator' => 'gpt-5-mini',
         'active' => true,
@@ -49,6 +51,36 @@ RSpec.describe Api::Internal::EvaluationGoldQueriesController do
       get collection_path, params: { persona: 'emu_ordinary' }
 
       expect(response.parsed_body['data'].pluck('id')).to eq([ordinary.id.to_s])
+    end
+
+    it 'filters by set_id, returning only the rows of that set' do
+      gold_query_set = create(:evaluation_gold_query_set)
+      in_set = create(:evaluation_gold_query, evaluation_gold_query_set: gold_query_set, oracle_text: 'The ruling text')
+
+      get collection_path, params: { set_id: gold_query_set.id }
+
+      expect(response.parsed_body['data'].pluck('id')).to eq([in_set.id.to_s])
+      expect(response.parsed_body['data'].first['attributes']).to include('set_id' => gold_query_set.id, 'oracle_text' => 'The ruling text')
+    end
+
+    it 'returns the rows of every set when no set_id is given' do
+      create(:evaluation_gold_query)
+
+      get collection_path
+
+      expect(response.parsed_body['data'].size).to eq(3)
+    end
+
+    it 'returns nothing for a set that has no rows' do
+      get collection_path, params: { set_id: create(:evaluation_gold_query_set).id }
+
+      expect(response.parsed_body['data']).to eq([])
+    end
+
+    it 'rejects a set_id that is not a number' do
+      get collection_path, params: { set_id: 'abc' }
+
+      expect(response).to have_http_status(:bad_request)
     end
 
     it 'filters by source_type' do

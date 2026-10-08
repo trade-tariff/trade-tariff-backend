@@ -43,6 +43,25 @@ class VersionDiffService
       created_at
       updated_at
     ].freeze,
+    'TariffKnowledge::SyntheticAtar' => %w[
+      id
+      created_at
+      updated_at
+    ].freeze,
+    # Only query, expected_code and notes are editable. The rest identify the row or were
+    # written by the generator, so a change to them is not an operator edit.
+    'EvaluationGoldQuery' => %w[
+      id
+      set_id
+      source_type
+      source_id
+      persona
+      expected_description
+      oracle_text
+      generator
+      active
+      created_at
+    ].freeze,
     'GoodsNomenclatureIntercept' => %w[
       goods_nomenclature_sid
       created_at

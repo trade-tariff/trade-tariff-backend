@@ -1,5 +1,5 @@
 module "backend_uk" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.3.0"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.3.1"
 
   region = var.region
 
@@ -36,7 +36,7 @@ module "backend_uk" {
   container_user           = local.container_user
 
   has_autoscaler     = local.has_autoscaler
-  min_capacity       = var.min_capacity
+  min_capacity       = var.min_capacity_uk
   max_capacity       = var.max_capacity
   scale_in_cooldown  = var.scale_in_cooldown
   scale_out_cooldown = var.scale_out_cooldown

@@ -6,6 +6,7 @@ RSpec.describe SearchAnalytics::CloudwatchQueryValidator do
   let(:client) { instance_double(Aws::CloudWatchLogs::Client) }
   let(:now) { Time.zone.parse('2026-07-23 10:00:00 UTC') }
   let(:output) { StringIO.new }
+  let(:day_end) { now.utc.beginning_of_day }
   let(:daily_definitions) do
     {
       'volume' => 'SELECT COUNT(*) FROM `platform-logs-development`',
@@ -15,7 +16,9 @@ RSpec.describe SearchAnalytics::CloudwatchQueryValidator do
   end
 
   before do
-    allow(SearchAnalytics::DailyQuery).to receive(:new).and_return(instance_double(SearchAnalytics::DailyQuery, query_definitions: daily_definitions))
+    daily = SearchAnalytics::DailyQuery.new(reporting_date: now.utc.to_date - 1, region: 'eu-west-2', log_group_name: 'platform-logs-development', now:)
+    allow(daily).to receive(:query_definitions).and_return(daily_definitions)
+    allow(SearchAnalytics::DailyQuery).to receive(:new).and_return(daily)
     allow(client).to receive_messages(
       start_query: instance_double(Aws::CloudWatchLogs::Types::StartQueryResponse, query_id: 'query-id'),
       get_query_results: instance_double(Aws::CloudWatchLogs::Types::GetQueryResultsResponse, status: 'Complete'),
@@ -31,7 +34,7 @@ RSpec.describe SearchAnalytics::CloudwatchQueryValidator do
     expect(SearchAnalytics::CloudwatchSnapshotQuery).not_to receive(:query_definitions)
     expect(validate).to be(true)
     expect(client).to have_received(:start_query).with(
-      start_time: (now - 5.minutes).to_i, end_time: now.to_i,
+      start_time: (day_end - 5.minutes).to_i, end_time: day_end.to_i,
       query_language: 'SQL', query_string: daily_definitions.fetch('volume')
     ).once
     expect(client).to have_received(:start_query).exactly(2).times
@@ -43,8 +46,16 @@ RSpec.describe SearchAnalytics::CloudwatchQueryValidator do
     expect(Aws::CloudWatchLogs::Client).not_to receive(:new)
     expect(SearchAnalyticsQueryResult).not_to receive(:fetch)
     validate
-    expect(output.string).to include('Validated daily/search_journeys', 'Validated daily/ai_cost_trend', 'Validated daily/classic_outcomes', "Validated #{TradeTariffBackend.service == 'uk' ? 11 : 10} distinct CloudWatch queries")
+    expect(output.string).to include('Validated daily/search_journeys', 'Validated daily/ai_cost_trend', 'Validated daily/classic_outcomes', 'Validated daily/search_actions', 'Validated daily/search_results', 'Validated daily/selection_results', 'Validated daily/selection_pages', "Validated #{TradeTariffBackend.service == 'uk' ? 15 : 14} distinct CloudWatch queries")
     expect(client).to have_received(:start_query).with(hash_including(query_string: a_string_including("request_source = 'frontend'", "worker-#{TradeTariffBackend.service}/"))).at_least(:once)
+    expect(client).to have_received(:start_query).with(
+      start_time: (day_end - 5.minutes).to_i, end_time: day_end.to_i, query_language: 'SQL',
+      query_string: a_string_including(
+        "UNIX_TIMESTAMP(`@timestamp`) >= #{(day_end - 5.minutes).to_i}",
+        "UNIX_TIMESTAMP(`@timestamp`) < #{day_end.to_i}",
+      )
+    ).exactly(TradeTariffBackend.service == 'uk' ? 15 : 14).times
+    expect(client).to have_received(:start_query).with(hash_including(query_string: a_string_matching(/request_id NOT IN \(.*UNIX_TIMESTAMP\(`@timestamp`\) >= #{(day_end - 1.day).to_i}.*UNIX_TIMESTAMP\(`@timestamp`\) < #{day_end.to_i}/m))).at_least(:once)
   end
 
   it 'retains validation of rendered native dashboard queries' do
@@ -52,6 +63,7 @@ RSpec.describe SearchAnalytics::CloudwatchQueryValidator do
                          dashboard_queries: { 'operations' => { 'query_language' => 'CWLI', 'query_string' => "SOURCE 'platform-logs-development' | stats count(*)" } })
     expect(client).to have_received(:start_query).with(hash_including(
                                                          log_group_name: 'platform-logs-development', query_language: 'CWLI', query_string: 'stats count(*)',
+                                                         start_time: (now - 5.minutes).to_i, end_time: now.to_i
                                                        ))
   end
 

@@ -38,6 +38,7 @@ module SearchReferences
       {
         search_reference_id: @search_reference.id,
         title: @search_reference.title,
+        usage: @search_reference.usage,
         referenced_class: @search_reference.referenced_class,
         productline_suffix: @search_reference.productline_suffix,
         goods_nomenclature_sid: @search_reference.goods_nomenclature_sid,

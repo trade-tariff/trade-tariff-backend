@@ -46,7 +46,9 @@ locals {
       value = value
     }
   ]
-  backend_uk_service_env_vars = concat(local.backend_uk_secret_env_vars, local.api_service_env_vars)
+  # The API service calls other *.tariff.internal services directly (EvalAppClient,
+  # IdentityApiClient), so it needs the same internal CA the worker already gets.
+  backend_uk_service_env_vars = concat(local.backend_uk_secret_env_vars, local.api_service_env_vars, local.internal_ca_env_vars)
 
   worker_xi_secret_value = try(data.aws_secretsmanager_secret_version.backend_xi_worker_configuration.secret_string, "{}")
   worker_xi_secret_map   = jsondecode(local.worker_xi_secret_value)

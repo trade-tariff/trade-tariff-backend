@@ -17,6 +17,7 @@ module Api
         'GoodsNomenclatureSelfText' => GoodsNomenclatureSelfText,
         'AdminConfiguration' => AdminConfiguration,
         'DescriptionIntercept' => DescriptionIntercept,
+        'TariffKnowledge::SyntheticAtar' => TariffKnowledge::SyntheticAtar,
         'GoodsNomenclatureIntercept' => GoodsNomenclatureIntercept,
         'CustomsTariffSectionNote' => CustomsTariffSectionNote,
         'CustomsTariffChapterNote' => CustomsTariffChapterNote,

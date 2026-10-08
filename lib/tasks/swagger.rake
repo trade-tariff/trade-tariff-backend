@@ -40,8 +40,6 @@ module SwaggerRakeTasks
     green_lanes/goods_nomenclatures_controller.rb
     green_lanes/themes_controller.rb
     knowledge_graph/queries_controller.rb
-    enquiry_form/revised_submissions_controller.rb
-    enquiry_form/submissions_controller.rb
     errors_controller.rb
     notifications_controller.rb
   ].freeze

@@ -33,14 +33,20 @@ module Api
             render json: serialize(evaluation_run), status: :created
           end
 
+          # Locks the row before validating: the cancelled-is-final check compares against whatever
+          # status was loaded, so without the lock a cancel saved by another request after this one
+          # loaded the run would be silently overwritten.
           def update
-            run.set(update_params)
+            EvaluationRun.db.transaction do
+              run.lock!
+              run.set(update_params)
 
-            if run.valid? && run.save
-              run.reconcile_aggregates! if RECONCILING_STATUSES.include?(run.status)
-              render json: serialize(run.reload), status: :ok
-            else
-              render json: serialize_errors(run), status: :unprocessable_content
+              if run.valid? && run.save
+                run.reconcile_aggregates! if RECONCILING_STATUSES.include?(run.status)
+                render json: serialize(run.reload), status: :ok
+              else
+                render json: serialize_errors(run), status: :unprocessable_content
+              end
             end
           end
 
@@ -53,7 +59,7 @@ module Api
           end
 
           def filtered_runs
-            dataset = EvaluationRun.dataset
+            dataset = EvaluationRun.eager(:evaluation_experiment)
             dataset = dataset.where(experiment_id: params[:experiment_id]) if params[:experiment_id].present?
             dataset = dataset.where(status: params[:status]) if params[:status].present?
             dataset = dataset.where { created_at >= Date.parse(params[:from]) } if params[:from].present?

@@ -11,11 +11,80 @@ RSpec.describe SidekiqDeathHandler do
     }
   end
 
-  let(:exception) { StandardError.new('user specified timeout') }
+  let(:exception) do
+    StandardError.new('user specified timeout').tap do |e|
+      e.set_backtrace((1..12).map { |number| "app/workers/example_worker.rb:#{number}" })
+    end
+  end
+
+  let(:sent_arguments) { {} }
 
   before do
     allow(TradeTariffBackend).to receive(:slack_failures_enabled?).and_return(true)
-    allow(SlackNotifierService).to receive(:call)
+    allow(SlackNotifierService).to receive(:call) { |**arguments| sent_arguments.merge!(arguments) }
+    allow(CloudwatchLogsInsightsLink).to receive(:for_job).and_return('https://logs.example/insights')
+    travel_to Time.utc(2026, 9, 21, 12, 0, 0)
+  end
+
+  def sent_field(title)
+    sent_arguments[:attachments].first[:fields].find { |field| field[:title] == title }
+  end
+
+  it 'includes the first 10 backtrace lines in a code block' do
+    described_class.call(job, exception)
+
+    expected_lines = (1..10).map { |number| "app/workers/example_worker.rb:#{number}" }
+    expect(sent_field('Backtrace')).to eq(
+      title: 'Backtrace',
+      value: "```#{expected_lines.join("\n")}```",
+      short: false,
+    )
+  end
+
+  context 'when the exception has no backtrace' do
+    let(:exception) { StandardError.new('user specified timeout') }
+
+    it 'says that there is no backtrace' do
+      described_class.call(job, exception)
+
+      expect(sent_field('Backtrace')[:value]).to eq('No backtrace')
+    end
+  end
+
+  it 'links to the CloudWatch logs for the job' do
+    described_class.call(job, exception)
+
+    expect(sent_field('Logs')).to eq(
+      title: 'Logs',
+      value: '<https://logs.example/insights|View logs in CloudWatch>',
+      short: false,
+    )
+  end
+
+  context 'when the job has a failed_at time' do
+    let(:job) { super().merge('failed_at' => Time.utc(2026, 9, 20, 9, 0, 0).to_i * 1000) }
+
+    it 'scopes the logs from 5 minutes before the first failure to 5 minutes after now' do
+      described_class.call(job, exception)
+
+      expect(CloudwatchLogsInsightsLink).to have_received(:for_job).with(
+        jid: '93ce163da1a9f7052e55d7c6',
+        from: Time.utc(2026, 9, 20, 8, 55, 0),
+        to: Time.utc(2026, 9, 21, 12, 5, 0),
+      )
+    end
+  end
+
+  context 'when the job has no failed_at time' do
+    it 'scopes the logs from 15 minutes before now to 5 minutes after now' do
+      described_class.call(job, exception)
+
+      expect(CloudwatchLogsInsightsLink).to have_received(:for_job).with(
+        jid: '93ce163da1a9f7052e55d7c6',
+        from: Time.utc(2026, 9, 21, 11, 45, 0),
+        to: Time.utc(2026, 9, 21, 12, 5, 0),
+      )
+    end
   end
 
   it 'sends a Slack alert with structured error details' do

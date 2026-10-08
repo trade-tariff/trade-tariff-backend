@@ -24,6 +24,10 @@ RSpec.describe SearchAnalytics::DailyResults do
       { '@timestamp' => bucket, 'search_type' => 'classic', 'event' => 'search_failed', 'searches' => failed, 'zero_results' => 0 },
       { '@timestamp' => bucket, 'search_type' => 'interactive', 'event' => 'search_completed', 'searches' => 3, 'zero_results' => 0 },
     ]
+    rows['search_results'] = [
+      { 'search_type' => 'classic', 'request_source' => 'frontend', 'searches' => eligible, 'zero_results' => zero },
+      { 'search_type' => 'interactive', 'request_source' => 'frontend', 'searches' => 2, 'zero_results' => 0 },
+    ]
     rows['search_journeys'] = [
       { '@timestamp' => bucket, 'search_type' => 'interactive', 'request_source' => 'frontend', 'journey_keys' => %w[shared] },
       { '@timestamp' => bucket, 'search_type' => 'classic', 'request_source' => 'frontend', 'journey_keys' => [date.iso8601] },
@@ -46,6 +50,147 @@ RSpec.describe SearchAnalytics::DailyResults do
     SearchAnalyticsQueryResult.where(reporting_date: date, name:).update(rows: Sequel.pg_jsonb(rows))
   end
 
+  def action(keys, type, classification, source = 'frontend')
+    { 'journey_keys' => keys, 'search_type' => type, 'search_action' => classification, 'request_source' => source }
+  end
+
+  it 'uses weighted search-only counts across dates and views' do
+    expect(read('classic').payload['summary']).to include('completed_searches' => 44, 'zero_result_searches' => 3, 'zero_result_rate' => 3.0 / 44)
+    expect(read('internal').payload['summary']).to include('completed_searches' => 4, 'zero_result_searches' => 0, 'zero_result_rate' => 0.0)
+    expect(read('all').payload['summary']).to include('completed_searches' => 48, 'zero_result_searches' => 3, 'zero_result_rate' => 3.0 / 48)
+    expect(read('all').payload.dig('availability', 'zero_result_rate_coverage')).to eq('complete' => false, 'collected_days' => 2, 'expected_days' => 30)
+    expect(read('classic').payload.dig('comparisons', 'classic', 'zero_result_rate')).to eq(3.0 / 44)
+  end
+
+  it 'keeps legacy totals without inventing a search-only rate' do
+    SearchAnalyticsQueryResult.where(name: 'search_results').delete
+    payload = read('classic').payload
+    expect(payload['summary']).to include('searches' => 2, 'requests' => 100, 'zero_result_rate' => nil, 'completed_searches' => nil)
+    expect(payload.dig('summary_statuses', 'zero_result_rate', 'level')).to eq('neutral')
+    expect(payload.dig('coverage', 'queries')).not_to have_key('search_results')
+  end
+
+  it 'distinguishes no completed searches from a zero-percent rate' do
+    replace_rows(last_date, 'search_results', [])
+    payload = read('classic', '24h').payload
+    expect(payload['summary']).to include('completed_searches' => 0, 'zero_result_searches' => 0, 'zero_result_rate' => nil)
+    expect(payload.dig('availability', 'zero_result_rate_coverage', 'complete')).to be(true)
+  end
+
+  it 'does not use stale or missing days in the numerator or denominator' do
+    SearchAnalyticsQueryResult.where(name: 'search_results', reporting_date: first_date).update(fingerprint: 'stale')
+    payload = read('classic').payload
+    expect(payload['summary']).to include('completed_searches' => 40, 'zero_result_searches' => 1, 'zero_result_rate' => 0.025)
+    expect(payload.dig('availability', 'zero_result_rate_coverage', 'collected_days')).to eq(1)
+  end
+
+  it 'deduplicates actions and retains view boundaries' do
+    [first_date, last_date].each do |date|
+      replace_rows(date, 'search_actions', [
+        action([date.iso8601], 'classic', 'navigation'),
+        action(%w[shared shared], 'interactive', 'search'),
+        action(%w[shared], 'internal', 'search'),
+        action(%w[shared], 'classic', 'navigation', 'admin'),
+        action(%w[orphan], 'classic', 'search'),
+      ])
+    end
+    expect(read('all').payload.dig('actions', 'summary')).to eq('total' => 3, 'navigation' => 2, 'search' => 1, 'unclassified' => 0)
+    expect(read('classic').payload.dig('actions', 'summary')).to eq('total' => 2, 'navigation' => 2, 'search' => 0, 'unclassified' => 0)
+    expect(read('internal').payload.dig('actions', 'summary')).to eq('total' => 1, 'navigation' => 0, 'search' => 1, 'unclassified' => 0)
+    expect(read('internal').payload.dig('actions', 'trend').pluck('search')).to eq([1, 1])
+  end
+
+  context 'with CloudWatch UTC timestamps and a non-UTC database session' do
+    around do |example|
+      SearchAnalyticsQueryResult.db.transaction(rollback: :always) do
+        SearchAnalyticsQueryResult.db.run("SET LOCAL TIME ZONE 'Europe/London'")
+        example.run
+      end
+    end
+
+    before do
+      replace_rows(last_date, 'search_journeys', [
+        { '@timestamp' => '2026-09-14 00:00:00.000', 'search_type' => 'classic', 'request_source' => 'frontend', 'journey_keys' => %w[navigation] },
+        { '@timestamp' => '2026-09-14T00:00:00Z', 'search_type' => 'classic', 'request_source' => 'frontend', 'journey_keys' => %w[search] },
+      ])
+      replace_rows(last_date, 'search_actions', [
+        action(%w[navigation], 'classic', 'navigation'),
+        action(%w[search], 'classic', 'search'),
+      ])
+    end
+
+    it 'keeps hourly action buckets aligned with the journey totals' do
+      expect(read('classic', '24h').payload.dig('actions', 'trend')).to include(
+        'bucket' => '2026-09-14T00:00:00Z', 'total' => 2, 'navigation' => 1, 'search' => 1, 'unclassified' => 0,
+      )
+    end
+
+    it 'keeps daily action buckets on the UTC date at midnight' do
+      expect(read('classic', '7d').payload.dig('actions', 'trend')).to include(
+        'bucket' => '2026-09-14T00:00:00Z', 'total' => 2, 'navigation' => 1, 'search' => 1, 'unclassified' => 0,
+      )
+    end
+  end
+
+  it 'keeps conflicting evidence unclassified' do
+    replace_rows(first_date, 'search_actions', [action(%w[shared], 'interactive', 'search')])
+    replace_rows(last_date, 'search_actions', [action(%w[shared], 'internal', 'navigation')])
+    expect(read.payload.dig('actions', 'summary')).to eq('total' => 1, 'navigation' => 0, 'search' => 0, 'unclassified' => 1)
+  end
+
+  it 'keeps missing and invalid evidence unknown' do
+    replace_rows(last_date, 'search_actions', [action(%w[shared], 'interactive', 'unexpected')])
+    expect(read('all').payload.dig('actions', 'summary')).to eq('total' => 3, 'navigation' => 0, 'search' => 0, 'unclassified' => 3)
+  end
+
+  it 'does not relabel old headline-only days' do
+    SearchAnalyticsQueryResult.where(name: 'search_actions').delete
+    payload = read('classic').payload
+    expect(payload.dig('summary', 'searches')).to eq(2)
+    expect(payload.dig('actions', 'summary')).to eq('total' => 2, 'navigation' => nil, 'search' => nil, 'unclassified' => 2)
+    expect(payload.dig('actions', 'available')).to be(false)
+    expect(payload.dig('coverage', 'queries')).not_to have_key('search_actions')
+  end
+
+  it 'keeps stale action queries unavailable' do
+    replace_rows(last_date, 'search_actions', [action(%w[shared], 'interactive', 'navigation')])
+    SearchAnalyticsQueryResult.where(name: 'search_actions').update(fingerprint: 'stale')
+    expect(read.payload.dig('actions', 'summary')).to include('navigation' => nil, 'search' => nil, 'unclassified' => 1)
+  end
+
+  it 'does not use action-only IDs as starts' do
+    replace_rows(last_date, 'search_journeys', [])
+    replace_rows(last_date, 'search_actions', [action(%w[shared], 'interactive', 'search')])
+    payload = read('internal', '24h').payload
+    expect(payload.dig('actions', 'summary')).to eq('total' => 0, 'navigation' => 0, 'search' => 0, 'unclassified' => 0)
+  end
+
+  context 'with concurrent recollection', :truncation do
+    it 'keeps the headline and split consistent' do
+      expected = read('internal', '24h')
+      ready = Queue.new
+      release = Queue.new
+      allow(SearchAnalytics::ActionBreakdown).to receive(:call).and_wrap_original do |method, **args|
+        ready << true
+        release.pop
+        method.call(**args)
+      end
+      reader = Thread.new { read('internal', '24h') }
+      Timeout.timeout(10) { ready.pop }
+      replace_rows(last_date, 'search_journeys', [
+        { '@timestamp' => '2026-09-14T08:00:00Z', 'request_source' => 'frontend', 'search_type' => 'internal', 'journey_keys' => %w[shared new] },
+      ])
+      replace_rows(last_date, 'search_actions', [action(%w[shared new], 'internal', 'search')])
+      release << true
+
+      expect(Timeout.timeout(10) { reader.value }).to eq(expected)
+    ensure
+      release << true if release
+      reader&.join(10)
+      reader&.kill if reader&.alive?
+    end
+  end
+
   it 'deduplicates the same frontend journey across days without collapsing its AI calls' do
     payload = read.payload
     expect(payload['summary']).to include('searches' => 1, 'requests' => 6)
@@ -55,9 +200,9 @@ RSpec.describe SearchAnalytics::DailyResults do
     expect(payload.dig('trends', 'volume').map { |row| row['internal'] }).to eq([1, 1])
   end
 
-  it 'derives existing rates from their summed request denominators, not the journey headline' do
+  it 'keeps request-based diagnostics separate from the journey headline and unavailable selection rates' do
     payload = read('classic').payload
-    expect(payload['summary']).to include('searches' => 2, 'requests' => 100, 'failure_rate' => 0.02, 'zero_result_rate' => 3.0 / 98, 'selection_rate' => 4.0 / 44)
+    expect(payload['summary']).to include('searches' => 2, 'requests' => 100, 'failure_rate' => 0.02, 'zero_result_rate' => 3.0 / 44, 'selection_rate' => nil)
     expect(payload['improvement_terms']).to include('query' => 'trainers', 'term_type' => 'search_terms', 'zero_results' => 3)
   end
 

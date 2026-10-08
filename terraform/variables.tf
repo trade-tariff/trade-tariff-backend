@@ -19,7 +19,13 @@ variable "service_count" {
   default     = 1
 }
 
-variable "min_capacity" {
+variable "min_capacity_uk" {
+  description = "Smallest number of tasks the backend-uk service can scale-in to."
+  type        = number
+  default     = 1
+}
+
+variable "min_capacity_xi" {
   description = "Smallest number of tasks the backend-xi service can scale-in to."
   type        = number
   default     = 1
@@ -43,12 +49,6 @@ variable "memory" {
 
 variable "enable_alarms" {
   description = "Whether to enable CloudWatch alarms for the service."
-  type        = bool
-  default     = false
-}
-
-variable "enable_database_replication" {
-  description = "Whether to enable the scheduled database replication job."
   type        = bool
   default     = false
 }

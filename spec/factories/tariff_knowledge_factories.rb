@@ -63,4 +63,15 @@ FactoryBot.define do
     last_seen_at { first_seen_at }
     fetched_at { first_seen_at }
   end
+
+  factory :tariff_knowledge_synthetic_atar, class: 'TariffKnowledge::SyntheticAtar' do
+    sequence(:real_user_search) { |n| "example search #{n}" }
+    chapter { '39' }
+    times_searched { 25 }
+    likely_heading { '3924' }
+    description { 'Reusable plastic food storage box with a clip-on lid, made of polypropylene, for household use.' }
+    goods_nomenclature_item_id { '3924100000' }
+    notes { 'Household tableware and kitchenware of plastics.' }
+    completed_by { 'AB' }
+  end
 end

@@ -6,15 +6,15 @@ RSpec.describe Api::V2::ChaptersController, :v2 do
   end
 
   describe 'GET #index' do
-    it 'caches the serialized chapters' do
+    it 'returns chapters created since the previous request' do
+      allow(Rails).to receive(:cache).and_return(ActiveSupport::Cache::MemoryStore.new)
+      create(:chapter, goods_nomenclature_item_id: '0100000000')
       api_get '/uk/api/chapters'
 
-      expect(Rails.cache)
-        .to have_received(:fetch)
-        .with(
-          "_chapters-#{now.iso8601}/v2",
-          expires_at: now.end_of_day,
-        )
+      create(:chapter, goods_nomenclature_item_id: '0200000000')
+      api_get '/uk/api/chapters'
+
+      expect(JSON.parse(response.body)['data'].size).to eq(2)
     end
 
     it_behaves_like 'a successful csv response' do
@@ -128,15 +128,21 @@ RSpec.describe Api::V2::ChaptersController, :v2 do
   describe 'GET #changes' do
     let(:chapter) { create :chapter, :with_section }
 
-    it 'caches the serialized chapter changes' do
+    it 'returns changes made since the previous request' do
+      allow(Rails).to receive(:cache).and_return(ActiveSupport::Cache::MemoryStore.new)
+      heading = create(:heading, goods_nomenclature_item_id: "#{chapter.short_code}20000000")
       api_get changes_api_chapter_path(chapter)
 
-      expect(Rails.cache)
-        .to have_received(:fetch)
-        .with(
-          "_chapter-#{chapter.short_code}-#{now.iso8601}/changes-v2",
-          expires_at: now.end_of_day,
-        )
+      create(:measure,
+             :with_measure_type,
+             goods_nomenclature: heading,
+             goods_nomenclature_sid: heading.goods_nomenclature_sid,
+             goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
+             operation_date: now)
+      api_get changes_api_chapter_path(chapter)
+
+      model_names = JSON.parse(response.body)['data'].map { |change| change.dig('attributes', 'model_name') }
+      expect(model_names).to include('Measure')
     end
   end
 

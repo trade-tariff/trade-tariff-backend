@@ -1,10 +1,11 @@
-region        = "eu-west-2"
-environment   = "production"
-cpu           = 2048
-memory        = 4096
-service_count = 3
-min_capacity  = 2
-max_capacity  = 16
+region          = "eu-west-2"
+environment     = "production"
+cpu             = 2048
+memory          = 4096
+service_count   = 3
+min_capacity_uk = 3
+min_capacity_xi = 2
+max_capacity    = 16
 
 enable_alarms               = true
 enable_observability_alerts = true
@@ -19,7 +20,7 @@ backend_uk_scheduled_scaling_actions = {
 
   midnight_scale_down = {
     schedule     = "cron(40 0 * * ? *)"
-    min_capacity = 2
+    min_capacity = 3
     max_capacity = 16
   }
 
@@ -31,7 +32,7 @@ backend_uk_scheduled_scaling_actions = {
 
   threeam_scale_down = {
     schedule     = "cron(40 3 * * ? *)"
-    min_capacity = 2
+    min_capacity = 3
     max_capacity = 16
   }
 
@@ -43,7 +44,7 @@ backend_uk_scheduled_scaling_actions = {
 
   fiveam_scale_down = {
     schedule     = "cron(0 7 * * ? *)"
-    min_capacity = 2
+    min_capacity = 3
     max_capacity = 16
   }
 }
