@@ -138,15 +138,6 @@ resource "aws_cloudwatch_metric_alarm" "database_backup_freshness" {
   ok_actions    = [data.aws_sns_topic.slack_topic.arn]
 }
 
-resource "aws_cloudwatch_event_rule" "database_replication" {
-  count = 1
-
-  name                = "backend-database-replication-${var.environment}"
-  description         = "Triggers weekday database replication for ${var.environment}"
-  schedule_expression = "cron(30 23 ? * MON-FRI *)"
-  state               = "ENABLED"
-}
-
 data "aws_iam_policy_document" "eventbridge_assume_role" {
   statement {
     actions = ["sts:AssumeRole"]
