@@ -172,10 +172,31 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
       gold_in_top1_count: results.where(gold_in_top1: true).count,
       gold_in_top5_count: results.where(gold_in_top5: true).count,
       unpriced_result_count: results.exclude(pricing_known: true).count,
+      persona_breakdown: persona_breakdown_for(results),
       max_cost_result_id: max_cost_result&.id,
       min_cost_result_id: min_cost_result&.id,
       max_latency_result_id: max_latency_result&.id,
       min_latency_result_id: min_latency_result&.id,
     )
+  end
+
+private
+
+  # One entry per persona value actually present among this run's results — not a fixed enum, the
+  # backend has no concept of trade-tariff-admin's own persona labels, just whatever string each
+  # result's persona column holds. Same field names as the run's own top-level aggregates, just
+  # scoped to one persona, so an operator can tell which persona's accuracy, cost or latency is
+  # best or worst within a single run rather than only seeing the run as a whole.
+  def persona_breakdown_for(results)
+    results.distinct.select_map(:persona).compact.index_with do |persona|
+      persona_results = results.where(persona:)
+      {
+        'result_count' => persona_results.count,
+        'gold_in_top1_count' => persona_results.where(gold_in_top1: true).count,
+        'gold_in_top5_count' => persona_results.where(gold_in_top5: true).count,
+        'total_cost_usd' => persona_results.sum(:cost_usd) || 0,
+        'total_latency_seconds' => persona_results.sum(:latency_seconds) || 0,
+      }
+    end
   end
 end

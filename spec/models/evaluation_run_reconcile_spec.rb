@@ -101,5 +101,24 @@ RSpec.describe EvaluationRun do
       run.reconcile_aggregates!
       expect(run.unpriced_result_count).to eq(1)
     end
+
+    it 'breaks accuracy, cost and latency down by persona, so one persona can be compared against another' do
+      EvaluationResult.ingest!(run:, source_type: 'atar', source_id: 'A1', persona: 'emu_generic', attrs: { expected_code: '1', gold_in_top1: true, gold_in_top5: true, cost_usd: 0.01, latency_seconds: 2.0 })
+      EvaluationResult.ingest!(run:, source_type: 'atar', source_id: 'A2', persona: 'emu_generic', attrs: { expected_code: '2', gold_in_top1: false, gold_in_top5: true, cost_usd: 0.02, latency_seconds: 3.0 })
+      EvaluationResult.ingest!(run:, source_type: 'atar', source_id: 'A3', persona: 'emu_specific', attrs: { expected_code: '3', gold_in_top1: true, gold_in_top5: true, cost_usd: 0.05, latency_seconds: 1.0 })
+
+      run.reconcile_aggregates!
+
+      expect(run.persona_breakdown).to eq(
+        'emu_generic' => { 'result_count' => 2, 'gold_in_top1_count' => 1, 'gold_in_top5_count' => 2, 'total_cost_usd' => 0.03, 'total_latency_seconds' => 5.0 },
+        'emu_specific' => { 'result_count' => 1, 'gold_in_top1_count' => 1, 'gold_in_top5_count' => 1, 'total_cost_usd' => 0.05, 'total_latency_seconds' => 1.0 },
+      )
+    end
+
+    it 'is an empty breakdown, not an error, when the run has no results' do
+      run.reconcile_aggregates!
+
+      expect(run.persona_breakdown).to eq({})
+    end
   end
 end

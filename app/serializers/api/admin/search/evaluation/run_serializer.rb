@@ -26,6 +26,7 @@ module Api
                      :gold_in_top1_count,
                      :gold_in_top5_count,
                      :unpriced_result_count,
+                     :persona_breakdown,
                      :error_summary,
                      :aggregate_metrics,
                      :created_at,
