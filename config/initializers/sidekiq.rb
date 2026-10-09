@@ -1,4 +1,5 @@
 require 'sidekiq'
+require 'sidekiq/api'
 require 'custom_job_logger'
 require 'sidekiq_death_handler'
 require 'trade_tariff_backend'
