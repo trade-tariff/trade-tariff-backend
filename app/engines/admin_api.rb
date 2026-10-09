@@ -16,7 +16,9 @@ AdminApi.routes.draw do
       resources :downloads, only: %i[create]
       resources :applies, only: %i[create]
       resources :footnotes, only: %i[index show update]
-      resources :search_references, only: [:index]
+      resources :search_references, only: %i[index show], constraints: { id: /\d+/ } do
+        get :versions, on: :member
+      end
       resources :search_diagnostics, only: %i[index show], param: :request_id, constraints: { request_id: /[^\/.]+/ }
       resources :search_analytics, only: [:index]
       if TradeTariffBackend.uk?
