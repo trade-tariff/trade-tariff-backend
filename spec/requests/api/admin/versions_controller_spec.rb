@@ -285,6 +285,51 @@ RSpec.describe Api::Admin::VersionsController do
         end
       end
 
+      context 'when restoring an fpo version over a search reference' do
+        let!(:search_reference) { create(:search_reference, :with_current_commodity, title: 'fpo', usage: 'fpo') }
+        let(:version) { search_reference.versions.order(:id).first }
+        let(:suggestions) { SearchSuggestion.search_reference_type.where(id: search_reference.id.to_s) }
+
+        before do
+          search_reference.update(usage: 'search')
+          create(:search_suggestion, :search_reference, id: search_reference.id.to_s)
+          allow(TradeTariffBackend.search_client).to receive(:delete)
+        end
+
+        it 'restores the fpo usage' do
+          restore
+
+          expect(search_reference.reload.usage).to eq('fpo')
+        end
+
+        it 'removes it from search suggestions' do
+          expect { restore }.to change(suggestions, :count).from(1).to(0)
+        end
+
+        it 'removes it from the search index' do
+          restore
+
+          expect(TradeTariffBackend.search_client).to have_received(:delete)
+            .with(Search::SearchReferenceIndex, have_attributes(id: search_reference.id))
+        end
+      end
+
+      context 'when the restored usage is unchanged' do
+        let!(:search_reference) { create(:search_reference, :with_current_commodity, title: 'original') }
+        let(:version) { search_reference.versions.order(:id).first }
+
+        before do
+          search_reference.update(title: 'changed')
+          allow(TradeTariffBackend.search_client).to receive(:delete)
+        end
+
+        it 'does not touch the search index' do
+          restore
+
+          expect(TradeTariffBackend.search_client).not_to have_received(:delete)
+        end
+      end
+
       context 'when the commodity is no longer valid' do
         let!(:search_reference) { create(:search_reference, :with_non_current_commodity, title: 'expired') }
         let(:version) { Version.where(item_type: 'SearchReference', item_id: search_reference.id.to_s, event: 'destroy').first }

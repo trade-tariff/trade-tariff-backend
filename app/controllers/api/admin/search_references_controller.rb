@@ -16,14 +16,6 @@ module Api
         ).serializable_hash
       end
 
-      def versions
-        versions = versions_for_item.order(:id).all
-        raise Sequel::RecordNotFound if versions.empty? && current_search_reference.nil?
-
-        Version.preload_predecessors(versions)
-        render json: Api::Admin::VersionSerializer.new(versions).serializable_hash
-      end
-
     private
 
       def letter

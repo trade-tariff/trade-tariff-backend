@@ -66,6 +66,22 @@ RSpec.describe 'search_references rake tasks' do
       expect(version.object['title']).to eq('orphan updated')
     end
 
+    it 'dates the destroy version from the last known version, not today' do
+      last_version = Version.where(item_type: 'SearchReference', item_id: orphan.id.to_s).order(Sequel.desc(:id)).first
+      last_version.update(created_at: Time.zone.parse('2026-04-01 10:00'))
+
+      backfill
+
+      expect(destroy_versions.where(item_id: orphan.id.to_s).first.created_at).to eq(Time.zone.parse('2026-04-01 10:00'))
+    end
+
+    it 'lists the destroy version above the last version it shares a date with' do
+      backfill
+
+      latest = Version.most_recent_first.where(item_type: 'SearchReference', item_id: orphan.id.to_s).first
+      expect(latest.event).to eq('destroy')
+    end
+
     it 'leaves existing and already destroyed references alone' do
       backfill
 

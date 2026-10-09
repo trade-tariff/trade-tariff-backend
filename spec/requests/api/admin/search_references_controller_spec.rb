@@ -121,23 +121,4 @@ RSpec.describe Api::Admin::SearchReferencesController, :admin do
       end
     end
   end
-
-  describe 'GET #versions' do
-    let(:search_reference) { create :search_reference, referenced: create(:heading), title: 'original title' }
-
-    before { search_reference.update(title: 'updated title') }
-
-    it 'returns the versions of the search reference' do
-      authenticated_get versions_api_search_reference_path(search_reference.id, format: :json)
-
-      events = JSON.parse(response.body)['data'].map { |version| version.dig('attributes', 'event') }
-      expect(events).to eq(%w[create update])
-    end
-
-    it 'returns 404 when the search reference has no record and no history' do
-      authenticated_get versions_api_search_reference_path(999_999, format: :json)
-
-      expect(response).to have_http_status(:not_found)
-    end
-  end
 end
