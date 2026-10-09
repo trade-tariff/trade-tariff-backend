@@ -13,7 +13,7 @@ class Version < Sequel::Model
     end
 
     def most_recent_first
-      order(Sequel.desc(:created_at))
+      order(Sequel.desc(:created_at), Sequel.desc(:id))
     end
   end
 

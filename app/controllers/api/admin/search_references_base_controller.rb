@@ -108,15 +108,8 @@ module Api
         SearchReference::USAGE_FILTERS.include?(usage) ? usage : SearchReference::SEARCH_USAGE
       end
 
-      # The search reference index and search suggestions are rebuilt on a schedule.
-      # Remove a reference straight away when it stops being a public search reference.
       def remove_from_public_search(previous_usage)
-        return unless previous_usage == SearchReference::SEARCH_USAGE && @search_reference.fpo?
-
-        SearchSuggestion.search_reference_type.where(id: @search_reference.id.to_s).delete
-        TradeTariffBackend.search_client.delete(::Search::SearchReferenceIndex, @search_reference)
-      rescue OpenSearch::Transport::Transport::Errors::NotFound
-        nil
+        ::SearchReferences::PublicSearchRemoval.call(@search_reference, previous_usage:)
       end
     end
   end

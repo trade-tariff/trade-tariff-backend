@@ -19,6 +19,14 @@ RSpec.describe ClearInvalidSearchReferences, type: :worker do
       expect { do_perform }.to change(SearchReference, :count).by(-1)
     end
 
+    it 'records a destroy version attributed to the worker' do
+      do_perform
+
+      version = Version.where(item_type: 'SearchReference', event: 'destroy').first
+      expect(version).to have_attributes(whodunnit: 'ClearInvalidSearchReferences')
+      expect(version.object['title']).to eq('foo')
+    end
+
     it 'sends an invalidation alert email listing it under expired' do
       do_perform
 
