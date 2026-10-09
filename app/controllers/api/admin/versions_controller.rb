@@ -45,6 +45,8 @@ module Api
         pk_col = Array(klass.primary_key).first
         record = klass.where(pk_col => version.item_id).first
 
+        previous_usage = record.usage if record.is_a?(SearchReference)
+
         if record
           restorable = version.object.except(*non_restorable_keys(klass))
           record.set(restorable.transform_keys(&:to_sym))
@@ -57,7 +59,7 @@ module Api
 
         return render_restore_error(record.errors.full_messages.to_sentence) unless record.save
 
-        after_restore(record)
+        after_restore(record, previous_usage:)
 
         render json: VersionSerializer.new(
           record.versions.order(Sequel.desc(:id)).first,
@@ -85,8 +87,10 @@ module Api
         "#{message}."
       end
 
-      def after_restore(record)
+      def after_restore(record, previous_usage:)
         return unless record.is_a?(SearchReference)
+
+        ::SearchReferences::PublicSearchRemoval.call(record, previous_usage:)
 
         sid = record.goods_nomenclature_sid
         ScoreLabelBatchWorker.perform_async(sid) if sid

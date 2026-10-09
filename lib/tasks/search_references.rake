@@ -19,12 +19,15 @@ module_function
   # ClearInvalidSearchReferences used to remove references with `delete`,
   # which skipped paper trail, so their history never recorded the removal.
   # Write the missing destroy version from each orphan's last known state.
+  # The real removal time is unknown. It happened on or after the orphan's
+  # last version, so that is the date written, which keeps these rows in
+  # their historical place in Recent changes rather than all landing today.
   def backfill_destroy_versions
     dry_run = ENV['DRY_RUN'].to_s.downcase == 'true'
     orphans = orphaned_search_reference_versions
 
     orphans.each do |version|
-      puts "#{dry_run ? '[DRY RUN] ' : ''}Backfilling destroy version for search reference #{version.item_id} (#{version.object['title']})"
+      puts "#{dry_run ? '[DRY RUN] ' : ''}Backfilling destroy version for search reference #{version.item_id} (#{version.object['title']}), dated #{version.created_at.iso8601}"
       next if dry_run
 
       Version.create(
@@ -33,7 +36,7 @@ module_function
         event: 'destroy',
         object: Sequel.pg_jsonb_wrap(version.object.to_h),
         whodunnit: BACKFILL_WHODUNNIT,
-        created_at: Time.current,
+        created_at: version.created_at,
       )
     end
 
@@ -56,6 +59,6 @@ namespace :search_references do
   desc 'Import FPO extra references (usage=fpo) from CSV. CSV=path (default data/fpo_extra_references.csv), DRY_RUN=true to preview, WHODUNNIT=author for paper trail versions (default fpo_csv_import)'
   task(import_fpo: :environment) { SearchReferencesTasks.import_fpo }
 
-  desc 'Write missing destroy versions for search references deleted without paper trail. DRY_RUN=true to preview'
+  desc 'Write missing destroy versions for search references deleted without paper trail, dated from the last known version. Run per service (SERVICE=uk and SERVICE=xi). DRY_RUN=true to preview'
   task(backfill_destroy_versions: :environment) { SearchReferencesTasks.backfill_destroy_versions }
 end
