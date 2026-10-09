@@ -6,7 +6,6 @@ module ProductionEnvironmentConfig
       configure_logging(config)
       configure_cache(config)
       configure_mailer(config)
-      configure_sidekiq_auth(config)
     end
 
     def configure_runtime(config)
@@ -89,20 +88,6 @@ module ProductionEnvironmentConfig
       config.action_mailer.perform_caching = false
       config.action_mailer.delivery_method = :ses_v2
       config.i18n.fallbacks = [I18n.default_locale]
-    end
-
-    def configure_sidekiq_auth(config)
-      config.middleware.use(SidekiqBasicAuth) do |username, password|
-        secure_credential_compare(username, :username) &
-          secure_credential_compare(password, :password)
-      end
-    end
-
-    def secure_credential_compare(value, credential_key)
-      ActiveSupport::SecurityUtils.secure_compare(
-        ::Digest::SHA256.hexdigest(value),
-        ::Digest::SHA256.hexdigest(Rails.application.credentials.dig(:sidekiq, credential_key)),
-      )
     end
   end
 end

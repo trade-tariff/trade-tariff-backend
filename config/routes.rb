@@ -7,9 +7,6 @@ Rails.application.routes.draw do
   # Error handling
   draw(:errors)
 
-  # Sidekiq web interface
-  draw(:sidekiq)
-
   # Admin routes
   mount AdminApi => '/uk/admin', as: 'uk_admin_api' if TradeTariffBackend.uk?
   mount AdminApi => '/xi/admin', as: 'xi_admin_api' if TradeTariffBackend.xi?
