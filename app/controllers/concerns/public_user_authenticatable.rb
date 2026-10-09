@@ -14,7 +14,7 @@ private
   attr_reader :current_user
 
   def authenticate!
-    if Rails.env.development?
+    if Rails.env.development? && ENV['MYOTT_AUTH_BYPASS'] != 'false'
       @current_user ||= Api::User::DummyUserService.find_or_create
       return
     end

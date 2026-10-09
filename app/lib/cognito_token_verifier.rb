@@ -14,7 +14,9 @@ class CognitoTokenVerifier
 
   def self.verify_id_token(token)
     return Result.new(valid: false, payload: nil, reason: :missing_token) if token.blank?
-    return Result.new(valid: false, payload: nil, reason: :missing_jwks_keys) if jwks_keys.nil? && !Rails.env.development?
+
+    real_local = Rails.env.development? && ENV['MYOTT_AUTH_BYPASS'] == 'false'
+    return Result.new(valid: false, payload: nil, reason: :missing_jwks_keys) if !real_local && jwks_keys.nil? && !Rails.env.development?
 
     new(token).verify
   rescue JWT::ExpiredSignature
