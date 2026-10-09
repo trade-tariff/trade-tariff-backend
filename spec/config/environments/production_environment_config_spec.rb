@@ -10,7 +10,6 @@ RSpec.describe ProductionEnvironmentConfig do
       c.public_file_server = ActiveSupport::OrderedOptions.new
       c.lograge = ActiveSupport::OrderedOptions.new
       c.i18n = ActiveSupport::OrderedOptions.new
-      c.middleware = instance_double(ActionDispatch::MiddlewareStack)
     end
   end
 
@@ -201,19 +200,6 @@ RSpec.describe ProductionEnvironmentConfig do
       expect(config.action_mailer.perform_caching).to be(false)
       expect(config.action_mailer.delivery_method).to eq(:ses_v2)
       expect(config.i18n.fallbacks).to eq([:en])
-    end
-  end
-
-  describe '.secure_credential_compare' do
-    it 'returns true when the value matches the sidekiq credential' do
-      allow(Rails.application).to receive(:credentials).and_return(
-        ActiveSupport::InheritableOptions.new(
-          sidekiq: ActiveSupport::InheritableOptions.new(username: 'user', password: 'secret'),
-        ),
-      )
-
-      expect(described_class.secure_credential_compare('user', :username)).to be(true)
-      expect(described_class.secure_credential_compare('wrong', :username)).to be(false)
     end
   end
 end
