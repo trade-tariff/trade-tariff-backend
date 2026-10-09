@@ -234,5 +234,76 @@ RSpec.describe Api::Admin::VersionsController do
         expect(response).to have_http_status(:ok)
       end
     end
+
+    context 'with a SearchReference' do
+      let(:restore) { post "/uk/admin/versions/#{version.id}/restore.json", headers: request_headers(format: :json), as: :json }
+      let(:json) { JSON.parse(response.body) }
+
+      before do
+        TradeTariffRequest.time_machine_now = Time.current
+        allow(ScoreLabelBatchWorker).to receive(:perform_async)
+      end
+
+      context 'when the search reference exists' do
+        let!(:search_reference) { create(:search_reference, :with_current_commodity, title: 'original') }
+        let(:version) { search_reference.versions.order(:id).first }
+
+        before { search_reference.update(title: 'changed') }
+
+        it 'restores the previous title' do
+          restore
+
+          expect(response).to have_http_status(:ok)
+          expect(search_reference.reload.title).to eq('original')
+        end
+
+        it 'refreshes the label embeddings for the commodity' do
+          restore
+
+          expect(ScoreLabelBatchWorker).to have_received(:perform_async).with(search_reference.goods_nomenclature_sid)
+        end
+      end
+
+      context 'when the search reference has been deleted' do
+        let!(:search_reference) { create(:search_reference, :with_current_commodity, title: 'deleted') }
+        let(:version) { Version.where(item_type: 'SearchReference', item_id: search_reference.id.to_s, event: 'destroy').first }
+
+        before { search_reference.destroy }
+
+        it 're-creates it with its original id' do
+          restore
+
+          expect(response).to have_http_status(:ok)
+          expect(SearchReference.where(id: search_reference.id).get(:title)).to eq('deleted')
+        end
+
+        it 'continues the existing version history' do
+          restore
+
+          events = Version.where(item_type: 'SearchReference', item_id: search_reference.id.to_s).order(:id).select_map(:event)
+          expect(events).to eq(%w[create destroy create])
+        end
+      end
+
+      context 'when the commodity is no longer valid' do
+        let!(:search_reference) { create(:search_reference, :with_non_current_commodity, title: 'expired') }
+        let(:version) { Version.where(item_type: 'SearchReference', item_id: search_reference.id.to_s, event: 'destroy').first }
+
+        before { search_reference.destroy }
+
+        it 'refuses to restore it' do
+          expect { restore }.not_to change(SearchReference, :count)
+
+          expect(response).to have_http_status(:unprocessable_content)
+          expect(json.dig('errors', 0, 'detail')).to include("commodity #{search_reference.goods_nomenclature_item_id} has expired")
+        end
+
+        it 'does not refresh embeddings' do
+          restore
+
+          expect(ScoreLabelBatchWorker).not_to have_received(:perform_async)
+        end
+      end
+    end
   end
 end

@@ -64,4 +64,80 @@ RSpec.describe Api::Admin::SearchReferencesController, :admin do
       end
     end
   end
+
+  describe 'GET #show' do
+    let(:search_reference) { create :search_reference, referenced: create(:heading), title: 'original title' }
+    let(:json) { JSON.parse(response.body) }
+
+    it 'returns the current search reference with version meta' do
+      authenticated_get api_search_reference_path(search_reference.id, format: :json)
+
+      expect(response).to have_http_status(:ok)
+      expect(json.dig('data', 'attributes', 'title')).to eq('original title')
+      expect(json.dig('meta', 'version')).to include('current' => true, 'latest_event' => 'create')
+    end
+
+    it 'returns 404 when the search reference has no record and no history' do
+      authenticated_get api_search_reference_path(999_999, format: :json)
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    context 'when viewing a historical version' do
+      before { search_reference.update(title: 'updated title') }
+
+      it 'returns the historical state' do
+        version = search_reference.versions.order(:id).first
+
+        authenticated_get api_search_reference_path(search_reference.id, filter: { oid: version.id }, format: :json)
+
+        expect(json.dig('data', 'attributes', 'title')).to eq('original title')
+        expect(json.dig('meta', 'version')).to include('current' => false, 'oid' => version.id)
+      end
+    end
+
+    context 'when the search reference has been destroyed' do
+      before { search_reference.destroy }
+
+      it 'returns its last known state from the destroy version' do
+        version = Version.where(item_type: 'SearchReference', item_id: search_reference.id.to_s, event: 'destroy').first
+
+        authenticated_get api_search_reference_path(search_reference.id, filter: { oid: version.id }, format: :json)
+
+        expect(response).to have_http_status(:ok)
+        expect(json.dig('data', 'attributes', 'title')).to eq('original title')
+        expect(json.dig('meta', 'version')).to include('current' => false, 'latest_event' => 'destroy')
+      end
+    end
+
+    context 'when the search reference was removed without a destroy version' do
+      before { search_reference.delete }
+
+      it 'returns its last known state' do
+        authenticated_get api_search_reference_path(search_reference.id, format: :json)
+
+        expect(response).to have_http_status(:ok)
+        expect(json.dig('data', 'attributes', 'title')).to eq('original title')
+      end
+    end
+  end
+
+  describe 'GET #versions' do
+    let(:search_reference) { create :search_reference, referenced: create(:heading), title: 'original title' }
+
+    before { search_reference.update(title: 'updated title') }
+
+    it 'returns the versions of the search reference' do
+      authenticated_get versions_api_search_reference_path(search_reference.id, format: :json)
+
+      events = JSON.parse(response.body)['data'].map { |version| version.dig('attributes', 'event') }
+      expect(events).to eq(%w[create update])
+    end
+
+    it 'returns 404 when the search reference has no record and no history' do
+      authenticated_get versions_api_search_reference_path(999_999, format: :json)
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
 end

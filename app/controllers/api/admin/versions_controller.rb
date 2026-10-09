@@ -21,6 +21,18 @@ module Api
         'GoodsNomenclatureIntercept' => GoodsNomenclatureIntercept,
         'CustomsTariffSectionNote' => CustomsTariffSectionNote,
         'CustomsTariffChapterNote' => CustomsTariffChapterNote,
+        'SearchReference' => SearchReference,
+      }.freeze
+
+      # Restoring a deleted record normally gives it a new primary key. These
+      # types keep their original key so their version history stays continuous.
+      PRESERVE_ID_ON_RECREATE = %w[SearchReference].freeze
+
+      SEARCH_REFERENCE_BLOCKED_REASONS = {
+        missing: 'no longer exists',
+        expired: 'has expired',
+        superseded: 'has been superseded',
+        unknown: 'is no longer current',
       }.freeze
 
       def restore
@@ -37,12 +49,15 @@ module Api
           restorable = version.object.except(*non_restorable_keys(klass))
           record.set(restorable.transform_keys(&:to_sym))
         else
-          skip = %w[id created_at updated_at]
-          restorable = version.object.except(*skip)
-          record = klass.new(restorable.transform_keys(&:to_sym))
+          record = recreate_record(klass, version)
         end
 
-        record.save
+        blocked_reason = restore_blocked_reason(record)
+        return render_restore_error(blocked_reason) if blocked_reason
+
+        return render_restore_error(record.errors.full_messages.to_sentence) unless record.save
+
+        after_restore(record)
 
         render json: VersionSerializer.new(
           record.versions.order(Sequel.desc(:id)).first,
@@ -50,6 +65,37 @@ module Api
       end
 
     private
+
+      def recreate_record(klass, version)
+        restorable = version.object.except('id', 'created_at', 'updated_at')
+        record = klass.new(restorable.transform_keys(&:to_sym))
+        record.values[:id] = version.object['id'] if PRESERVE_ID_ON_RECREATE.include?(version.item_type)
+        record
+      end
+
+      def restore_blocked_reason(record)
+        return unless record.is_a?(SearchReference)
+
+        result = TimeMachine.no_time_machine { ::SearchReferences::InvalidationReasonService.call(record) }
+        return unless result[:removal_alert_required]
+
+        explanation = SEARCH_REFERENCE_BLOCKED_REASONS.fetch(result[:reason], 'is no longer current')
+        message = "Cannot restore this search reference because commodity #{result[:goods_nomenclature_item_id]} #{explanation}"
+        message += " (successors: #{result[:successor_ids].join(', ')})" if result[:successor_ids].present?
+        "#{message}."
+      end
+
+      def after_restore(record)
+        return unless record.is_a?(SearchReference)
+
+        sid = record.goods_nomenclature_sid
+        ScoreLabelBatchWorker.perform_async(sid) if sid
+      end
+
+      def render_restore_error(detail)
+        render json: { errors: [{ status: '422', title: 'Restore failed', detail: }] },
+               status: :unprocessable_content
+      end
 
       def non_restorable_keys(klass)
         pk_cols = Array(klass.primary_key).map(&:to_s)
