@@ -23,7 +23,7 @@ development: &pricing
     long_context_output_multiplier: 1.5
   gpt-5.6-sol:
     <<: *gpt_5_6_sol
-  gpt-5.6-terra:
+  gpt-5.6-terra: &gpt_5_6_terra
     input_per_million_tokens: 2.0
     cached_input_per_million_tokens: 0.2
     output_per_million_tokens: 12.0
@@ -31,7 +31,7 @@ development: &pricing
     long_context_input_token_threshold: 272000
     long_context_input_multiplier: 2.0
     long_context_output_multiplier: 1.5
-  gpt-5.6-luna:
+  gpt-5.6-luna: &gpt_5_6_luna
     input_per_million_tokens: 0.2
     cached_input_per_million_tokens: 0.02
     output_per_million_tokens: 1.2
@@ -39,6 +39,20 @@ development: &pricing
     long_context_input_token_threshold: 272000
     long_context_input_multiplier: 2.0
     long_context_output_multiplier: 1.5
+  # Amazon Bedrock global cross-Region inference profiles are billed at OpenAI rates.
+  global.openai.gpt-5.6-sol:
+    <<: *gpt_5_6_sol
+  global.openai.gpt-5.6-terra:
+    <<: *gpt_5_6_terra
+  global.openai.gpt-5.6-luna:
+    <<: *gpt_5_6_luna
+  # Selectable model keys that route to Bedrock (OpenaiClient::MODEL_CONFIGS).
+  bedrock/gpt-5.6-sol:
+    <<: *gpt_5_6_sol
+  bedrock/gpt-5.6-terra:
+    <<: *gpt_5_6_terra
+  bedrock/gpt-5.6-luna:
+    <<: *gpt_5_6_luna
   gpt-5.5:
     input_per_million_tokens: 5.0
     cached_input_per_million_tokens: 0.5

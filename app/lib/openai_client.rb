@@ -56,14 +56,7 @@ class OpenaiClient
 
     model ||= TradeTariffBackend.ai_model
 
-    body = {
-      model: model,
-      messages: messages,
-      user: TradeTariffBackend.openai_user,
-      response_format: { type: 'json_object' },
-    }
-    body[:reasoning_effort] = reasoning_effort if reasoning_effort.present?
-    body = body.to_json
+    body = request_body(messages:, model:, reasoning_effort:).to_json
 
     with_retry(
       max_attempts: MAX_RETRIES,
@@ -85,7 +78,7 @@ class OpenaiClient
       response = post(body, remaining:)
       raise_on_error!(response, model:, event_kind:, reasoning_effort:) unless response.success?
 
-      json = response.body.dig('choices', 0, 'message', 'content') || ''
+      json = response_content(response.body) || ''
       result = begin
         JSON.parse(json)
       rescue StandardError
@@ -99,12 +92,35 @@ class OpenaiClient
 
 private
 
+  def request_path
+    'chat/completions'
+  end
+
+  def request_body(messages:, model:, reasoning_effort:)
+    body = {
+      model: model,
+      messages: messages,
+      user: TradeTariffBackend.openai_user,
+      response_format: { type: 'json_object' },
+    }
+    body[:reasoning_effort] = reasoning_effort if reasoning_effort.present?
+    body
+  end
+
+  def response_content(body)
+    body.dig('choices', 0, 'message', 'content')
+  end
+
+  def response_finish_reason(body)
+    body.dig('choices', 0, 'finish_reason')
+  end
+
   def post(body, remaining:)
-    return self.class.client.post('chat/completions', body) unless remaining
+    return self.class.client.post(request_path, body) unless remaining
 
     timeout, open_timeout = transport_timeouts(remaining)
 
-    self.class.client.post('chat/completions', body) do |request|
+    self.class.client.post(request_path, body) do |request|
       request.options.timeout = timeout
       request.options.open_timeout = open_timeout
     end
@@ -147,7 +163,7 @@ private
 
   def response_metadata(body, response, reasoning_effort:)
     {
-      finish_reason: body.dig('choices', 0, 'finish_reason'),
+      finish_reason: response_finish_reason(body),
       served_model: body['model'],
       service_tier: body['service_tier'],
       reasoning_effort: reasoning_effort.presence,
@@ -214,12 +230,20 @@ private
       Rails.logger.debug "OpenaiClient call took #{duration.round(2)} seconds"
     end
 
+    def api_base_url
+      TradeTariffBackend.openai_api_base_url
+    end
+
+    def api_key
+      TradeTariffBackend.openai_api_key
+    end
+
     def client
-      @client ||= Faraday.new(url: TradeTariffBackend.openai_api_base_url) do |faraday|
+      @client ||= Faraday.new(url: api_base_url) do |faraday|
         faraday.adapter Faraday.default_adapter
         faraday.headers['Accept'] = 'application/json'
         faraday.headers['Content-Type'] = 'application/json'
-        faraday.headers['Authorization'] = "Bearer #{TradeTariffBackend.openai_api_key}"
+        faraday.headers['Authorization'] = "Bearer #{api_key}"
         faraday.headers['User-Agent'] = TradeTariffBackend.user_agent
         faraday.response :json, content_type: /\bjson$/
         faraday.options.timeout = TradeTariffBackend.openai_api_timeout
@@ -229,6 +253,12 @@ private
   end
 
   MODEL_CONFIGS = {
+    # Spike: GPT-5.6 on Amazon Bedrock (global cross-Region inference), routed by
+    # TradeTariffBackend.search_ai_client to BedrockOpenaiClient.
+    'bedrock/gpt-5.6-sol' => { reasoning_levels: %w[none low medium high xhigh max] },
+    'bedrock/gpt-5.6-terra' => { reasoning_levels: %w[none low medium high xhigh max] },
+    'bedrock/gpt-5.6-luna' => { reasoning_levels: %w[none low medium high xhigh max] },
+
     # GPT-6 (1M context)
     'gpt-6-astra' => { reasoning_levels: %w[low medium high xhigh max] },
 

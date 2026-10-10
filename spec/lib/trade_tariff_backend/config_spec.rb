@@ -737,6 +737,25 @@ RSpec.describe TradeTariffBackend::Config do
       end
     end
 
+    describe '.bedrock_api_key' do
+      it 'reads AWS_BEARER_TOKEN_BEDROCK from ENV' do
+        ENV['AWS_BEARER_TOKEN_BEDROCK'] = 'bedrock-api-key-test'
+        expect(config.bedrock_api_key).to eq('bedrock-api-key-test')
+      end
+    end
+
+    describe '.bedrock_api_base_url' do
+      it 'defaults to the eu-west-2 OpenAI-compatible endpoint' do
+        ENV.delete('BEDROCK_REGION')
+        expect(config.bedrock_api_base_url).to eq('https://bedrock-runtime.eu-west-2.amazonaws.com/openai/v1')
+      end
+
+      it 'uses BEDROCK_REGION' do
+        ENV['BEDROCK_REGION'] = 'us-east-1'
+        expect(config.bedrock_api_base_url).to eq('https://bedrock-runtime.us-east-1.amazonaws.com/openai/v1')
+      end
+    end
+
     describe '.slack_web_hook_url' do
       it 'reads SLACK_WEB_HOOK_URL from ENV' do
         ENV['SLACK_WEB_HOOK_URL'] = 'https://hooks.slack.example/abc'

@@ -84,4 +84,18 @@ RSpec.describe TradeTariffBackend::Clients do
       expect(backend.number_formatter).to be(first)
     end
   end
+
+  describe '.search_ai_client' do
+    it 'returns BedrockOpenaiClient for a Bedrock model' do
+      expect(backend.search_ai_client('bedrock/gpt-5.6-terra')).to be(BedrockOpenaiClient)
+    end
+
+    it 'returns OpenaiClient for an OpenAI model' do
+      expect(backend.search_ai_client('gpt-5.6-terra')).to be(OpenaiClient)
+    end
+
+    it 'returns OpenaiClient when no model is given' do
+      expect(backend.search_ai_client(nil)).to be(OpenaiClient)
+    end
+  end
 end
