@@ -65,7 +65,6 @@ class OpenaiClient
     }
     body[:reasoning] = { effort: reasoning_effort } if reasoning_effort.present?
     body = body.to_json
-    Rails.logger.info "OpenaiClient: calling model=#{model} reasoning_effort=#{reasoning_effort} event_kind=#{event_kind} timeout=#{timeout} body=#{body}"
 
     with_retry(
       max_attempts: MAX_RETRIES,
