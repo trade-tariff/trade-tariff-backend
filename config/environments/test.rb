@@ -74,4 +74,9 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Negative examples intentionally violate constraints. Those are ERROR in the
+  # server log unless this session raises the threshold. The client still
+  # receives the exception, so a real failure still fails the example.
+  config.sequel.after_new_connection = proc { |conn| conn.exec('SET log_min_messages TO fatal') }
 end
