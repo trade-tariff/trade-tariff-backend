@@ -155,6 +155,82 @@ RSpec.describe Api::Admin::Search::Evaluation::ResultsController, :admin do
     it { expect(json_response['data'].size).to eq(1) }
   end
 
+  # A fresh top-level describe, not nested under "GET #index" above -- that block's own `before`
+  # seeds two bystander results scoped to `run` with every other attribute left at its factory/DB
+  # default, which would otherwise leak into a loose outcome filter's results here too.
+  describe 'GET #index with persona and outcome filters' do
+    let(:make_request) { authenticated_get api_admin_search_evaluation_results_path(format: :json), params: filter_params }
+
+    context 'when filtering by persona' do
+      let(:filter_params) { { run_id: run.id, persona: 'emu_specific' } }
+
+      before do
+        create(:evaluation_result, evaluation_run: run, persona: 'emu_generic', source_id: 'generic-1')
+        create(:evaluation_result, evaluation_run: run, persona: 'emu_specific', source_id: 'specific-1')
+      end
+
+      it 'returns only results from that persona' do
+        expect(json_response['data'].map { |item| item['attributes']['source_id'] }).to contain_exactly('specific-1')
+      end
+    end
+
+    context 'when filtering by outcome=pass' do
+      let(:filter_params) { { run_id: run.id, outcome: 'pass' } }
+
+      before do
+        create(:evaluation_result, evaluation_run: run, source_id: 'passed', gold_in_top5: true)
+        create(:evaluation_result, evaluation_run: run, source_id: 'failed', gold_in_top5: false)
+        create(:evaluation_result, evaluation_run: run, source_id: 'errored', gold_in_top5: false, error: 'simulator exhausted its retries')
+      end
+
+      it 'returns only results scored in the top 5' do
+        expect(json_response['data'].map { |item| item['attributes']['source_id'] }).to contain_exactly('passed')
+      end
+    end
+
+    context 'when filtering by outcome=fail' do
+      let(:filter_params) { { run_id: run.id, outcome: 'fail' } }
+
+      before do
+        create(:evaluation_result, evaluation_run: run, source_id: 'passed', gold_in_top5: true)
+        create(:evaluation_result, evaluation_run: run, source_id: 'failed', gold_in_top5: false)
+        create(:evaluation_result, evaluation_run: run, source_id: 'errored', gold_in_top5: false, error: 'simulator exhausted its retries')
+      end
+
+      it 'returns only genuine misses, not errored results' do
+        expect(json_response['data'].map { |item| item['attributes']['source_id'] }).to contain_exactly('failed')
+      end
+    end
+
+    context 'when filtering by outcome=error' do
+      let(:filter_params) { { run_id: run.id, outcome: 'error' } }
+
+      before do
+        create(:evaluation_result, evaluation_run: run, source_id: 'passed', gold_in_top5: true)
+        create(:evaluation_result, evaluation_run: run, source_id: 'failed', gold_in_top5: false)
+        create(:evaluation_result, evaluation_run: run, source_id: 'errored', gold_in_top5: false, error: 'simulator exhausted its retries')
+      end
+
+      it 'returns only results whose session errored' do
+        expect(json_response['data'].map { |item| item['attributes']['source_id'] }).to contain_exactly('errored')
+      end
+    end
+
+    context 'when filtering by persona and outcome together' do
+      let(:filter_params) { { run_id: run.id, persona: 'emu_specific', outcome: 'fail' } }
+
+      before do
+        create(:evaluation_result, evaluation_run: run, source_id: 'specific-fail', persona: 'emu_specific', gold_in_top5: false)
+        create(:evaluation_result, evaluation_run: run, source_id: 'specific-pass', persona: 'emu_specific', gold_in_top5: true)
+        create(:evaluation_result, evaluation_run: run, source_id: 'generic-fail', persona: 'emu_generic', gold_in_top5: false)
+      end
+
+      it 'applies both filters at once' do
+        expect(json_response['data'].map { |item| item['attributes']['source_id'] }).to contain_exactly('specific-fail')
+      end
+    end
+  end
+
   describe 'GET #show' do
     let(:make_request) { authenticated_get api_admin_search_evaluation_result_path(id, format: :json) }
 
