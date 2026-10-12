@@ -9,6 +9,10 @@ RSpec.configure do |config|
 
   config.filter_run :focus
   config.run_all_when_everything_filtered = true
+  config.silence_filter_announcements = true
+  # Draft API docs stay in the tree, but they are not part of the default run.
+  # RUN_DRAFT_DOCS=true exercises them.
+  config.filter_run_excluding draft_docs: true unless ENV['RUN_DRAFT_DOCS'] == 'true'
   config.expose_dsl_globally = false
 
   config.order = :random

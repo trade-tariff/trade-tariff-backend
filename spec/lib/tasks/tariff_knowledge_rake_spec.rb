@@ -278,6 +278,7 @@ RSpec.describe 'tariff_knowledge rake tasks' do
       expect {
         expect { Rake::Task['tariff_knowledge:note_structures:validate'].invoke }
           .to raise_error(SystemExit, /Note structure validation reported issues/)
+          .and output(a_string_including('Note structure validation reported issues.')).to_stderr
       }.to output(a_string_including('Validated 1 tariff knowledge note sources')).to_stdout
     ensure
       if original_value

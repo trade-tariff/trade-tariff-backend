@@ -1,6 +1,8 @@
 require 'swagger_helper'
 
-RSpec.describe 'Classification Search', skip: 'Draft MCP API docs are held back until release', swagger_doc: 'v2/swagger.json', type: :request do
+# Held back until the MCP classification search API is released.
+# The default run excludes draft_docs so these do not appear as pending failures.
+RSpec.describe 'Classification Search', :draft_docs, swagger_doc: 'v2/swagger.json', type: :request do
   let(:accept) { 'application/vnd.hmrc.2.0+json' }
 
   path '/api/classification_search' do
