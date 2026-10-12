@@ -37,6 +37,10 @@ Return the labeled commodity data in JSON format with the following fields:
 
 Ensure you label **ALL** provided commodities in the output array, even if the list is long. Do not truncate or omit any.
 
+Only list a brand in **known_brands** when the supplied **description** names it. Do not invent a brand. Do not list a brand whose name only occurs inside another word.
+
+Return at most eight entries in **synonyms** and at most eight entries in **colloquial_terms**. Do not return blank or duplicate entries.
+
 Always respond with a JSON array of objects.
 
 What follows is the commodity data to label in JSON format:
