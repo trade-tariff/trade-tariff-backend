@@ -32,7 +32,10 @@ class GeneratedLabelFilter
     def named_in?(brand, description)
       return false if description.empty?
 
-      description.match?(/\b#{Regexp.escape(brand)}\b/i)
+      # A named brand may end in punctuation, for example "Chips Ahoy!".
+      # Word boundaries fail after such punctuation, so check instead that
+      # the match is not part of a longer word on either side.
+      description.match?(/(?<!\w)#{Regexp.escape(brand)}(?!\w)/i)
     end
   end
 end

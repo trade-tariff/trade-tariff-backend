@@ -153,6 +153,42 @@ RSpec.describe LabelService do
       end
     end
 
+    context 'when the contextual description names a brand with trailing punctuation' do
+      let(:goods_nomenclature) do
+        instance_double(
+          GoodsNomenclature,
+          goods_nomenclature_sid: 1,
+          goods_nomenclature_item_id: '0101210000',
+          ancestor_chain_description: 'Live animals >> Horses! >> Pure-bred breeding animals',
+          goods_nomenclature_label: nil,
+          as_json: { 'goods_nomenclature_item_id' => '0101210000' },
+        )
+      end
+      let(:ai_response) do
+        {
+          'data' => [
+            {
+              'commodity_code' => '0101210000',
+              'description' => 'Purebred horses for breeding',
+              'known_brands' => %w[Horses! orses!],
+              'colloquial_terms' => [],
+              'synonyms' => [],
+            },
+          ],
+        }
+      end
+
+      it 'keeps the brand with the trailing exclamation mark and rejects the substring brand' do
+        described_class.new([goods_nomenclature]).call
+
+        expect(GoodsNomenclatureLabel).to have_received(:build).with(
+          goods_nomenclature,
+          hash_including('known_brands' => ['Horses!']),
+          contextual_description: 'Live animals >> Horses! >> Pure-bred breeding animals',
+        )
+      end
+    end
+
     context 'when the AI returns more than eight synonyms or colloquial terms' do
       let(:ai_response) do
         {
