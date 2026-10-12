@@ -23,9 +23,6 @@ jobs:
         with:
           role-to-assume: ${{ env.IAM_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-      - uses: trade-tariff/trade-tariff-tools/.github/actions/setup-ssh@main
-        with:
-          ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
       - name: Fetch Subnet and Security Group IDs
         id: network
         run: |
