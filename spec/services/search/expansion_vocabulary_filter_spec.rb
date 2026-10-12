@@ -34,8 +34,10 @@ RSpec.describe Search::ExpansionVocabularyFilter do
       expect(described_class.call(original_query: 'chicken', expanded_query: 'chicken chickens')).to eq('chicken chickens')
     end
 
-    it 'keeps a singular fold of a query token without vocabulary support' do
-      expect(described_class.call(original_query: 'breeding horses', expanded_query: 'breeding horses horse')).to eq('breeding horses horse')
+    it 'does not guess a singular when the plural has two stems' do
+      expect(described_class.call(original_query: 'cases', expanded_query: 'cases cas')).to eq('cases')
+      expect(described_class.call(original_query: 'cases', expanded_query: 'cases case')).to eq('cases')
+      expect(described_class.call(original_query: 'houses', expanded_query: 'houses hous')).to eq('houses')
     end
 
     it 'keeps an ies fold of a query token without vocabulary support' do
@@ -66,8 +68,9 @@ RSpec.describe Search::ExpansionVocabularyFilter do
       expect(described_class.call(original_query: 'bus', expanded_query: 'bus buses')).to eq('bus buses')
     end
 
-    it 'keeps the singular of a plural noun that ends in ses' do
-      expect(described_class.call(original_query: 'buses', expanded_query: 'buses bus')).to eq('buses bus')
+    it 'does not guess the singular of an ambiguous ses plural' do
+      expect(described_class.call(original_query: 'buses', expanded_query: 'buses bus')).to eq('buses')
+      expect(described_class.call(original_query: 'buses', expanded_query: 'buses buse')).to eq('buses')
     end
 
     it 'does not pluralize a token that is already plural' do

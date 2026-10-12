@@ -80,8 +80,11 @@ module Search
     # A plural token is not pluralized again. "chickens" does not accept
     # "chickenss", and "buses" does not accept "buseses".
     def related_forms(token)
-      singular = singular_form(token) || token
-      [singular, plural_form(singular)].uniq
+      singular = singular_form(token)
+      return [singular, token].uniq if singular
+      return [token] if competing_stems(token).size > 1
+
+      [token, plural_form(token)].uniq
     end
 
     def plural_form(token)
@@ -99,18 +102,23 @@ module Search
         return stem if consonant_y?(stem) && plural_form(stem) == word
       end
 
-      es_stem = word.delete_suffix('es') if word.end_with?('es')
-      s_stem = word.delete_suffix('s') if word.end_with?('s')
-      # "buses" is bus + es. "horses" is horse + s. A vowel before the
-      # final s marks the es plural. A stem ending in se marks the s plural.
-      if es_stem&.match?(/[aeiou]s\z/) && plural_form(es_stem) == word
-        return es_stem
-      end
-      return s_stem if s_stem&.end_with?('se') && plural_form(s_stem) == word
-      return es_stem if es_stem && es_plural?(es_stem) && !es_stem.end_with?('s') && plural_form(es_stem) == word
-      return s_stem if s_stem && !es_plural?(s_stem) && plural_form(s_stem) == word
+      stems = competing_stems(word)
+      stems.first if stems.size == 1
+    end
 
-      nil
+    # "cases" is both cas + es and case + s. More than one stem means the
+    # fold is ambiguous, so neither stem is granted without vocabulary support.
+    def competing_stems(word)
+      stems = []
+      if word.end_with?('es')
+        stem = word.delete_suffix('es')
+        stems << stem if es_plural?(stem) && plural_form(stem) == word
+      end
+      if word.end_with?('s')
+        stem = word.delete_suffix('s')
+        stems << stem if !es_plural?(stem) && !consonant_y?(stem) && plural_form(stem) == word
+      end
+      stems.uniq
     end
 
     def es_plural?(stem)
