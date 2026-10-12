@@ -19,8 +19,8 @@ module Search
   # Historical dates are rare, and a second snapshot would replace this one
   # and rebuild the whole set.
   #
-  # Do not load this set from an initializer or a worker. Workers must not
-  # build or retain it.
+  # A worker does not build or retain the set. Queued search reads the shared
+  # cache written by a web process. A cache miss keeps the original query.
   class ExpansionVocabulary
     TTL = 1.hour
     PAGE_SIZE = 1_000
@@ -47,10 +47,9 @@ module Search
       # Returns nil when the set is not loaded yet. The caller keeps the
       # original query in that case.
       def supported_words(candidates)
-        return nil if worker_process?
-
         at, atar = context
         return nil unless current_date?(at)
+        return worker_supported_words(candidates, atar) if worker_process?
 
         key = cache_key(atar)
         snapshot = @snapshot
@@ -97,10 +96,37 @@ module Search
         at == Date.current
       end
 
-      # Queued search runs this filter inside Sidekiq. Do not build or keep
-      # the word set in a worker process.
+      SHARED_CACHE_PREFIX = 'search_expansion_vocabulary/v1'
+
+      # Queued search runs this filter inside Sidekiq. Read the shared cache
+      # only. Do not build or retain the set in the worker.
       def worker_process?
         Sidekiq.server?
+      end
+
+      def worker_supported_words(candidates, atar)
+        words = read_shared(atar)
+        return if words.nil?
+
+        select_supported(words, candidates)
+      end
+
+      def publish_snapshot(atar, words)
+        word_set = words.to_set
+        @snapshot = Snapshot.new(key: cache_key(atar), words: word_set, loaded_at: Time.current)
+        Rails.cache.write(shared_cache_key(atar), word_set.to_a, expires_in: TTL)
+        word_set
+      end
+
+      def read_shared(atar)
+        words = Rails.cache.read(shared_cache_key(atar))
+        return if words.blank?
+
+        words.to_set
+      end
+
+      def shared_cache_key(atar)
+        "#{SHARED_CACHE_PREFIX}/#{atar}"
       end
 
       def cache_key(atar)
@@ -124,7 +150,7 @@ module Search
             Rails.application.executor.wrap do
               started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
               words = with_read_connection { build(Date.current, refresh_atar) }
-              @snapshot = Snapshot.new(key: cache_key(refresh_atar), words:, loaded_at: Time.current)
+              publish_snapshot(refresh_atar, words)
               elapsed_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started) * 1000).round
               Rails.logger.info("Search expansion vocabulary refreshed in #{elapsed_ms}ms with #{words.size} words")
             end

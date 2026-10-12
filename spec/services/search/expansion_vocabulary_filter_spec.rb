@@ -247,6 +247,18 @@ RSpec.describe Search::ExpansionVocabularyFilter do
       expect(described_class.call(original_query: 'chicken', expanded_query: 'poultry meat')).to eq('chicken')
     end
 
+    it 'uses a shared vocabulary in a worker without retaining it' do
+      memory_cache = ActiveSupport::Cache::MemoryStore.new
+      allow(Rails).to receive(:cache).and_return(memory_cache)
+      allow(Sidekiq).to receive(:server?).and_return(true)
+      Rails.cache.write('search_expansion_vocabulary/v1/false', %w[poultry meat])
+      expect(Sequel::Model).not_to receive(:db)
+
+      expect(described_class.call(original_query: 'chicken', expanded_query: 'poultry meat'))
+        .to eq('chicken poultry meat')
+      expect(Search::ExpansionVocabulary.instance_variable_get(:@snapshot)).to be_nil
+    end
+
     it 'does not duplicate the original query when the expansion prefix differs only in case' do
       create(:goods_nomenclature_description, description: 'Meat of poultry')
 
