@@ -19,6 +19,7 @@ RSpec.describe Api::Internal::SearchService do
     allow(AdminConfiguration).to receive(:enabled?).with('refine_search_with_answers_enabled').and_return(true)
     allow(AdminConfiguration).to receive(:enabled?).with('search_compressed_notes_enabled').and_return(false)
     allow(Search::Instrumentation).to receive(:search) { |**_kwargs, &block| block.call.first }
+    allow(Search::ExpansionVocabularyFilter).to receive(:call) { |**expansion| expansion[:expanded_query] }
     TradeTariffRequest.request_source = TradeTariffRequest::FRONTEND_REQUEST_SOURCE
     allow(SearchExport::JourneyProjection).to receive(:record).and_call_original
     allow(Search::Instrumentation).to receive(:evaluation_journey_recorded)
@@ -118,6 +119,21 @@ RSpec.describe Api::Internal::SearchService do
           expect(TradeTariffBackend.search_client).to have_received(:search).exactly(expected.empty? ? 1 : 2).times
         end
       end
+    end
+
+    it 'records only the added terms the tariff vocabulary supports' do
+      allow(Search::ExpansionVocabularyFilter).to receive(:call).and_call_original
+      create(:goods_nomenclature_description, description: 'Meat of poultry')
+      allow(ExpandSearchQueryService).to receive(:call).and_return(
+        ExpandSearchQueryService::Result.new(expanded_query: 'chicken poultry meat, zaptoxidinyl serum', reason: nil),
+      )
+
+      response = described_class.new(q: 'chicken', request_id: 'expansion-journey').call
+
+      expect(response.dig(:meta, :interactive_search, :query_expansion)).to eq(ai_terms: ['poultry meat'])
+      expect(response.dig(:meta, :interactive_search, :expanded_query)).to eq('chicken poultry meat')
+      expect(InteractiveSearchService).to have_received(:call)
+        .with(hash_including(expanded_query: 'chicken poultry meat'))
     end
 
     it 'combines carried AI terms with synonyms from the current retrieval only' do

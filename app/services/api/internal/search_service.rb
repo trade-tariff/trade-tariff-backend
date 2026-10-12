@@ -458,7 +458,10 @@ module Api
           original_query: query,
         ) { ExpandSearchQueryService.call(query, request_id:) }
 
-        result.expanded_query
+        ::Search::ExpansionVocabularyFilter.call(
+          original_query: query,
+          expanded_query: result.expanded_query,
+        )
       end
 
       def retrieval_query

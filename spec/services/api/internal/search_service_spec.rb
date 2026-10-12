@@ -30,6 +30,7 @@ RSpec.describe Api::Internal::SearchService do
       ExpandSearchQueryService::Result.new(expanded_query: query, reason: nil)
     end
     allow(InteractiveSearchService).to receive(:call).and_return(nil)
+    allow(Search::ExpansionVocabularyFilter).to receive(:call) { |**expansion| expansion[:expanded_query] }
     allow(Search::Instrumentation).to receive(:search) { |**_kwargs, &block| block.call&.first }
     allow(Search::Instrumentation).to receive(:query_expanded).and_yield
     allow(Search::Instrumentation).to receive(:query_refined).and_call_original
@@ -976,6 +977,39 @@ RSpec.describe Api::Internal::SearchService do
 
         expect(ExpandSearchQueryService).to have_received(:call).with('handbag Leather', request_id: a_kind_of(String))
       end
+
+      it 'drops added terms that the tariff vocabulary does not support' do
+        allow(Search::ExpansionVocabularyFilter).to receive(:call).and_call_original
+        allow(ExpandSearchQueryService).to receive(:call)
+          .and_return(ExpandSearchQueryService::Result.new(expanded_query: 'laptop zaptoxidinyl screens', reason: nil))
+        allow(Search::GoodsNomenclatureQuery).to receive(:new).and_call_original
+
+        described_class.new(q: 'laptop').call
+
+        expect(Search::ExpansionVocabularyFilter).to have_received(:call)
+          .with(original_query: 'laptop', expanded_query: 'laptop zaptoxidinyl screens')
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'laptop',
+          anything,
+          hash_including(expanded_query: 'laptop'),
+        )
+      end
+
+      it 'keeps added terms that the tariff vocabulary supports' do
+        allow(Search::ExpansionVocabularyFilter).to receive(:call).and_call_original
+        create(:goods_nomenclature_description, description: 'Portable computers')
+        allow(ExpandSearchQueryService).to receive(:call)
+          .and_return(ExpandSearchQueryService::Result.new(expanded_query: 'laptop portable computers', reason: nil))
+        allow(Search::GoodsNomenclatureQuery).to receive(:new).and_call_original
+
+        described_class.new(q: 'laptop').call
+
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'laptop',
+          anything,
+          hash_including(expanded_query: 'laptop portable computers'),
+        )
+      end
     end
 
     context 'when conditional expansion is enabled' do
@@ -1023,6 +1057,31 @@ RSpec.describe Api::Internal::SearchService do
         expect(ExpandSearchQueryService).to have_received(:call).with('CBD oil', request_id: a_kind_of(String))
         expect(TradeTariffBackend.search_client).to have_received(:search).twice
         expect(result[:data].first[:attributes][:goods_nomenclature_item_id]).to eq('3304990000')
+      end
+
+      it 'retains the preliminary retrieval when the vocabulary filter drops the whole rewrite' do
+        allow(Search::ExpansionVocabularyFilter).to receive(:call).and_call_original
+
+        described_class.new(q: 'CBD oil').call
+
+        expect(Search::ExpansionVocabularyFilter).to have_received(:call)
+          .with(original_query: 'CBD oil', expanded_query: 'cannabidiol oil')
+        expect(TradeTariffBackend.search_client).to have_received(:search).once
+      end
+
+      it 'keeps a rewrite whose words the tariff vocabulary supports and prefixes the original query' do
+        allow(Search::ExpansionVocabularyFilter).to receive(:call).and_call_original
+        create(:goods_nomenclature_description, description: 'Cannabidiol oil preparations')
+        allow(Search::GoodsNomenclatureQuery).to receive(:new).and_call_original
+
+        described_class.new(q: 'CBD oil').call
+
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'CBD oil',
+          anything,
+          hash_including(expanded_query: 'CBD oil cannabidiol oil'),
+        )
+        expect(TradeTariffBackend.search_client).to have_received(:search).twice
       end
 
       it 'uses retrieval synonyms before retaining evidence-based AI fallback with the v2 decider' do

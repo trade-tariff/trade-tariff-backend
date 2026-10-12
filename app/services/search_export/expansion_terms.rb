@@ -10,6 +10,9 @@ module SearchExport
       terms.filter_map { |term| term.to_s.strip.presence }.uniq
     end
 
+    # Returns the text a model added to the expansion input: the appended
+    # suffix of a prefixed query, or the whole string when the model wrote a
+    # rewrite instead of appending. Shared with Search::ExpansionVocabularyFilter.
     def self.added_ai_term(expansion_input, sent_query)
       input = expansion_input.to_s
       sent = sent_query.to_s
@@ -21,7 +24,5 @@ module SearchExport
         sent
       end
     end
-
-    private_class_method :added_ai_term
   end
 end
