@@ -11,6 +11,42 @@ RSpec.describe CognitoTokenVerifier do
       allow(JWT).to receive(:decode).and_return(decoded_token)
     end
 
+    context 'when real local authentication is selected' do
+      before do
+        allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('development'))
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with('MYOTT_AUTH_BYPASS').and_return('false')
+      end
+
+      it 'uses the token account without fetching external signing keys' do
+        expect(described_class.verify_id_token(token).payload['sub']).to eq('1234567890')
+        expect(Faraday).not_to have_received(:get)
+      end
+
+      it 'rejects malformed tokens' do
+        allow(JWT).to receive(:decode).and_raise(JWT::DecodeError)
+        expect(described_class.verify_id_token(token).reason).to eq(:invalid_token)
+      end
+
+      it 'rejects tokens in the wrong group' do
+        allow(JWT).to receive(:decode).and_return([{ 'sub' => 'other', 'cognito:groups' => %w[admin] }])
+        expect(described_class.verify_id_token(token).reason).to eq(:not_in_group)
+      end
+    end
+
+    context 'when baseline development authentication is selected' do
+      before do
+        allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('development'))
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with('MYOTT_AUTH_BYPASS').and_return(nil)
+      end
+
+      it 'preserves the existing key fetch' do
+        described_class.verify_id_token(token)
+        expect(Faraday).to have_received(:get)
+      end
+    end
+
     context 'when the token is valid' do
       it 'returns a valid Result with payload' do
         result = described_class.verify_id_token(token)
