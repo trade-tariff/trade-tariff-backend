@@ -242,16 +242,15 @@ RSpec.describe Search::ExpansionVocabularyFilter do
 
     it 'does not build a vocabulary in a worker process' do
       allow(Sidekiq).to receive(:server?).and_return(true)
+      Sidekiq.redis { |redis| redis.call('DEL', "search_expansion_vocabulary/v1/#{Date.current}/false") }
       expect(Sequel::Model).not_to receive(:db)
 
       expect(described_class.call(original_query: 'chicken', expanded_query: 'poultry meat')).to eq('chicken')
     end
 
     it 'uses a shared vocabulary in a worker without retaining it' do
-      memory_cache = ActiveSupport::Cache::MemoryStore.new
-      allow(Rails).to receive(:cache).and_return(memory_cache)
       allow(Sidekiq).to receive(:server?).and_return(true)
-      Rails.cache.write("search_expansion_vocabulary/v1/#{Date.current}/false", %w[poultry meat])
+      write_shared_words(Date.current, %w[poultry meat])
       expect(Sequel::Model).not_to receive(:db)
 
       expect(described_class.call(original_query: 'chicken', expanded_query: 'poultry meat'))
@@ -260,10 +259,9 @@ RSpec.describe Search::ExpansionVocabularyFilter do
     end
 
     it 'does not use a shared vocabulary from another date' do
-      memory_cache = ActiveSupport::Cache::MemoryStore.new
-      allow(Rails).to receive(:cache).and_return(memory_cache)
       allow(Sidekiq).to receive(:server?).and_return(true)
-      Rails.cache.write("search_expansion_vocabulary/v1/#{Date.current - 1}/false", %w[poultry])
+      Sidekiq.redis { |redis| redis.call('DEL', "search_expansion_vocabulary/v1/#{Date.current}/false") }
+      write_shared_words(Date.current - 1, %w[poultry])
 
       expect(described_class.call(original_query: 'chicken', expanded_query: 'poultry meat')).to eq('chicken')
     end
@@ -279,6 +277,14 @@ RSpec.describe Search::ExpansionVocabularyFilter do
       TradeTariffRequest.time_machine_now = 2.years.ago
 
       expect(described_class.call(original_query: 'chicken', expanded_query: 'poultry meat')).to eq('chicken')
+    end
+
+    def write_shared_words(date, words)
+      key = "search_expansion_vocabulary/v1/#{date}/false"
+      Sidekiq.redis do |redis|
+        redis.call('DEL', key)
+        redis.call('SADD', key, *words)
+      end
     end
   end
 end

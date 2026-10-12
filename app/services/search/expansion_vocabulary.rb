@@ -19,8 +19,9 @@ module Search
   # Historical dates are rare, and a second snapshot would replace this one
   # and rebuild the whole set.
   #
-  # A worker does not build or retain the set. Queued search reads the shared
-  # cache written by a web process. A cache miss keeps the original query.
+  # A worker does not build or retain the set. Queued search checks only the
+  # candidate words against a shared Redis set. A missing set keeps the
+  # original query.
   class ExpansionVocabulary
     TTL = 1.hour
     SHARED_TTL = 26.hours
@@ -107,25 +108,36 @@ module Search
       end
 
       def worker_supported_words(candidates, at, atar)
-        words = read_shared(at, atar)
-        return if words.nil?
+        return Set.new if candidates.empty?
+        return unless shared_exists?(at, atar)
 
-        select_supported(words, candidates)
+        present = candidates.select { |word| shared_member?(at, atar, word) }
+        present.to_set
       end
 
       def publish_snapshot(at, atar, words)
         word_set = words.to_set
         @snapshot = Snapshot.new(key: cache_key(at, atar), words: word_set, loaded_at: Time.current)
-        Rails.cache.write(shared_cache_key(at, atar), word_set.to_a, expires_in: SHARED_TTL)
-        @shared_written_at = Time.current
+        write_shared(at, atar, word_set)
         word_set
       end
 
-      def read_shared(at, atar)
-        words = Rails.cache.read(shared_cache_key(at, atar))
-        return if words.blank?
+      def write_shared(at, atar, words)
+        key = shared_cache_key(at, atar)
+        Sidekiq.redis do |redis|
+          redis.call('DEL', key)
+          words.each_slice(500) { |slice| redis.call('SADD', key, *slice) }
+          redis.call('EXPIRE', key, SHARED_TTL.to_i)
+        end
+        @shared_written_at = Time.current
+      end
 
-        words.to_set
+      def shared_exists?(at, atar)
+        Sidekiq.redis { |redis| redis.call('EXISTS', shared_cache_key(at, atar)).to_i.positive? }
+      end
+
+      def shared_member?(at, atar, word)
+        Sidekiq.redis { |redis| redis.call('SISMEMBER', shared_cache_key(at, atar), word).to_i == 1 }
       end
 
       def shared_cache_key(at, atar)
@@ -142,10 +154,9 @@ module Search
 
       def republish_shared(at, atar, words)
         return if @shared_written_at && @shared_written_at > 5.minutes.ago
-        return if Rails.cache.exist?(shared_cache_key(at, atar))
+        return if shared_exists?(at, atar)
 
-        Rails.cache.write(shared_cache_key(at, atar), words.to_a, expires_in: SHARED_TTL)
-        @shared_written_at = Time.current
+        write_shared(at, atar, words)
       end
 
       def claim_refresh_lock?
