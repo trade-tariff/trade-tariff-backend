@@ -58,7 +58,7 @@ module Search
 
         if snapshot&.key == key
           schedule_refresh(atar) if !fresh?(snapshot) && !Rails.env.test?
-          republish_shared(at, atar, snapshot.words) if fresh?(snapshot)
+          schedule_shared_republish(at, atar, snapshot.words) if fresh?(snapshot) && !Rails.env.test?
           return select_supported(snapshot.words, candidates)
         end
 
@@ -123,11 +123,16 @@ module Search
       end
 
       def write_shared(at, atar, words)
+        return if words.blank?
+
         key = shared_cache_key(at, atar)
+        staging = "#{key}:staging:#{Process.pid}"
         Sidekiq.redis do |redis|
-          redis.call('DEL', key)
-          words.each_slice(500) { |slice| redis.call('SADD', key, *slice) }
-          redis.call('EXPIRE', key, SHARED_TTL.to_i)
+          redis.call('DEL', staging)
+          words.each_slice(500) { |slice| redis.call('SADD', staging, *slice) }
+          redis.call('EXPIRE', staging, SHARED_TTL.to_i)
+          # Rename is atomic. Readers see the old complete set or the new one.
+          redis.call('RENAME', staging, key)
         end
         @shared_written_at = Time.current
       end
@@ -152,11 +157,17 @@ module Search
         snapshot.loaded_at > TTL.ago
       end
 
-      def republish_shared(at, atar, words)
-        return if @shared_written_at && @shared_written_at > 5.minutes.ago
-        return if shared_exists?(at, atar)
+      def schedule_shared_republish(at, atar, words)
+        return if @shared_checked_at && @shared_checked_at > 5.minutes.ago
 
-        write_shared(at, atar, words)
+        @shared_checked_at = Time.current
+        Thread.new(at, atar, words.to_a) do |refresh_at, refresh_atar, refresh_words|
+          Rails.application.executor.wrap do
+            write_shared(refresh_at, refresh_atar, refresh_words) unless shared_exists?(refresh_at, refresh_atar)
+          end
+        rescue StandardError => e
+          Rails.logger.warn("Search expansion vocabulary republish failed: #{e.class} #{e.message}")
+        end
       end
 
       def claim_refresh_lock?
