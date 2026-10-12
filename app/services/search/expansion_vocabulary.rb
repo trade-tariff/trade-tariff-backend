@@ -23,6 +23,7 @@ module Search
   # cache written by a web process. A cache miss keeps the original query.
   class ExpansionVocabulary
     TTL = 1.hour
+    SHARED_TTL = 26.hours
     PAGE_SIZE = 1_000
     REFRESH_JITTER_SECONDS = 3
     WORD_PATTERN = /[\p{alnum}']+/
@@ -56,6 +57,7 @@ module Search
 
         if snapshot&.key == key
           schedule_refresh(atar) if !fresh?(snapshot) && !Rails.env.test?
+          republish_shared(at, atar, snapshot.words) if fresh?(snapshot)
           return select_supported(snapshot.words, candidates)
         end
 
@@ -114,7 +116,8 @@ module Search
       def publish_snapshot(at, atar, words)
         word_set = words.to_set
         @snapshot = Snapshot.new(key: cache_key(at, atar), words: word_set, loaded_at: Time.current)
-        Rails.cache.write(shared_cache_key(at, atar), word_set.to_a, expires_in: TTL)
+        Rails.cache.write(shared_cache_key(at, atar), word_set.to_a, expires_in: SHARED_TTL)
+        @shared_written_at = Time.current
         word_set
       end
 
@@ -137,11 +140,28 @@ module Search
         snapshot.loaded_at > TTL.ago
       end
 
+      def republish_shared(at, atar, words)
+        return if @shared_written_at && @shared_written_at > 5.minutes.ago
+        return if Rails.cache.exist?(shared_cache_key(at, atar))
+
+        Rails.cache.write(shared_cache_key(at, atar), words.to_a, expires_in: SHARED_TTL)
+        @shared_written_at = Time.current
+      end
+
+      def claim_refresh_lock?
+        Rails.cache.write(refresh_lock_key, true, expires_in: 2.minutes, unless_exist: true)
+      end
+
+      def refresh_lock_key
+        "#{SHARED_CACHE_PREFIX}/refresh_lock"
+      end
+
       def schedule_refresh(atar)
         return if worker_process? || @refreshing
 
         MUTEX.synchronize do
           return if @refreshing
+          return unless claim_refresh_lock?
 
           @refreshing = true
           @refresh_thread = Thread.new(atar) do |refresh_atar|
