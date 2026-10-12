@@ -75,7 +75,7 @@ module Search
     # "chickeny".
     def morphological_variant?(word)
       query_tokens.any? do |token|
-        word == token || word == plural_form(token) || singular_form(word) == token || singular_form(token) == word
+        word == token || word == plural_form(token) || token == plural_form(word)
       end
     end
 
@@ -86,27 +86,8 @@ module Search
       "#{token}s"
     end
 
-    def singular_form(word)
-      return if word.length < 4
-
-      if word.end_with?('ies')
-        stem = "#{word.delete_suffix('ies')}y"
-        return stem if consonant_y?(stem)
-      end
-      # Strip es only for x, z, ch, or sh. A stem that merely ends in s
-      # would turn "horses" into "hors".
-      if word.end_with?('es')
-        stem = word.delete_suffix('es')
-        return stem if es_plural?(stem) && !stem.end_with?('s')
-      end
-      return unless word.end_with?('s')
-
-      stem = word.delete_suffix('s')
-      stem unless es_plural?(stem) || consonant_y?(stem)
-    end
-
     def es_plural?(stem)
-      stem.end_with?('x', 'z', 'ch', 'sh', 'ss') || stem.match?(/[^aeiou]s\z/)
+      stem.match?(/[sxz]\z/) || stem.end_with?('ch', 'sh')
     end
 
     def consonant_y?(token)

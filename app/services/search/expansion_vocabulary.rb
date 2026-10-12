@@ -118,12 +118,12 @@ module Search
           return if @refreshing
 
           @refreshing = true
-          Thread.new(atar) do |refresh_atar|
+          @refresh_thread = Thread.new(atar) do |refresh_atar|
             # Spread cold starts so web processes do not all read at once.
-            sleep(rand(0.0..REFRESH_JITTER_SECONDS))
+            sleep(refresh_delay)
             Rails.application.executor.wrap do
               started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-              words = build(Date.current, refresh_atar)
+              words = with_read_connection { build(Date.current, refresh_atar) }
               @snapshot = Snapshot.new(key: cache_key(refresh_atar), words:, loaded_at: Time.current)
               elapsed_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started) * 1000).round
               Rails.logger.info("Search expansion vocabulary refreshed in #{elapsed_ms}ms with #{words.size} words")
@@ -133,6 +133,18 @@ module Search
           ensure
             @refreshing = false
           end
+        end
+      end
+
+      def refresh_delay
+        rand(0.0..REFRESH_JITTER_SECONDS)
+      end
+
+      def with_read_connection(&block)
+        if Sequel::Model.db.servers.include?(:reader)
+          Sequel::Model.db.with_server(:reader, &block)
+        else
+          yield
         end
       end
 

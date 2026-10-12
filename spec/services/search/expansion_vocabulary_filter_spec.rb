@@ -62,6 +62,14 @@ RSpec.describe Search::ExpansionVocabularyFilter do
       expect(described_class.call(original_query: 'box', expanded_query: 'box boxes')).to eq('box boxes')
     end
 
+    it 'keeps the plural of a noun that ends in s' do
+      expect(described_class.call(original_query: 'bus', expanded_query: 'bus buses')).to eq('bus buses')
+    end
+
+    it 'keeps the singular of a plural noun that ends in ses' do
+      expect(described_class.call(original_query: 'buses', expanded_query: 'buses bus')).to eq('buses bus')
+    end
+
     it 'keeps a phrase that only repeats query tokens and stop words' do
       expect(described_class.call(original_query: 'frozen chicken', expanded_query: 'frozen chicken of chicken')).to eq('frozen chicken of chicken')
     end
