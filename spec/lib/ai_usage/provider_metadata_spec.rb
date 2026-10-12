@@ -80,7 +80,7 @@ RSpec.describe 'AI provider metadata' do
   context 'with Responses' do
     let(:model) { 'gpt-test' }
     let(:endpoint) { 'https://gb.api.openai.com/v1/responses' }
-    let(:success_body) { { 'output' => [{ 'type' => 'message', 'content' => [{ 'type' => 'output_text', 'text' => '{"answer":"test"}' }] }] } }
+    let(:success_body) { { 'status' => 'completed', 'output' => [{ 'type' => 'message', 'content' => [{ 'type' => 'output_text', 'text' => '{"answer":"test"}' }] }] } }
     let(:error_class) { OpenaiClient::ApiError }
     let(:call_provider) { -> { OpenaiClient.new.call('test', model:, event_kind: 'metadata_test') } }
 

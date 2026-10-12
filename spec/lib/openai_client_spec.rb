@@ -201,15 +201,77 @@ RSpec.describe OpenaiClient do
 
       before { allow(Kernel).to receive(:sleep) }
 
-      it 'retries and returns the completed response' do
+      it 'retries and returns the completed response with the usage of both attempts' do
+        allow(TradeTariffBackend).to receive(:openai_model_pricing).and_return({
+          'gpt-test' => { 'input_per_million_tokens' => 2.0, 'output_per_million_tokens' => 8.0 },
+        })
         stub_request(:post, "#{api_base_url}/responses")
           .to_return(
             { status: 200, body: failed_body.to_json, headers: { 'Content-Type' => 'application/json' } },
             { status: 200, body: response_body.to_json, headers: { 'Content-Type' => 'application/json' } },
           )
 
-        expect(client.call('test')).to eq('capital' => 'Paris')
+        result = client.call('test', model: 'gpt-test')
+
+        expect(result).to eq('capital' => 'Paris')
         expect(Kernel).to have_received(:sleep).with(2).once
+        expect(AiUsage.metadata_from(result).to_h).to include(
+          input_tokens: 2_000,
+          output_tokens: 250,
+          total_tokens: 2_250,
+          total_cost_usd: 0.006,
+          pricing_known: true,
+          finish_reason: 'completed',
+        )
+      end
+
+      it 'adds the failed attempt usage to a later incomplete response' do
+        incomplete_body = {
+          'status' => 'incomplete',
+          'incomplete_details' => { 'reason' => 'max_output_tokens' },
+          'output' => [],
+          'usage' => { 'input_tokens' => 1_000, 'output_tokens' => 4_000, 'total_tokens' => 5_000 },
+        }
+        stub_request(:post, "#{api_base_url}/responses")
+          .to_return(
+            { status: 200, body: failed_body.to_json, headers: { 'Content-Type' => 'application/json' } },
+            { status: 200, body: incomplete_body.to_json, headers: { 'Content-Type' => 'application/json' } },
+          )
+
+        expect { client.call('test') }
+          .to raise_error(OpenaiClient::ResponseIncompleteError) { |error|
+            expect(error.ai_usage.to_h).to include(
+              input_tokens: 2_000,
+              output_tokens: 4_000,
+              finish_reason: 'max_output_tokens',
+            )
+          }
+      end
+
+      it 'adds the failed attempt usage to a deadline error' do
+        allow(Process).to receive(:clock_gettime).with(Process::CLOCK_MONOTONIC).and_return(0.0, 0.5, 0.5)
+        stub_request(:post, "#{api_base_url}/responses")
+          .to_return(status: 200, body: failed_body.to_json, headers: { 'Content-Type' => 'application/json' })
+
+        expect { client.call('test', timeout: 1) }
+          .to raise_error(OpenaiClient::DeadlineExceeded) { |error|
+            expect(error.ai_usage.to_h).to include(input_tokens: 1_000, finish_reason: 'server_error')
+          }
+      end
+
+      it 'does not mark pricing unknown for an earlier attempt without usage' do
+        allow(TradeTariffBackend).to receive(:openai_model_pricing).and_return({
+          'gpt-test' => { 'input_per_million_tokens' => 2.0, 'output_per_million_tokens' => 8.0 },
+        })
+        stub_request(:post, "#{api_base_url}/responses")
+          .to_return(
+            { status: 500, body: { error: 'Server Error' }.to_json, headers: { 'Content-Type' => 'application/json' } },
+            { status: 200, body: response_body.to_json, headers: { 'Content-Type' => 'application/json' } },
+          )
+
+        result = client.call('test', model: 'gpt-test')
+
+        expect(AiUsage.metadata_from(result).to_h).to include(input_tokens: 1_000, pricing_known: true)
       end
 
       it 'raises ResponseFailedError with usage after exhausting retries' do
@@ -220,7 +282,34 @@ RSpec.describe OpenaiClient do
           .to raise_error(OpenaiClient::ResponseFailedError) { |error|
             expect(error).to be_a(OpenaiClient::ApiError)
             expect(error.message).to eq('OpenAI response status=failed reason=server_error')
-            expect(error.ai_usage.to_h).to include(finish_reason: 'server_error', input_tokens: 1_000)
+            expect(error.ai_usage.to_h).to include(finish_reason: 'server_error', input_tokens: 3_000)
+          }
+
+        expect(WebMock).to have_requested(:post, "#{api_base_url}/responses").times(3)
+      end
+    end
+
+    context 'when the response has no status' do
+      let(:malformed_body) do
+        {
+          'output' => [
+            { 'type' => 'message', 'content' => [{ 'type' => 'output_text', 'text' => '{"capital":"Paris"}' }] },
+          ],
+          'usage' => { 'input_tokens' => 10, 'output_tokens' => 5, 'total_tokens' => 15 },
+        }
+      end
+
+      before do
+        allow(Kernel).to receive(:sleep)
+        stub_request(:post, "#{api_base_url}/responses")
+          .to_return(status: 200, body: malformed_body.to_json, headers: { 'Content-Type' => 'application/json' })
+      end
+
+      it 'raises ResponseFailedError instead of returning the output' do
+        expect { client.call('test') }
+          .to raise_error(OpenaiClient::ResponseFailedError) { |error|
+            expect(error.response_status).to be_nil
+            expect(error.message).to eq('OpenAI response status=missing')
           }
 
         expect(WebMock).to have_requested(:post, "#{api_base_url}/responses").times(3)
@@ -232,6 +321,7 @@ RSpec.describe OpenaiClient do
       let(:response_body) do
         {
           'id' => 'resp_body_id',
+          'status' => 'completed',
           'output' => [
             { 'type' => 'message', 'content' => [{ 'type' => 'output_text', 'text' => '{"capital":"Paris"}' }] },
           ],
@@ -337,14 +427,14 @@ RSpec.describe OpenaiClient do
         end
       end
 
-      it 'attaches usage metadata to ApiError when the provider returns usage' do
+      it 'attaches the usage of every attempt to ApiError when the provider returns usage' do
         expect { client.call('test', model: 'gpt-test', event_kind: 'interactive_search') }
           .to raise_error(OpenaiClient::ApiError) { |error|
             expect(error.ai_usage.to_h).to include(
               model: 'gpt-test',
               event_kind: 'interactive_search',
-              input_tokens: 20,
-              total_tokens: 20,
+              input_tokens: 60,
+              total_tokens: 60,
             )
           }
       end
@@ -369,6 +459,7 @@ RSpec.describe OpenaiClient do
     context 'when the response contains invalid JSON' do
       let(:invalid_json_response) do
         {
+          'status' => 'completed',
           'output' => [
             { 'type' => 'message', 'content' => [{ 'type' => 'output_text', 'text' => 'not valid json' }] },
           ],
@@ -405,6 +496,7 @@ RSpec.describe OpenaiClient do
     context 'when the response has no content' do
       let(:empty_response) do
         {
+          'status' => 'completed',
           'output' => [
             { 'type' => 'message', 'content' => [] },
           ],

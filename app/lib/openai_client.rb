@@ -33,7 +33,7 @@ class OpenaiClient
     end
 
     def message
-      ["OpenAI response status=#{response_status}", ("reason=#{reason}" if reason)].compact.join(' ')
+      ["OpenAI response status=#{response_status || 'missing'}", ("reason=#{reason}" if reason)].compact.join(' ')
     end
   end
 
@@ -44,10 +44,11 @@ class OpenaiClient
   class ResponseIncompleteError < ResponseStatusError; end
 
   class DeadlineExceeded < StandardError
-    attr_reader :elapsed_seconds
+    attr_reader :elapsed_seconds, :ai_usage
 
-    def initialize(timeout_seconds:, elapsed_seconds:)
+    def initialize(timeout_seconds:, elapsed_seconds:, ai_usage: nil)
       @elapsed_seconds = elapsed_seconds.to_f
+      @ai_usage = ai_usage
       super("OpenAI operation exceeded #{(timeout_seconds.to_f * 1000).round}ms deadline")
     end
   end
@@ -88,6 +89,13 @@ class OpenaiClient
     body[:reasoning] = { effort: reasoning_effort } if reasoning_effort.present?
     body = body.to_json
 
+    # Usage from earlier attempts that the provider billed (for example a
+    # `failed` response that consumed input tokens). It is added to the usage
+    # of the final result or error.
+    prior_usage = nil
+    attempt_usage = nil
+    usage_so_far = -> { AiUsage.merge_metadata(prior_usage, attempt_usage) }
+
     with_retry(
       max_attempts: MAX_RETRIES,
       retryable_errors: RETRYABLE_ERRORS,
@@ -95,21 +103,24 @@ class OpenaiClient
       on_retry: lambda { |attempt:, delay:, error:, **|
         raise error if error.is_a?(ResponseIncompleteError)
 
-        raise_deadline_if_elapsed!(deadline:, timeout:, started_at:)
-        raise_if_delay_exceeds_deadline!(delay:, deadline:, timeout:, started_at:)
+        prior_usage = usage_so_far.call if usage_reported?(attempt_usage)
+        attempt_usage = nil
+        raise_deadline_if_elapsed!(deadline:, timeout:, started_at:, ai_usage: prior_usage)
+        raise_if_delay_exceeds_deadline!(delay:, deadline:, timeout:, started_at:, ai_usage: prior_usage)
         Rails.logger.warn "OpenaiClient: #{error.class} on attempt #{attempt}, retrying in #{delay}s..."
       },
       on_exhausted: lambda { |attempt:, error:, **|
-        raise_deadline_if_elapsed!(deadline:, timeout:, started_at:)
+        raise_deadline_if_elapsed!(deadline:, timeout:, started_at:, ai_usage: usage_so_far.call)
         Rails.logger.error "OpenaiClient: #{error.class} after #{attempt} attempts, giving up"
       },
     ) do
       remaining = remaining_time(deadline)
-      raise_deadline!(timeout:, started_at:) if deadline && remaining <= 0
+      raise_deadline!(timeout:, started_at:, ai_usage: prior_usage) if deadline && remaining <= 0
 
       response = post(body, remaining:)
-      raise_on_error!(response, model:, event_kind:, reasoning_effort:) unless response.success?
-      raise_on_unfinished_response!(response, model:, event_kind:, reasoning_effort:)
+      attempt_usage = usage_metadata(response, model:, event_kind:, reasoning_effort:)
+      raise_on_error!(response, ai_usage: usage_so_far.call) unless response.success?
+      raise_on_unfinished_response!(response, ai_usage: usage_so_far.call)
 
       json = output_text(response.body)
       result = begin
@@ -118,8 +129,8 @@ class OpenaiClient
         json
       end
 
-      raise_deadline!(timeout:, started_at:) if deadline && remaining_time(deadline) <= 0
-      AiUsage.attach_metadata(result, usage_metadata(response, model:, event_kind:, reasoning_effort:))
+      raise_deadline!(timeout:, started_at:, ai_usage: usage_so_far.call) if deadline && remaining_time(deadline) <= 0
+      AiUsage.attach_metadata(result, usage_so_far.call)
     end
   end
 
@@ -144,9 +155,7 @@ private
     [timeout * scale, open_timeout * scale]
   end
 
-  def raise_on_error!(response, model: nil, event_kind: nil, reasoning_effort: nil)
-    ai_usage = usage_metadata(response, model:, event_kind:, reasoning_effort:)
-
+  def raise_on_error!(response, ai_usage:)
     if response.status == 429
       retry_after = response.headers['Retry-After'] || response.headers['retry-after']
       raise RateLimitError.new(status: response.status, body: response.body, retry_after: retry_after, ai_usage:)
@@ -155,10 +164,10 @@ private
     raise ApiError.new(status: response.status, body: response.body, ai_usage:)
   end
 
-  def raise_on_unfinished_response!(response, model:, event_kind:, reasoning_effort:)
+  def raise_on_unfinished_response!(response, ai_usage:)
     body = response_body_hash(response)
     response_status = body['status']
-    return if response_status.nil? || response_status == 'completed'
+    return if response_status == 'completed'
 
     error_class = response_status == 'incomplete' ? ResponseIncompleteError : ResponseFailedError
     raise error_class.new(
@@ -166,8 +175,12 @@ private
       body: response.body,
       response_status:,
       reason: unfinished_reason(body),
-      ai_usage: usage_metadata(response, model:, event_kind:, reasoning_effort:),
+      ai_usage:,
     )
+  end
+
+  def usage_reported?(metadata)
+    metadata.present? && (metadata.input_tokens || metadata.total_tokens).present?
   end
 
   def unfinished_reason(body)
@@ -222,25 +235,26 @@ private
     response.headers['x-request-id'].presence || response.headers['openai-request-id'].presence
   end
 
-  def raise_deadline_if_elapsed!(deadline:, timeout:, started_at:)
-    raise_deadline!(timeout:, started_at:) if deadline && remaining_time(deadline) <= 0
+  def raise_deadline_if_elapsed!(deadline:, timeout:, started_at:, ai_usage: nil)
+    raise_deadline!(timeout:, started_at:, ai_usage:) if deadline && remaining_time(deadline) <= 0
   end
 
-  def raise_if_delay_exceeds_deadline!(delay:, deadline:, timeout:, started_at:)
+  def raise_if_delay_exceeds_deadline!(delay:, deadline:, timeout:, started_at:, ai_usage: nil)
     return unless deadline
 
     remaining = remaining_time(deadline)
-    raise_deadline!(timeout:, started_at:) if delay >= remaining
+    raise_deadline!(timeout:, started_at:, ai_usage:) if delay >= remaining
   end
 
   def remaining_time(deadline)
     deadline && deadline - monotonic_time
   end
 
-  def raise_deadline!(timeout:, started_at:)
+  def raise_deadline!(timeout:, started_at:, ai_usage: nil)
     raise DeadlineExceeded.new(
       timeout_seconds: timeout,
       elapsed_seconds: monotonic_time - started_at,
+      ai_usage:,
     )
   end
 
