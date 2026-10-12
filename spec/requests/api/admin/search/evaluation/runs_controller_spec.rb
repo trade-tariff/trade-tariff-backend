@@ -254,6 +254,52 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
 
       it { expect(json_response['data'].size).to eq(1) }
     end
+
+    context 'when filtering by a from date' do
+      let(:filters) { { from: 2.days.ago.to_date.iso8601 } }
+
+      before do
+        create(:evaluation_run, evaluation_experiment: experiment, created_at: 5.days.ago)
+        create(:evaluation_run, evaluation_experiment: experiment, created_at: 1.day.ago)
+      end
+
+      it { is_expected.to have_http_status :success }
+
+      it 'only returns runs created on or after that date, instead of raising' do
+        expect(json_response['data'].size).to eq(1)
+      end
+    end
+
+    context 'when filtering by a to date' do
+      let(:filters) { { to: 2.days.ago.to_date.iso8601 } }
+
+      before do
+        create(:evaluation_run, evaluation_experiment: experiment, created_at: 5.days.ago)
+        create(:evaluation_run, evaluation_experiment: experiment, created_at: 1.day.ago)
+      end
+
+      it { is_expected.to have_http_status :success }
+
+      it 'only returns runs created on or before that date, instead of raising' do
+        expect(json_response['data'].size).to eq(1)
+      end
+    end
+
+    context 'when filtering by both a from and to date' do
+      let(:filters) { { from: 4.days.ago.to_date.iso8601, to: 2.days.ago.to_date.iso8601 } }
+
+      before do
+        create(:evaluation_run, evaluation_experiment: experiment, created_at: 6.days.ago)
+        create(:evaluation_run, evaluation_experiment: experiment, created_at: 3.days.ago)
+        create(:evaluation_run, evaluation_experiment: experiment, created_at: 1.day.ago)
+      end
+
+      it { is_expected.to have_http_status :success }
+
+      it 'only returns runs created within that range, instead of raising' do
+        expect(json_response['data'].size).to eq(1)
+      end
+    end
   end
 
   describe 'GET #show' do
