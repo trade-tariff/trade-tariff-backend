@@ -242,7 +242,7 @@ RSpec.describe Search::ExpansionVocabularyFilter do
 
     it 'does not build a vocabulary in a worker process' do
       allow(Sidekiq).to receive(:server?).and_return(true)
-      Sidekiq.redis { |redis| redis.call('DEL', "search_expansion_vocabulary/v1/#{Date.current}/false") }
+      Sidekiq.redis { |redis| redis.call('DEL', shared_key(Date.current)) }
       expect(Sequel::Model).not_to receive(:db)
 
       expect(described_class.call(original_query: 'chicken', expanded_query: 'poultry meat')).to eq('chicken')
@@ -260,7 +260,7 @@ RSpec.describe Search::ExpansionVocabularyFilter do
 
     it 'does not use a shared vocabulary from another date' do
       allow(Sidekiq).to receive(:server?).and_return(true)
-      Sidekiq.redis { |redis| redis.call('DEL', "search_expansion_vocabulary/v1/#{Date.current}/false") }
+      Sidekiq.redis { |redis| redis.call('DEL', shared_key(Date.current)) }
       write_shared_words(Date.current - 1, %w[poultry])
 
       expect(described_class.call(original_query: 'chicken', expanded_query: 'poultry meat')).to eq('chicken')
@@ -279,8 +279,12 @@ RSpec.describe Search::ExpansionVocabularyFilter do
       expect(described_class.call(original_query: 'chicken', expanded_query: 'poultry meat')).to eq('chicken')
     end
 
+    def shared_key(date)
+      "search_expansion_vocabulary/v1/#{TradeTariffBackend.service}/#{date}/false"
+    end
+
     def write_shared_words(date, words)
-      key = "search_expansion_vocabulary/v1/#{date}/false"
+      key = shared_key(date)
       Sidekiq.redis do |redis|
         redis.call('DEL', key)
         redis.call('SADD', key, *words)

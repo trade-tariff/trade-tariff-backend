@@ -126,7 +126,7 @@ module Search
         return if words.blank?
 
         key = shared_cache_key(at, atar)
-        staging = "#{key}:staging:#{Process.pid}"
+        staging = "#{key}:staging:#{SecureRandom.hex(8)}"
         Sidekiq.redis do |redis|
           redis.call('DEL', staging)
           words.each_slice(500) { |slice| redis.call('SADD', staging, *slice) }
@@ -146,7 +146,7 @@ module Search
       end
 
       def shared_cache_key(at, atar)
-        "#{SHARED_CACHE_PREFIX}/#{at}/#{atar}"
+        "#{SHARED_CACHE_PREFIX}/#{TradeTariffBackend.service}/#{at}/#{atar}"
       end
 
       def cache_key(at, atar)
@@ -175,7 +175,7 @@ module Search
       end
 
       def refresh_lock_key
-        "#{SHARED_CACHE_PREFIX}/refresh_lock"
+        "#{SHARED_CACHE_PREFIX}/#{TradeTariffBackend.service}/refresh_lock"
       end
 
       def schedule_refresh(atar)
