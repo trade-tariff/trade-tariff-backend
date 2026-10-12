@@ -200,6 +200,13 @@ RSpec.describe 'admin_configurations:seed' do
 
     expand_query = AdminConfiguration.where(name: 'expand_query_context').first
     expect(expand_query.config_type).to eq('markdown')
+    expect(expand_query.value).to include('%{search_query}')
+    expect(expand_query.value).to include('Keep the original search query wording')
+    expect(expand_query.value).to include('at most five short phrases')
+    expect(expand_query.value).to include('"added_terms"')
+    expect(expand_query.value).to include('Do not add commodity codes')
+    expect(expand_query.value).to include('Do not add chemical names')
+    expect(expand_query.value).to include('Do not add brand names')
     expect(expand_query.value).to include('## Output format')
     expect(expand_query.value).to include('## Example')
     expect(expand_query.value).not_to include('OpenSearch')
