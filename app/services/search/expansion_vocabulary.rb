@@ -49,9 +49,9 @@ module Search
       def supported_words(candidates)
         at, atar = context
         return nil unless current_date?(at)
-        return worker_supported_words(candidates, atar) if worker_process?
+        return worker_supported_words(candidates, at, atar) if worker_process?
 
-        key = cache_key(atar)
+        key = cache_key(at, atar)
         snapshot = @snapshot
 
         if snapshot&.key == key
@@ -65,8 +65,8 @@ module Search
         nil
       end
 
-      def remember!(words, atar: atar_enabled?)
-        @snapshot = Snapshot.new(key: cache_key(atar), words: words.to_set, loaded_at: Time.current)
+      def remember!(words, at: vocabulary_date, atar: atar_enabled?)
+        @snapshot = Snapshot.new(key: cache_key(at, atar), words: words.to_set, loaded_at: Time.current)
       end
 
       def reset!
@@ -104,33 +104,33 @@ module Search
         Sidekiq.server?
       end
 
-      def worker_supported_words(candidates, atar)
-        words = read_shared(atar)
+      def worker_supported_words(candidates, at, atar)
+        words = read_shared(at, atar)
         return if words.nil?
 
         select_supported(words, candidates)
       end
 
-      def publish_snapshot(atar, words)
+      def publish_snapshot(at, atar, words)
         word_set = words.to_set
-        @snapshot = Snapshot.new(key: cache_key(atar), words: word_set, loaded_at: Time.current)
-        Rails.cache.write(shared_cache_key(atar), word_set.to_a, expires_in: TTL)
+        @snapshot = Snapshot.new(key: cache_key(at, atar), words: word_set, loaded_at: Time.current)
+        Rails.cache.write(shared_cache_key(at, atar), word_set.to_a, expires_in: TTL)
         word_set
       end
 
-      def read_shared(atar)
-        words = Rails.cache.read(shared_cache_key(atar))
+      def read_shared(at, atar)
+        words = Rails.cache.read(shared_cache_key(at, atar))
         return if words.blank?
 
         words.to_set
       end
 
-      def shared_cache_key(atar)
-        "#{SHARED_CACHE_PREFIX}/#{atar}"
+      def shared_cache_key(at, atar)
+        "#{SHARED_CACHE_PREFIX}/#{at}/#{atar}"
       end
 
-      def cache_key(atar)
-        atar
+      def cache_key(at, atar)
+        [at, atar]
       end
 
       def fresh?(snapshot)
@@ -149,8 +149,9 @@ module Search
             sleep(refresh_delay)
             Rails.application.executor.wrap do
               started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-              words = with_read_connection { build(Date.current, refresh_atar) }
-              publish_snapshot(refresh_atar, words)
+              refresh_at = Date.current
+              words = with_read_connection { build(refresh_at, refresh_atar) }
+              publish_snapshot(refresh_at, refresh_atar, words)
               elapsed_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started) * 1000).round
               Rails.logger.info("Search expansion vocabulary refreshed in #{elapsed_ms}ms with #{words.size} words")
             end
