@@ -1,5 +1,7 @@
 class ExpandSearchQueryService
   NUMERIC_CODE_PATTERN = /\A\d+\z/
+  COMMODITY_CODE_LIKE_PATTERN = /\d{4,}/
+  MAX_ADDED_TERMS = 5
   CACHE_TTL = 7.days
   EXPANSION_TIMEOUT_SECONDS = 5.0
   EXPANSION_TIMEOUT_MS = (EXPANSION_TIMEOUT_SECONDS * 1000).to_i
@@ -28,8 +30,10 @@ class ExpandSearchQueryService
     end
 
     def valid_response?(response)
-      response.is_a?(Hash) && response['expanded_query'].is_a?(String) &&
-        response['expanded_query'].present? && response['error'].blank?
+      return false unless response.is_a?(Hash) && response['error'].blank?
+
+      (response['expanded_query'].is_a?(String) && response['expanded_query'].present?) ||
+        response['added_terms'].is_a?(Array)
     end
   end
 
@@ -46,7 +50,9 @@ private
     if cached
       cached_response = cached.is_a?(Hash) ? cached.stringify_keys : cached
       if self.class.valid_response?(cached_response)
-        return Result.new(expanded_query: cached_response['expanded_query'], reason: cached_response['reason'])
+        # Rebuild cached responses too. Entries written before the append
+        # contract may hold a rewrite that replaces the original query.
+        return result_from_response(cached_response)
       end
 
       record_failure('Cached query expansion was malformed')
@@ -69,9 +75,9 @@ private
     end
 
     if self.class.valid_response?(response)
-      result_hash = { expanded_query: response['expanded_query'], reason: response['reason'] }
-      Rails.cache.write(cache_key, result_hash, expires_in: CACHE_TTL)
-      Result.new(**result_hash)
+      result = result_from_response(response)
+      Rails.cache.write(cache_key, { expanded_query: result.expanded_query, reason: result.reason }, expires_in: CACHE_TTL)
+      result
     else
       record_failure('Query expansion response was malformed')
       unchanged_result
@@ -89,6 +95,56 @@ private
   rescue StandardError => e
     record_failure(e.message, error_type: e.class.name)
     unchanged_result
+  end
+
+  def result_from_response(response)
+    added_terms = added_phrases(response)
+    expanded_query = added_terms.empty? ? query : [query, *added_terms].join(' ')
+
+    Result.new(expanded_query:, reason: response['reason'])
+  end
+
+  def added_phrases(response)
+    phrases = if response['added_terms'].is_a?(Array)
+                response['added_terms'].grep(String)
+              else
+                legacy_phrases(response['expanded_query'].to_s)
+              end
+
+    phrases
+      .map { |phrase| phrase.to_s.squish }
+      .compact_blank
+      .reject { |phrase| phrase_already_in_query?(phrase) }
+      .reject { |phrase| invents_commodity_code?(phrase) }
+      .uniq(&:downcase)
+      .first(MAX_ADDED_TERMS)
+  end
+
+  # A legacy response holds a single rewritten query. Treat it as added text.
+  # Strip the original query when the rewrite keeps it as a prefix. Then split
+  # the remainder into comma-separated phrases.
+  def legacy_phrases(expanded_query)
+    rewritten = expanded_query.to_s.strip
+    return [] if rewritten.blank? || rewritten.downcase == query.downcase
+
+    prefix_match = /\A#{Regexp.escape(query)}\s+/i.match(rewritten)
+    added_text = prefix_match ? prefix_match.post_match : rewritten
+
+    added_text.split(',')
+  end
+
+  def phrase_already_in_query?(phrase)
+    phrase_words = words_in(phrase)
+
+    phrase_words.empty? || (phrase_words - words_in(query)).empty?
+  end
+
+  def words_in(text)
+    text.to_s.downcase.scan(/[[:word:]]+/)
+  end
+
+  def invents_commodity_code?(phrase)
+    phrase.scan(COMMODITY_CODE_LIKE_PATTERN).any? { |number| !query.include?(number) }
   end
 
   def record_failure(message, error_type: 'InvalidResponse')

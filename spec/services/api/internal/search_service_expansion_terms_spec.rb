@@ -81,6 +81,9 @@ RSpec.describe Api::Internal::SearchService do
         expected_query = selections.reduce(expanded) do |value, selection|
           value.downcase.include?(selection.downcase) ? value : "#{value} #{selection}"
         end
+        original_words = query.downcase.scan(/[[:word:]]+/)
+        leading_words = expected_query.downcase.scan(/[[:word:]]+/).first(original_words.size)
+        expected_query = "#{query} #{expected_query}" unless leading_words == original_words
         expect(InteractiveSearchService).to have_received(:call).with(hash_including(expanded_query: expected_query)).at_least(:once)
       end
     end

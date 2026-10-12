@@ -423,10 +423,33 @@ module Api
 
       def normalised_query
         if expanded_query.present?
-          return InternalSearchQueryNormaliserService::Result.new(query: q, expanded_query: refine_query(expanded_query))
+          return InternalSearchQueryNormaliserService::Result.new(query: q, expanded_query: refine_query(supplied_expanded_query))
         end
 
         @normalised_query ||= InternalSearchQueryNormaliserService.call(query: retrieval_query, request_id: request_id)
+      end
+
+      # A client-supplied rewrite can drop the wording the trader typed. Keep
+      # the original wording in front when the rewrite omits it, so OpenSearch,
+      # the vector embedding, and the question context still see it.
+      def supplied_expanded_query
+        return expanded_query if original_wording_in_expansion?
+
+        [q, expanded_query].join(' ')
+      end
+
+      def original_wording_in_expansion?
+        original_words = query_words(q)
+        return true if original_words.empty?
+
+        query_words(expanded_query).first(original_words.size) == original_words
+      end
+
+      # Compare words, not whitespace tokens. Punctuation attached to a
+      # word, such as a comma after it, must not hide a word the expansion
+      # already keeps.
+      def query_words(query)
+        query.to_s.downcase.scan(/[[:word:]]+/)
       end
 
       def expand_query(query)

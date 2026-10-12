@@ -21,8 +21,8 @@ RSpec.describe ExpandSearchQueryService do
     context 'when the query is a text search term' do
       let(:query) { 'laptop' }
 
-      it 'returns the expanded query from the AI' do
-        expect(result.expanded_query).to eq('Portable automatic data-processing machines')
+      it 'appends the AI rewrite after the unchanged original query' do
+        expect(result.expanded_query).to eq('laptop Portable automatic data-processing machines')
       end
 
       it 'returns the reason for expansion' do
@@ -159,6 +159,140 @@ RSpec.describe ExpandSearchQueryService do
       it 'does not infer a failure from the unchanged value' do
         expect(result.expanded_query).to eq('laptop')
         expect(TradeTariffRequest.search_failures).to be_nil
+      end
+    end
+
+    context 'when the AI returns added terms' do
+      let(:query) { 'laptop' }
+      let(:ai_response) do
+        { 'added_terms' => ['portable computers', 'notebook computers'], 'reason' => 'The term is colloquial.' }
+      end
+
+      it 'appends each term after the unchanged original query' do
+        expect(result.expanded_query).to eq('laptop portable computers notebook computers')
+      end
+
+      it 'returns the reason for expansion' do
+        expect(result.reason).to eq('The term is colloquial.')
+      end
+
+      it 'does not record a failure' do
+        expect(TradeTariffRequest.search_failures).to be_nil
+      end
+    end
+
+    context 'when the AI returns no added terms' do
+      let(:query) { 'laptop' }
+      let(:ai_response) { { 'added_terms' => [], 'reason' => 'already tariff-ready' } }
+
+      it 'returns the original query unchanged' do
+        expect(result.expanded_query).to eq('laptop')
+      end
+
+      it 'does not record a failure' do
+        expect(TradeTariffRequest.search_failures).to be_nil
+      end
+    end
+
+    context 'when the AI returns more than five added terms' do
+      let(:query) { 'laptop' }
+      let(:ai_response) do
+        {
+          'added_terms' => [
+            'portable computers',
+            'notebook computers',
+            'mobile computers',
+            'tablet computers',
+            'handheld computers',
+            'desktop computers',
+            'server computers',
+          ],
+          'reason' => 'The term is colloquial.',
+        }
+      end
+
+      it 'appends at most five added phrases' do
+        expect(result.expanded_query)
+          .to eq('laptop portable computers notebook computers mobile computers tablet computers handheld computers')
+      end
+    end
+
+    context 'when an added phrase repeats the original wording' do
+      let(:query) { 'laptop' }
+      let(:ai_response) { { 'added_terms' => ['laptop', 'portable computers'], 'reason' => 'The term is colloquial.' } }
+
+      it 'drops the phrase that adds nothing' do
+        expect(result.expanded_query).to eq('laptop portable computers')
+      end
+    end
+
+    context 'when an added phrase repeats the original wording with punctuation' do
+      let(:query) { 'laptop,' }
+      let(:ai_response) { { 'added_terms' => %w[laptop], 'reason' => 'The term is colloquial.' } }
+
+      it 'drops the phrase that adds no new word' do
+        expect(result.expanded_query).to eq('laptop,')
+      end
+    end
+
+    context 'when added phrases differ only by case' do
+      let(:query) { 'laptop' }
+      let(:ai_response) { { 'added_terms' => ['portable computers', 'Portable Computers'], 'reason' => 'x' } }
+
+      it 'keeps one copy of the phrase' do
+        expect(result.expanded_query).to eq('laptop portable computers')
+      end
+    end
+
+    context 'when an added phrase invents a commodity code' do
+      let(:query) { 'laptop' }
+      let(:ai_response) do
+        { 'added_terms' => ['portable computers', 'heading 8471301000'], 'reason' => 'The term is colloquial.' }
+      end
+
+      it 'drops the phrase with the invented code' do
+        expect(result.expanded_query).to eq('laptop portable computers')
+      end
+    end
+
+    context 'when an added phrase repeats a number from the original query' do
+      let(:query) { '8471 laptop' }
+      let(:ai_response) { { 'added_terms' => ['portable computers', 'code 8471'], 'reason' => 'The term is colloquial.' } }
+
+      it 'keeps the phrase' do
+        expect(result.expanded_query).to eq('8471 laptop portable computers code 8471')
+      end
+    end
+
+    context 'when a legacy rewrite keeps the original query as a prefix' do
+      let(:query) { 'laptop' }
+      let(:ai_response) { { 'expanded_query' => 'laptop portable computers', 'reason' => 'The term is colloquial.' } }
+
+      it 'does not duplicate the original wording' do
+        expect(result.expanded_query).to eq('laptop portable computers')
+      end
+    end
+
+    context 'when a legacy rewrite is a comma-separated list' do
+      let(:query) { 'laptop' }
+      let(:ai_response) do
+        {
+          'expanded_query' => 'laptop, portable computers, notebooks, netbooks, tablets, smartphones, chromebooks, ultrabooks',
+          'reason' => 'The term is colloquial.',
+        }
+      end
+
+      it 'keeps the original query and appends at most five comma-separated phrases' do
+        expect(result.expanded_query).to eq('laptop portable computers notebooks netbooks tablets smartphones')
+      end
+    end
+
+    context 'when an added term is not a string' do
+      let(:query) { 'laptop' }
+      let(:ai_response) { { 'added_terms' => [123, 'portable computers'], 'reason' => 'The term is colloquial.' } }
+
+      it 'keeps only the string entries' do
+        expect(result.expanded_query).to eq('laptop portable computers')
       end
     end
 
@@ -349,7 +483,7 @@ RSpec.describe ExpandSearchQueryService do
         original.call(key, **options).merge(expanded_query: 123)
       end
 
-      expect(described_class.call(query).expanded_query).to eq(ai_response['expanded_query'])
+      expect(described_class.call(query).expanded_query).to eq('laptop Portable automatic data-processing machines')
       expect(TradeTariffRequest.search_failures).to eq(%w[query_expansion_failed])
       expect(OpenaiClient).to have_received(:call).twice
     end
@@ -358,7 +492,38 @@ RSpec.describe ExpandSearchQueryService do
       allow(OpenaiClient).to receive(:call).and_return({ 'expanded_query' => 123 }, ai_response)
       described_class.call(query)
 
-      expect(described_class.call(query).expanded_query).to eq(ai_response['expanded_query'])
+      expect(described_class.call(query).expanded_query).to eq('laptop Portable automatic data-processing machines')
+    end
+
+    it 'caches the rebuilt expanded query' do
+      allow(memory_store).to receive(:write).and_wrap_original do |original, key, value, **options|
+        original.call(key, value, **options)
+        value
+      end
+
+      described_class.call(query)
+
+      expect(memory_store).to have_received(:write)
+        .with(anything, hash_including(expanded_query: 'laptop Portable automatic data-processing machines'), anything)
+    end
+
+    it 'rebuilds a cached rewrite that replaced the original query' do
+      cache_key = nil
+      allow(memory_store).to receive(:write).and_wrap_original do |original, key, value, **options|
+        cache_key = key
+        original.call(key, value, **options)
+      end
+      described_class.call(query)
+
+      memory_store.write(
+        cache_key,
+        { expanded_query: 'Portable automatic data-processing machines', reason: 'legacy rewrite' },
+        expires_in: described_class::CACHE_TTL,
+      )
+      allow(OpenaiClient).to receive(:call).and_return({ 'added_terms' => %w[ignored], 'reason' => 'fresh' })
+
+      expect(described_class.call(query).expanded_query).to eq('laptop Portable automatic data-processing machines')
+      expect(OpenaiClient).to have_received(:call).once
     end
 
     it 'treats queries case-insensitively' do

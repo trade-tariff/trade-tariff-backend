@@ -2006,7 +2006,7 @@ RSpec.describe Api::Internal::SearchService do
         allow(InteractiveSearchService).to receive(:call).and_return(interactive_result)
       end
 
-      it 'reuses the supplied expanded query without expanding again and appends answered questions' do
+      it 'keeps the original wording in front of the supplied expansion, does not expand again, and appends answered questions' do
         result = described_class.new(
           q: 'laptop',
           expanded_query: 'portable data processing machine',
@@ -2017,15 +2017,15 @@ RSpec.describe Api::Internal::SearchService do
         expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
           'laptop',
           anything,
-          hash_including(expanded_query: 'portable data processing machine Personal'),
+          hash_including(expanded_query: 'laptop portable data processing machine Personal'),
         )
         expect(InteractiveSearchService).to have_received(:call).with(
-          hash_including(expanded_query: 'portable data processing machine Personal'),
+          hash_including(expanded_query: 'laptop portable data processing machine Personal'),
         )
-        expect(result[:meta][:interactive_search]).to include(expanded_query: 'portable data processing machine Personal')
+        expect(result[:meta][:interactive_search]).to include(expanded_query: 'laptop portable data processing machine Personal')
       end
 
-      it 'does not append answer text that is already present in the supplied expanded query' do
+      it 'prepends the original wording once and does not repeat answer text already present in the supplied expanded query' do
         described_class.new(
           q: 'laptop',
           expanded_query: 'portable data processing machine Personal',
@@ -2035,7 +2035,48 @@ RSpec.describe Api::Internal::SearchService do
         expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
           'laptop',
           anything,
-          hash_including(expanded_query: 'portable data processing machine Personal'),
+          hash_including(expanded_query: 'laptop portable data processing machine Personal'),
+        )
+      end
+
+      it 'does not duplicate the original wording when the supplied expansion keeps it' do
+        described_class.new(
+          q: 'laptop',
+          expanded_query: 'laptop portable data processing machine',
+        ).call
+
+        expect(ExpandSearchQueryService).not_to have_received(:call)
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'laptop',
+          anything,
+          hash_including(expanded_query: 'laptop portable data processing machine'),
+        )
+      end
+
+      it 'does not duplicate the original wording when the expansion keeps it with attached punctuation' do
+        described_class.new(
+          q: 'laptop',
+          expanded_query: 'laptop, portable data processing machine',
+        ).call
+
+        expect(ExpandSearchQueryService).not_to have_received(:call)
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'laptop',
+          anything,
+          hash_including(expanded_query: 'laptop, portable data processing machine'),
+        )
+      end
+
+      it 'puts the original wording in front when the expansion keeps those words later' do
+        described_class.new(
+          q: 'red laptop',
+          expanded_query: 'portable laptop red',
+        ).call
+
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'red laptop',
+          anything,
+          hash_including(expanded_query: 'red laptop portable laptop red'),
         )
       end
     end
