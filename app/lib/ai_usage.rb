@@ -72,6 +72,7 @@ module_function
   def payload_from_error(error) = error.respond_to?(:ai_usage) && error.ai_usage ? error.ai_usage.to_h.compact : {}
 
   def safe_error_message(error)
+    return error.message if error.is_a?(OpenaiClient::ResponseStatusError)
     return "OpenAI API error status=#{error.status}" if error.is_a?(OpenaiClient::ApiError)
 
     error.message.to_s.truncate(500)

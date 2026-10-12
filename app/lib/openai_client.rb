@@ -21,6 +21,28 @@ class OpenaiClient
     end
   end
 
+  # The HTTP request succeeded, but the Responses API reports that the model
+  # did not finish (body `status` is not `completed`).
+  class ResponseStatusError < ApiError
+    attr_reader :response_status, :reason
+
+    def initialize(status:, body:, response_status:, reason: nil, ai_usage: nil)
+      super(status:, body:, ai_usage:)
+      @response_status = response_status
+      @reason = reason
+    end
+
+    def message
+      ["OpenAI response status=#{response_status}", ("reason=#{reason}" if reason)].compact.join(' ')
+    end
+  end
+
+  # Retried like other API errors.
+  class ResponseFailedError < ResponseStatusError; end
+
+  # Not retried: the same request stops at the same limit again.
+  class ResponseIncompleteError < ResponseStatusError; end
+
   class DeadlineExceeded < StandardError
     attr_reader :elapsed_seconds
 
@@ -71,6 +93,8 @@ class OpenaiClient
       retryable_errors: RETRYABLE_ERRORS,
       delay_calculator: method(:calculate_retry_delay),
       on_retry: lambda { |attempt:, delay:, error:, **|
+        raise error if error.is_a?(ResponseIncompleteError)
+
         raise_deadline_if_elapsed!(deadline:, timeout:, started_at:)
         raise_if_delay_exceeds_deadline!(delay:, deadline:, timeout:, started_at:)
         Rails.logger.warn "OpenaiClient: #{error.class} on attempt #{attempt}, retrying in #{delay}s..."
@@ -85,6 +109,7 @@ class OpenaiClient
 
       response = post(body, remaining:)
       raise_on_error!(response, model:, event_kind:, reasoning_effort:) unless response.success?
+      raise_on_unfinished_response!(response, model:, event_kind:, reasoning_effort:)
 
       json = output_text(response.body)
       result = begin
@@ -130,6 +155,25 @@ private
     raise ApiError.new(status: response.status, body: response.body, ai_usage:)
   end
 
+  def raise_on_unfinished_response!(response, model:, event_kind:, reasoning_effort:)
+    body = response_body_hash(response)
+    response_status = body['status']
+    return if response_status.nil? || response_status == 'completed'
+
+    error_class = response_status == 'incomplete' ? ResponseIncompleteError : ResponseFailedError
+    raise error_class.new(
+      status: response.status,
+      body: response.body,
+      response_status:,
+      reason: unfinished_reason(body),
+      ai_usage: usage_metadata(response, model:, event_kind:, reasoning_effort:),
+    )
+  end
+
+  def unfinished_reason(body)
+    body.dig('incomplete_details', 'reason').presence || (body['error']['code'].presence if body['error'].is_a?(Hash))
+  end
+
   def usage_metadata(response, model:, event_kind:, reasoning_effort: nil)
     body = response_body_hash(response)
 
@@ -169,7 +213,7 @@ private
   end
 
   def finish_reason(body)
-    body.dig('incomplete_details', 'reason').presence || body['status']
+    unfinished_reason(body) || body['status']
   end
 
   def openai_request_id(response)

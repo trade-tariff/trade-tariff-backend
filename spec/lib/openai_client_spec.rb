@@ -129,25 +129,101 @@ RSpec.describe OpenaiClient do
     end
 
     context 'when the response is incomplete' do
-      let(:context) { 'What is the capital of France?' }
       let(:response_body) do
         {
           'status' => 'incomplete',
           'incomplete_details' => { 'reason' => 'max_output_tokens' },
-          'output' => [],
+          'output' => [
+            { 'type' => 'message', 'content' => [{ 'type' => 'output_text', 'text' => '{"capital":"Par"}' }] },
+          ],
+          'usage' => { 'input_tokens' => 1_000, 'output_tokens' => 4_000, 'total_tokens' => 5_000 },
         }
       end
 
       before do
+        allow(Kernel).to receive(:sleep)
         stub_request(:post, "#{api_base_url}/responses")
           .to_return(status: 200, body: response_body.to_json, headers: { 'Content-Type' => 'application/json' })
       end
 
-      it 'records the incomplete reason as the finish reason' do
-        result = client.call(context)
+      it 'raises ResponseIncompleteError instead of returning the partial JSON' do
+        expect { client.call('test', model: 'gpt-test', event_kind: 'interactive_search') }
+          .to raise_error(OpenaiClient::ResponseIncompleteError) { |error|
+            expect(error.message).to eq('OpenAI response status=incomplete reason=max_output_tokens')
+            expect(error.ai_usage.to_h).to include(
+              model: 'gpt-test',
+              event_kind: 'interactive_search',
+              finish_reason: 'max_output_tokens',
+              input_tokens: 1_000,
+              output_tokens: 4_000,
+            )
+          }
+      end
 
-        expect(result).to eq('')
-        expect(AiUsage.metadata_from(result).finish_reason).to eq('max_output_tokens')
+      it 'does not retry' do
+        expect { client.call('test') }.to raise_error(OpenaiClient::ResponseIncompleteError)
+
+        expect(WebMock).to have_requested(:post, "#{api_base_url}/responses").once
+        expect(Kernel).not_to have_received(:sleep)
+      end
+
+      it 'records a failed AI usage event with the usage and reason' do
+        events = []
+        collector = ->(_name, _start, _finish, _id, payload) { events << payload }
+
+        ActiveSupport::Notifications.subscribed(collector, 'api_call_failed.ai_usage') do
+          expect {
+            AiUsage::Instrumentation.api_call(event_kind: 'label_generation', model: 'gpt-test') do
+              client.call('test', model: 'gpt-test', event_kind: 'label_generation')
+            end
+          }.to raise_error(OpenaiClient::ResponseIncompleteError)
+        end
+
+        expect(events.sole).to include(
+          error_class: 'OpenaiClient::ResponseIncompleteError',
+          error_message: 'OpenAI response status=incomplete reason=max_output_tokens',
+          finish_reason: 'max_output_tokens',
+          input_tokens: 1_000,
+          output_tokens: 4_000,
+        )
+      end
+    end
+
+    context 'when the response failed' do
+      let(:failed_body) do
+        {
+          'status' => 'failed',
+          'error' => { 'code' => 'server_error', 'message' => 'The model failed.' },
+          'output' => [],
+          'usage' => { 'input_tokens' => 1_000, 'output_tokens' => 0, 'total_tokens' => 1_000 },
+        }
+      end
+
+      before { allow(Kernel).to receive(:sleep) }
+
+      it 'retries and returns the completed response' do
+        stub_request(:post, "#{api_base_url}/responses")
+          .to_return(
+            { status: 200, body: failed_body.to_json, headers: { 'Content-Type' => 'application/json' } },
+            { status: 200, body: response_body.to_json, headers: { 'Content-Type' => 'application/json' } },
+          )
+
+        expect(client.call('test')).to eq('capital' => 'Paris')
+        expect(Kernel).to have_received(:sleep).with(2).once
+      end
+
+      it 'raises ResponseFailedError with usage after exhausting retries' do
+        stub_request(:post, "#{api_base_url}/responses")
+          .to_return(status: 200, body: failed_body.to_json, headers: { 'Content-Type' => 'application/json' })
+
+        expect { client.call('test', model: 'gpt-test', event_kind: 'interactive_search') }
+          .to raise_error(OpenaiClient::ResponseFailedError) { |error|
+            expect(error).to be_a(OpenaiClient::ApiError)
+            expect(error.message).to eq('OpenAI response status=failed reason=server_error')
+            expect(error.ai_usage.to_h).to include(finish_reason: 'server_error', input_tokens: 1_000)
+          }
+
+        expect(WebMock).to have_requested(:post, "#{api_base_url}/responses").times(3)
       end
     end
 
