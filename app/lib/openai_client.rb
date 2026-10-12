@@ -58,12 +58,14 @@ class OpenaiClient
 
     body = {
       model: model,
-      messages: messages,
-      user: TradeTariffBackend.openai_user,
-      response_format: { type: 'json_object' },
+      input: messages,
+      safety_identifier: TradeTariffBackend.openai_user,
+      text: { format: { type: 'json_object' } },
+      store: false,
     }
-    body[:reasoning_effort] = reasoning_effort if reasoning_effort.present?
+    body[:reasoning] = { effort: reasoning_effort } if reasoning_effort.present?
     body = body.to_json
+    Rails.logger.info "OpenaiClient: calling model=#{model} reasoning_effort=#{reasoning_effort} event_kind=#{event_kind} timeout=#{timeout} body=#{body}"
 
     with_retry(
       max_attempts: MAX_RETRIES,
@@ -85,7 +87,7 @@ class OpenaiClient
       response = post(body, remaining:)
       raise_on_error!(response, model:, event_kind:, reasoning_effort:) unless response.success?
 
-      json = response.body.dig('choices', 0, 'message', 'content') || ''
+      json = output_text(response.body)
       result = begin
         JSON.parse(json)
       rescue StandardError
@@ -100,11 +102,11 @@ class OpenaiClient
 private
 
   def post(body, remaining:)
-    return self.class.client.post('chat/completions', body) unless remaining
+    return self.class.client.post('responses', body) unless remaining
 
     timeout, open_timeout = transport_timeouts(remaining)
 
-    self.class.client.post('chat/completions', body) do |request|
+    self.class.client.post('responses', body) do |request|
       request.options.timeout = timeout
       request.options.open_timeout = open_timeout
     end
@@ -147,13 +149,28 @@ private
 
   def response_metadata(body, response, reasoning_effort:)
     {
-      finish_reason: body.dig('choices', 0, 'finish_reason'),
+      finish_reason: finish_reason(body),
       served_model: body['model'],
       service_tier: body['service_tier'],
       reasoning_effort: reasoning_effort.presence,
       openai_request_id: openai_request_id(response),
       openai_response_id: body['id'].presence,
     }.compact
+  end
+
+  def output_text(body)
+    return '' unless body.is_a?(Hash)
+
+    Array(body['output'])
+      .select { |item| item['type'] == 'message' }
+      .flat_map { |item| Array(item['content']) }
+      .select { |content| content['type'] == 'output_text' }
+      .map { |content| content['text'] }
+      .join
+  end
+
+  def finish_reason(body)
+    body.dig('incomplete_details', 'reason').presence || body['status']
   end
 
   def openai_request_id(response)

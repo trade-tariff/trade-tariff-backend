@@ -6,7 +6,7 @@ RSpec.describe 'AI provider metadata' do
     })
   end
 
-  shared_examples 'provider metadata without usage' do
+  shared_examples 'provider metadata without usage' do |zero_usage:|
     [nil, {}].each do |usage|
       context "with usage #{usage.inspect}" do
         before do
@@ -35,7 +35,7 @@ RSpec.describe 'AI provider metadata' do
       before do
         stub_request(:post, endpoint).to_return(
           status: 200,
-          body: success_body.merge('usage' => { 'prompt_tokens' => 0, 'completion_tokens' => 0, 'total_tokens' => 0 }).to_json,
+          body: success_body.merge('usage' => zero_usage).to_json,
           headers: { 'Content-Type' => 'application/json', 'x-request-id' => 'req_zero' },
         )
       end
@@ -77,14 +77,15 @@ RSpec.describe 'AI provider metadata' do
     end
   end
 
-  context 'with Chat Completions' do
+  context 'with Responses' do
     let(:model) { 'gpt-test' }
-    let(:endpoint) { 'https://gb.api.openai.com/v1/chat/completions' }
-    let(:success_body) { { 'choices' => [{ 'message' => { 'content' => '{"answer":"test"}' } }] } }
+    let(:endpoint) { 'https://gb.api.openai.com/v1/responses' }
+    let(:success_body) { { 'output' => [{ 'type' => 'message', 'content' => [{ 'type' => 'output_text', 'text' => '{"answer":"test"}' }] }] } }
     let(:error_class) { OpenaiClient::ApiError }
     let(:call_provider) { -> { OpenaiClient.new.call('test', model:, event_kind: 'metadata_test') } }
 
-    include_examples 'provider metadata without usage'
+    include_examples 'provider metadata without usage',
+                     zero_usage: { 'input_tokens' => 0, 'output_tokens' => 0, 'total_tokens' => 0 }
   end
 
   context 'with embeddings' do
@@ -96,6 +97,7 @@ RSpec.describe 'AI provider metadata' do
 
     before { EmbeddingService.reset_client! }
 
-    include_examples 'provider metadata without usage'
+    include_examples 'provider metadata without usage',
+                     zero_usage: { 'prompt_tokens' => 0, 'completion_tokens' => 0, 'total_tokens' => 0 }
   end
 end
