@@ -440,8 +440,9 @@ module Api
 
       def original_wording_in_expansion?
         original_words = query_words(q)
+        return true if original_words.empty?
 
-        original_words.empty? || (original_words - query_words(expanded_query)).empty?
+        query_words(expanded_query).first(original_words.size) == original_words
       end
 
       # Compare words, not whitespace tokens. Punctuation attached to a

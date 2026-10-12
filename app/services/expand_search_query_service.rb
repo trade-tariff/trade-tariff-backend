@@ -134,9 +134,13 @@ private
   end
 
   def phrase_already_in_query?(phrase)
-    phrase_words = phrase.downcase.split
+    phrase_words = words_in(phrase)
 
-    phrase_words.empty? || (phrase_words - query.downcase.split).empty?
+    phrase_words.empty? || (phrase_words - words_in(query)).empty?
+  end
+
+  def words_in(text)
+    text.to_s.downcase.scan(/[[:word:]]+/)
   end
 
   def invents_commodity_code?(phrase)

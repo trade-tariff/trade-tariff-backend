@@ -2066,6 +2066,19 @@ RSpec.describe Api::Internal::SearchService do
           hash_including(expanded_query: 'laptop, portable data processing machine'),
         )
       end
+
+      it 'puts the original wording in front when the expansion keeps those words later' do
+        described_class.new(
+          q: 'red laptop',
+          expanded_query: 'portable laptop red',
+        ).call
+
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'red laptop',
+          anything,
+          hash_including(expanded_query: 'red laptop portable laptop red'),
+        )
+      end
     end
 
     context 'when configuration_overrides are supplied' do

@@ -226,6 +226,15 @@ RSpec.describe ExpandSearchQueryService do
       end
     end
 
+    context 'when an added phrase repeats the original wording with punctuation' do
+      let(:query) { 'laptop,' }
+      let(:ai_response) { { 'added_terms' => %w[laptop], 'reason' => 'The term is colloquial.' } }
+
+      it 'drops the phrase that adds no new word' do
+        expect(result.expanded_query).to eq('laptop,')
+      end
+    end
+
     context 'when added phrases differ only by case' do
       let(:query) { 'laptop' }
       let(:ai_response) { { 'added_terms' => ['portable computers', 'Portable Computers'], 'reason' => 'x' } }
