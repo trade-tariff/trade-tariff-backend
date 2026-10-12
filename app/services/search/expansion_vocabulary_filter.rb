@@ -74,9 +74,14 @@ module Search
     # suffix is absent, so "chicken" would otherwise fold to "chickenies" and
     # "chickeny".
     def morphological_variant?(word)
-      query_tokens.any? do |token|
-        word == token || word == plural_form(token) || token == plural_form(word)
-      end
+      query_tokens.any? { |token| related_forms(token).include?(word) }
+    end
+
+    # A plural token is not pluralized again. "chickens" does not accept
+    # "chickenss", and "buses" does not accept "buseses".
+    def related_forms(token)
+      singular = singular_form(token) || token
+      [singular, plural_form(singular)].uniq
     end
 
     def plural_form(token)
@@ -84,6 +89,28 @@ module Search
       return "#{token}es" if es_plural?(token)
 
       "#{token}s"
+    end
+
+    def singular_form(word)
+      return if word.length < 4
+
+      if word.end_with?('ies')
+        stem = "#{word.delete_suffix('ies')}y"
+        return stem if consonant_y?(stem) && plural_form(stem) == word
+      end
+
+      es_stem = word.delete_suffix('es') if word.end_with?('es')
+      s_stem = word.delete_suffix('s') if word.end_with?('s')
+      # "buses" is bus + es. "horses" is horse + s. A vowel before the
+      # final s marks the es plural. A stem ending in se marks the s plural.
+      if es_stem&.match?(/[aeiou]s\z/) && plural_form(es_stem) == word
+        return es_stem
+      end
+      return s_stem if s_stem&.end_with?('se') && plural_form(s_stem) == word
+      return es_stem if es_stem && es_plural?(es_stem) && !es_stem.end_with?('s') && plural_form(es_stem) == word
+      return s_stem if s_stem && !es_plural?(s_stem) && plural_form(s_stem) == word
+
+      nil
     end
 
     def es_plural?(stem)
