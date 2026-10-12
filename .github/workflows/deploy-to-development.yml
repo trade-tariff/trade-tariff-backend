@@ -48,7 +48,6 @@ jobs:
       checkout-ref: ${{ needs.authorize.outputs.sha }}
     secrets:
       slack-webhook: ${{ secrets.SLACK_WEBHOOK }}
-      ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
 
   start-services:
     needs: authorize
