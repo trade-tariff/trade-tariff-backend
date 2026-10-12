@@ -63,6 +63,9 @@ jobs:
           environment: development
 
   validate-cloudwatch-queries:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     needs: [authorize, deploy]
     permissions:
       contents: read

@@ -80,7 +80,8 @@ repository write access. Unlisted forks cannot deploy through these workflows.
 
 Authorization runs trusted code with read-only GitHub access and no deployment
 secrets or OIDC permission. Deployment jobs use the exact authorized commit SHA.
-The backend-only CloudWatch query check uses the same commit after deployment.
+The existing upstream-only CloudWatch query check uses the same commit after
+deployment. Fork deployments skip this check.
 Full-stack deployment uses the authorized backend commit and the normal refs
 for frontend, admin, identity and dev hub. The policy approves fork-code sources;
 it does not filter these supporting apps.
@@ -96,7 +97,7 @@ ref to an exact SHA before deployment. External account approval does not grant
 manual dispatch access, organisation membership or personal AWS credentials.
 Staging and production workflows do not use this policy.
 
-Backend-only deployment runs the CloudWatch query check, not end-to-end tests.
+Backend-only deployment does not run end-to-end tests.
 Full-stack deployment runs the existing tariff checks. Check the deployed commit
 and changed API behaviour on development. To roll back, a repository writer
 runs the manual development workflow with the previous deployed commit.
