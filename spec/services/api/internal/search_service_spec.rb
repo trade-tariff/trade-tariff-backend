@@ -2052,6 +2052,20 @@ RSpec.describe Api::Internal::SearchService do
           hash_including(expanded_query: 'laptop portable data processing machine'),
         )
       end
+
+      it 'does not duplicate the original wording when the expansion keeps it with attached punctuation' do
+        described_class.new(
+          q: 'laptop',
+          expanded_query: 'laptop, portable data processing machine',
+        ).call
+
+        expect(ExpandSearchQueryService).not_to have_received(:call)
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'laptop',
+          anything,
+          hash_including(expanded_query: 'laptop, portable data processing machine'),
+        )
+      end
     end
 
     context 'when configuration_overrides are supplied' do

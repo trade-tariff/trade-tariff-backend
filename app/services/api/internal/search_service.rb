@@ -439,9 +439,16 @@ module Api
       end
 
       def original_wording_in_expansion?
-        original_words = q.downcase.split
+        original_words = query_words(q)
 
-        original_words.empty? || (original_words - expanded_query.downcase.split).empty?
+        original_words.empty? || (original_words - query_words(expanded_query)).empty?
+      end
+
+      # Compare words, not whitespace tokens. Punctuation attached to a
+      # word, such as a comma after it, must not hide a word the expansion
+      # already keeps.
+      def query_words(query)
+        query.to_s.downcase.scan(/[[:word:]]+/)
       end
 
       def expand_query(query)
