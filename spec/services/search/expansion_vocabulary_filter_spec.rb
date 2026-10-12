@@ -41,6 +41,14 @@ RSpec.describe Search::ExpansionVocabularyFilter do
       expect(described_class.call(original_query: 'cherry tomatoes', expanded_query: 'cherry tomatoes cherries')).to eq('cherry tomatoes cherries')
     end
 
+    it 'returns the original query when the expansion invents an ies fold of a token without a y suffix' do
+      expect(described_class.call(original_query: 'chicken', expanded_query: 'chicken chickenies')).to eq('chicken')
+    end
+
+    it 'returns the original query when the expansion invents a y form of a token without an ies suffix' do
+      expect(described_class.call(original_query: 'chicken', expanded_query: 'chicken chickeny')).to eq('chicken')
+    end
+
     it 'keeps a phrase that only repeats query tokens and stop words' do
       expect(described_class.call(original_query: 'frozen chicken', expanded_query: 'frozen chicken of chicken')).to eq('frozen chicken of chicken')
     end
@@ -79,6 +87,20 @@ RSpec.describe Search::ExpansionVocabularyFilter do
 
         expect(described_class.call(original_query: 'chicken', expanded_query: 'poultry meat, zaptoxidinyl serum'))
           .to eq('chicken poultry meat')
+      end
+
+      it 'strips surrounding quotes so a quoted supported term is kept' do
+        create(:goods_nomenclature_description, description: 'Meat of poultry')
+
+        expect(described_class.call(original_query: 'chicken', expanded_query: "'poultry' meat"))
+          .to eq('chicken poultry meat')
+      end
+
+      it 'keeps an internal apostrophe when checking a term' do
+        create(:goods_nomenclature_description, description: "Meat at o'clock")
+
+        expect(described_class.call(original_query: 'chicken', expanded_query: "chicken o'clock"))
+          .to eq("chicken o'clock")
       end
 
       it 'drops a whole phrase when one of its words is unsupported' do

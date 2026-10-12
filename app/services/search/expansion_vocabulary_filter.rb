@@ -12,6 +12,15 @@ module Search
     WORD_PATTERN = /[\p{alnum}']+/
     private_constant :WORD_PATTERN
 
+    # A quote that sits between a word boundary and a word character surrounds
+    # a term. A quote between two word characters, such as the apostrophe in
+    # "o'clock" or "poultry's", is kept.
+    OPENING_QUOTE_PATTERN = /(?<![\p{alnum}'"])["'](?=\p{alnum})/
+    private_constant :OPENING_QUOTE_PATTERN
+
+    CLOSING_QUOTE_PATTERN = /(?<=\p{alnum})["'](?![\p{alnum}'"])/
+    private_constant :CLOSING_QUOTE_PATTERN
+
     def self.call(original_query:, expanded_query:)
       new(original_query, expanded_query).call
     rescue StandardError => e
@@ -50,7 +59,7 @@ module Search
     attr_reader :query_tokens
 
     def added_phrases(added_text)
-      added_text.split(',').map(&:strip).compact_blank
+      added_text.split(',').map { |phrase| strip_surrounding_quotes(phrase.strip) }.compact_blank
     end
 
     def candidate_words(phrases)
@@ -73,22 +82,32 @@ module Search
       TradeTariffBackend.stop_words.include?(word)
     end
 
+    # A variant is only a simple plural or singular fold when the folded
+    # suffix was actually present. delete_suffix returns the receiver when the
+    # suffix is absent, so "chicken" would otherwise fold to "chickenies" and
+    # "chickeny".
     def morphological_variant?(word)
       query_tokens.any? do |token|
         word == token ||
           ["#{token}s", "#{token}es"].include?(word) ||
-          word == "#{token.delete_suffix('y')}ies" ||
-          word.delete_suffix('s') == token ||
-          word.delete_suffix('es') == token ||
-          "#{word.delete_suffix('ies')}y" == token ||
-          token.delete_suffix('s') == word ||
-          token.delete_suffix('es') == word ||
-          "#{token.delete_suffix('ies')}y" == word
+          (token.end_with?('y') && word == "#{token.delete_suffix('y')}ies") ||
+          (word.end_with?('s') && word.delete_suffix('s') == token) ||
+          (word.end_with?('es') && word.delete_suffix('es') == token) ||
+          (word.end_with?('ies') && "#{word.delete_suffix('ies')}y" == token) ||
+          (token.end_with?('s') && token.delete_suffix('s') == word) ||
+          (token.end_with?('es') && token.delete_suffix('es') == word) ||
+          (token.end_with?('ies') && "#{token.delete_suffix('ies')}y" == word)
       end
     end
 
     def words(text)
       text.to_s.downcase.scan(WORD_PATTERN)
+          .map { |word| strip_surrounding_quotes(word) }
+          .select { |word| word.match?(/\p{alnum}/) }
+    end
+
+    def strip_surrounding_quotes(text)
+      text.gsub(OPENING_QUOTE_PATTERN, '').gsub(CLOSING_QUOTE_PATTERN, '')
     end
 
     def vocabulary_supported_words(candidate_words)
