@@ -58,12 +58,28 @@ module Api
             @runs ||= filtered_runs.order(Sequel.desc(:created_at)).paginate(current_page, per_page)
           end
 
+          # from/to are parsed into locals *before* each dataset.where { } block opens, not read
+          # from params inside the block itself. Sequel's virtual-row blocks rebind self to an
+          # internal query-building object, so a bare `params` call inside one doesn't reach the
+          # controller's own method — it resolves to a SQL identifier instead, and Date.parse
+          # then raises on that object rather than on the string actually typed into the form.
+          # experiment_id/status above don't have this problem because they pass a plain hash to
+          # .where(...) rather than a block, so no virtual row ever rebinds self there.
           def filtered_runs
             dataset = EvaluationRun.eager(:evaluation_experiment)
             dataset = dataset.where(experiment_id: params[:experiment_id]) if params[:experiment_id].present?
             dataset = dataset.where(status: params[:status]) if params[:status].present?
-            dataset = dataset.where { created_at >= Date.parse(params[:from]) } if params[:from].present?
-            dataset = dataset.where { created_at <= Date.parse(params[:to]) } if params[:to].present?
+
+            if params[:from].present?
+              from = Date.parse(params[:from])
+              dataset = dataset.where { created_at >= from }
+            end
+
+            if params[:to].present?
+              to = Date.parse(params[:to])
+              dataset = dataset.where { created_at <= to }
+            end
+
             dataset
           end
 
