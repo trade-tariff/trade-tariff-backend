@@ -4,12 +4,15 @@ class ClearInvalidSearchReferences
   sidekiq_options queue: :sync, retry: false
 
   TEMPLATE_ID = NOTIFY_CONFIGURATION.dig(:templates, :search_references, :invalidation_alert)
+  WHODUNNIT = 'ClearInvalidSearchReferences'.freeze
 
   def perform
     removed = []
 
-    SearchReference.each do |search_reference|
-      process(search_reference, removed:)
+    TradeTariffRequest.set(whodunnit: WHODUNNIT) do
+      SearchReference.each do |search_reference|
+        process(search_reference, removed:)
+      end
     end
 
     return if removed.empty?
@@ -26,7 +29,8 @@ private
 
     return unless result[:removal_alert_required]
 
-    search_reference.delete
+    # destroy (not delete) so a version records the reference's last known state
+    search_reference.destroy
     removed << result
   rescue StandardError => e
     logger.error("ClearInvalidSearchReferences: failed to process search reference #{search_reference.id}: #{e.class.name}: #{e.message}")

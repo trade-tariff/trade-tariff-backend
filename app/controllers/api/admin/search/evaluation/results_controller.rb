@@ -42,10 +42,25 @@ module Api
             @results ||= filtered_results.order(Sequel.desc(:created_at)).paginate(current_page, per_page)
           end
 
+          # outcome is derived, not a raw column: "pass" is gold_in_top5, "error" is any row whose
+          # Q&A session broke (error present, regardless of gold_in_top5 -- the eval app always
+          # posts gold_in_top5: false for those), and "fail" is everything else -- a genuine wrong
+          # or missing classification with no session error. The three are mutually exclusive and
+          # exhaustive over every result (AI-1432).
           def filtered_results
             dataset = EvaluationResult.dataset
             dataset = dataset.where(run_id: params[:run_id]) if params[:run_id].present?
-            dataset
+            dataset = dataset.where(persona: params[:persona]) if params[:persona].present?
+            filter_by_outcome(dataset)
+          end
+
+          def filter_by_outcome(dataset)
+            case params[:outcome]
+            when 'pass' then dataset.where(gold_in_top5: true)
+            when 'fail' then dataset.exclude(gold_in_top5: true).where(error: nil)
+            when 'error' then dataset.exclude(error: nil)
+            else dataset
+            end
           end
 
           def result
