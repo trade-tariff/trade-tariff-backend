@@ -203,5 +203,12 @@ RSpec.describe Search::ExpansionVocabularyFilter do
       expect(described_class.call(original_query: 'chicken', expanded_query: 'poultry meat'))
         .to eq('chicken poultry meat')
     end
+
+    it 'keeps the original query for a past date and does not scan' do
+      expect(Sequel::Model).not_to receive(:db)
+      TradeTariffRequest.time_machine_now = 2.years.ago
+
+      expect(described_class.call(original_query: 'chicken', expanded_query: 'poultry meat')).to eq('chicken')
+    end
   end
 end
