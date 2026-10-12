@@ -16,10 +16,11 @@ module SearchExport
     def self.added_ai_term(expansion_input, sent_query)
       input = expansion_input.to_s
       sent = sent_query.to_s
-      return if sent.blank? || sent == input
+      return if sent.blank? || sent.casecmp?(input)
 
-      if sent.start_with?("#{input} ")
-        sent.delete_prefix("#{input} ").strip.presence
+      prefix = "#{input} "
+      if sent.downcase.start_with?(prefix.downcase)
+        sent[prefix.length..].to_s.strip.presence
       else
         sent
       end

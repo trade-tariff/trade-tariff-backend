@@ -50,6 +50,18 @@ RSpec.describe Search::ExpansionVocabularyFilter do
       expect(described_class.call(original_query: 'chicken', expanded_query: 'chicken chickeny')).to eq('chicken')
     end
 
+    it 'returns the original query when the expansion invents an es plural of a regular noun' do
+      expect(described_class.call(original_query: 'chicken', expanded_query: 'chicken chickenes')).to eq('chicken')
+    end
+
+    it 'returns the original query when the expansion invents an s plural of an es noun' do
+      expect(described_class.call(original_query: 'box', expanded_query: 'box boxs')).to eq('box')
+    end
+
+    it 'keeps an es plural of a query token that takes es' do
+      expect(described_class.call(original_query: 'box', expanded_query: 'box boxes')).to eq('box boxes')
+    end
+
     it 'keeps a phrase that only repeats query tokens and stop words' do
       expect(described_class.call(original_query: 'frozen chicken', expanded_query: 'frozen chicken of chicken')).to eq('frozen chicken of chicken')
     end
@@ -162,6 +174,14 @@ RSpec.describe Search::ExpansionVocabularyFilter do
           expect(described_class.call(original_query: 'knee', expanded_query: 'knee artificial'))
             .to eq('knee')
         end
+
+        it 'ignores an ATaR ruling that is not current' do
+          allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(true)
+          TariffKnowledge::PublicAtarRuling.dataset.delete
+          create(:tariff_knowledge_public_atar_ruling, keywords: Sequel.pg_array(['obsolete knees'], :text), validity_end_date: 1.year.ago.to_date)
+
+          expect(described_class.call(original_query: 'knee', expanded_query: 'knee obsolete')).to eq('knee')
+        end
       end
     end
 
@@ -202,6 +222,19 @@ RSpec.describe Search::ExpansionVocabularyFilter do
 
       expect(described_class.call(original_query: 'chicken', expanded_query: 'poultry meat'))
         .to eq('chicken poultry meat')
+    end
+
+    it 'does not build a vocabulary in a worker process' do
+      allow(Sidekiq).to receive(:server?).and_return(true)
+      expect(Sequel::Model).not_to receive(:db)
+
+      expect(described_class.call(original_query: 'chicken', expanded_query: 'poultry meat')).to eq('chicken')
+    end
+
+    it 'does not duplicate the original query when the expansion prefix differs only in case' do
+      create(:goods_nomenclature_description, description: 'Meat of poultry')
+
+      expect(described_class.call(original_query: 'chicken', expanded_query: 'Chicken poultry')).to eq('chicken poultry')
     end
 
     it 'keeps the original query for a past date and does not scan' do

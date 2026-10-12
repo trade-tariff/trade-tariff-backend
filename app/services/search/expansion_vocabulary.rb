@@ -47,6 +47,8 @@ module Search
       # Returns nil when the set is not loaded yet. The caller keeps the
       # original query in that case.
       def supported_words(candidates)
+        return nil if worker_process?
+
         at, atar = context
         return nil unless current_date?(at)
 
@@ -95,6 +97,12 @@ module Search
         at == Date.current
       end
 
+      # Queued search runs this filter inside Sidekiq. Do not build or keep
+      # the word set in a worker process.
+      def worker_process?
+        Sidekiq.server?
+      end
+
       def cache_key(atar)
         atar
       end
@@ -104,7 +112,7 @@ module Search
       end
 
       def schedule_refresh(atar)
-        return if @refreshing
+        return if worker_process? || @refreshing
 
         MUTEX.synchronize do
           return if @refreshing
@@ -141,12 +149,19 @@ module Search
         end
 
         if atar
-          each_page(db[:tariff_knowledge_public_atar_rulings].order(:id), :id) do |row|
+          each_page(current_atar_rulings(db, at), :id) do |row|
             add_atar_words(words, row)
           end
         end
 
         words
+      end
+
+      def current_atar_rulings(db, at)
+        db[:tariff_knowledge_public_atar_rulings]
+          .where(Sequel[:validity_start_date] <= at)
+          .where(Sequel.lit('validity_end_date >= ? OR validity_end_date IS NULL', at))
+          .order(:id)
       end
 
       def each_description(db, at, words)

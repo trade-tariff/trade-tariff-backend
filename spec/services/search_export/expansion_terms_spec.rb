@@ -10,6 +10,11 @@ RSpec.describe SearchExport::ExpansionTerms do
         .to eq(['frozen poultry meat'])
     end
 
+    it 'strips a prefix that differs only in case' do
+      expect(described_class.call(expansion_input: 'chicken', sent_query: 'Chicken poultry', synonym_terms: []))
+        .to eq(%w[poultry])
+    end
+
     it 'does not count an unchanged retrieval query as expansion' do
       expect(described_class.call(expansion_input: 'chicken Fillet', sent_query: 'chicken Fillet', synonym_terms: []))
         .to eq([])
