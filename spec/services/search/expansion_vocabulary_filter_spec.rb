@@ -6,6 +6,7 @@ RSpec.describe Search::ExpansionVocabularyFilter do
   before do
     allow(AdminConfiguration).to receive(:enabled?).and_call_original
     allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(false)
+    Search::ExpansionVocabulary.reset!
   end
 
   describe '.call' do
@@ -187,6 +188,20 @@ RSpec.describe Search::ExpansionVocabularyFilter do
 
     it 'returns the original query when the added text has no phrases' do
       expect(described_class.call(original_query: 'chicken', expanded_query: 'chicken , ,')).to eq('chicken')
+    end
+
+    it 'returns the original query when the vocabulary set is not loaded yet' do
+      allow(Search::ExpansionVocabulary).to receive(:supported_words).and_return(nil)
+
+      expect(described_class.call(original_query: 'chicken', expanded_query: 'poultry meat')).to eq('chicken')
+    end
+
+    it 'does not query the database when a vocabulary snapshot is already loaded' do
+      Search::ExpansionVocabulary.remember!(%w[poultry meat])
+      allow(Sequel::Model).to receive(:db).and_raise(Sequel::DatabaseError)
+
+      expect(described_class.call(original_query: 'chicken', expanded_query: 'poultry meat'))
+        .to eq('chicken poultry meat')
     end
   end
 end

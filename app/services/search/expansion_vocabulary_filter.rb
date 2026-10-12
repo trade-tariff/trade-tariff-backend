@@ -3,24 +3,10 @@
 module Search
   # Keeps an added expansion term only when the tariff vocabulary supports it.
   #
-  # The vocabulary is the current nomenclature descriptions, the public search
-  # references, the non-expired goods nomenclature label text, and, when ATaR
-  # search is enabled, the public ATaR ruling search terms. One SQL statement
-  # checks the whole candidate set with word-bounded regular expressions, so
-  # "car" is never supported because it occurs inside "carpet".
+  # Support is membership of an in-process word set. The search request does
+  # not scan descriptions. A word inside another word, such as "car" inside
+  # "carpet", is not a member of that set.
   class ExpansionVocabularyFilter
-    WORD_PATTERN = /[\p{alnum}']+/
-    private_constant :WORD_PATTERN
-
-    # A quote that sits between a word boundary and a word character surrounds
-    # a term. A quote between two word characters, such as the apostrophe in
-    # "o'clock" or "poultry's", is kept.
-    OPENING_QUOTE_PATTERN = /(?<![\p{alnum}'"])["'](?=\p{alnum})/
-    private_constant :OPENING_QUOTE_PATTERN
-
-    CLOSING_QUOTE_PATTERN = /(?<=\p{alnum})["'](?![\p{alnum}'"])/
-    private_constant :CLOSING_QUOTE_PATTERN
-
     def self.call(original_query:, expanded_query:)
       new(original_query, expanded_query).call
     rescue StandardError => e
@@ -47,6 +33,7 @@ module Search
       return @original_query if phrases.empty?
 
       supported = vocabulary_supported_words(candidate_words(phrases))
+      return @original_query if supported.nil?
 
       surviving_phrases = phrases.select { |phrase| phrase_supported?(phrase, supported) }
       return @original_query if surviving_phrases.empty?
@@ -59,7 +46,7 @@ module Search
     attr_reader :query_tokens
 
     def added_phrases(added_text)
-      added_text.split(',').map { |phrase| strip_surrounding_quotes(phrase.strip) }.compact_blank
+      added_text.split(',').map { |phrase| ExpansionVocabulary.strip_surrounding_quotes(phrase.strip) }.compact_blank
     end
 
     def candidate_words(phrases)
@@ -101,75 +88,13 @@ module Search
     end
 
     def words(text)
-      text.to_s.downcase.scan(WORD_PATTERN)
-          .map { |word| strip_surrounding_quotes(word) }
-          .select { |word| word.match?(/\p{alnum}/) }
-    end
-
-    def strip_surrounding_quotes(text)
-      text.gsub(OPENING_QUOTE_PATTERN, '').gsub(CLOSING_QUOTE_PATTERN, '')
+      ExpansionVocabulary.extract_words(text)
     end
 
     def vocabulary_supported_words(candidate_words)
       return Set.new if candidate_words.empty?
 
-      Sequel::Model.db.fetch(vocabulary_sql, *vocabulary_bind_arguments(candidate_words)).map(:word).to_set
-    end
-
-    def vocabulary_bind_arguments(candidate_words)
-      point_in_time = TradeTariffRequest.time_machine_now
-      arguments = [candidate_words.join(',')]
-      arguments.concat([point_in_time, point_in_time]) if point_in_time.present?
-      arguments
-    end
-
-    def vocabulary_sql
-      atar_clause = if AdminConfiguration.enabled?('search_atars_enabled')
-                      <<~ATAR
-                        OR EXISTS (
-                          SELECT 1
-                          FROM tariff_knowledge_public_atar_rulings a
-                          WHERE (array_to_string(a.keywords, ' ') || ' ' || array_to_string(a.derived_facts, ' ')) ~* ('\\y' || candidates.word || '\\y')
-                        )
-                      ATAR
-                    end
-
-      <<~SQL
-        SELECT DISTINCT candidates.word
-        FROM unnest(string_to_array(?, ',')) AS candidates(word)
-        WHERE EXISTS (
-          SELECT 1
-          FROM goods_nomenclature_descriptions d
-          JOIN goods_nomenclature_description_periods p
-            ON p.goods_nomenclature_description_period_sid = d.goods_nomenclature_description_period_sid
-           AND p.goods_nomenclature_sid = d.goods_nomenclature_sid
-          WHERE d.description IS NOT NULL
-            AND #{descriptions_validity_sql}
-            AND d.description ~* ('\\y' || candidates.word || '\\y')
-        ) OR EXISTS (
-          SELECT 1
-          FROM search_references r
-          WHERE r.usage = 'search'
-            AND r.title IS NOT NULL
-            AND r.title ~* ('\\y' || candidates.word || '\\y')
-        ) OR EXISTS (
-          SELECT 1
-          FROM goods_nomenclature_labels l
-          WHERE l.expired = FALSE
-            AND (
-              l.description ~* ('\\y' || candidates.word || '\\y')
-              OR array_to_string(l.synonyms, ' ') ~* ('\\y' || candidates.word || '\\y')
-              OR array_to_string(l.colloquial_terms, ' ') ~* ('\\y' || candidates.word || '\\y')
-              OR array_to_string(l.known_brands, ' ') ~* ('\\y' || candidates.word || '\\y')
-            )
-        ) #{atar_clause}
-      SQL
-    end
-
-    def descriptions_validity_sql
-      return 'TRUE' if TradeTariffRequest.time_machine_now.blank?
-
-      'p.validity_start_date <= ? AND (p.validity_end_date >= ? OR p.validity_end_date IS NULL)'
+      ExpansionVocabulary.supported_words(candidate_words)
     end
   end
 end
