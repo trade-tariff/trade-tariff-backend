@@ -1,10 +1,11 @@
 class EvaluationQueuedSearchWorker
   include Sidekiq::Worker
 
-  # A dedicated queue, separate from QueuedSearchWorker's :default (AI-1438) -- evaluation
-  # search load must never compete with real user searches for Sidekiq capacity, in either
-  # direction: a burst of evaluation searches must not delay a real trader's search, and a
-  # surge of real traffic must not starve an evaluation run either.
+  # A dedicated queue, separate from QueuedSearchWorker's :default (AI-1438), so evaluation
+  # search load is never mixed into the same Redis list as a real trader's search. This still
+  # shares the Sidekiq process's single :concurrency pool with :default, though (see the
+  # comment on :evaluation in config/sidekiq.yml) -- queue separation alone does not give
+  # either side protected capacity; that needs a separate Sidekiq deployment (AI-1438 review).
   sidekiq_options queue: :evaluation, retry: false
 
   # Matches both sources of per-search LLM/embedding usage -- see with_usage_meta below.
@@ -38,6 +39,13 @@ private
     context = payload.fetch('context').symbolize_keys
     as_of = context.delete(:as_of)
     params = payload.fetch('params').with_indifferent_access
+    # Api::Internal::SearchService resolves its own as_of from params[:as_of], defaulting to
+    # Time.zone.today when blank -- but that default is resolved at whatever moment this job
+    # happens to run, not when the search was submitted. A job that sits in the queue across
+    # midnight would then search against a different calendar day than the one the submitter
+    # saw. Pin it to the date already captured in context at submission time, exactly as
+    # QueuedSearchWorker does for real user search (AI-1438 review).
+    params[:as_of] = context.delete(:search_as_of) || as_of
     # Sidekiq reuses threads across jobs; ActiveSupport::CurrentAttributes#set only
     # overrides the keys given, it does not reset everything else first, so a prior job's
     # TradeTariffRequest state on this thread could otherwise leak into this search.

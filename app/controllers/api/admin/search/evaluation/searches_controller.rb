@@ -3,6 +3,8 @@ module Api
     module Search
       module Evaluation
         class SearchesController < AdminController
+          include Api::Internal::QueryProcessing
+
           # Queues the search on EvaluationQueuedSearchWorker's dedicated :evaluation queue
           # and returns immediately, instead of calling SearchService inline (AI-1438) --
           # evaluation searches no longer hold a Puma thread for the search's full duration,
@@ -38,7 +40,7 @@ module Api
 
           def search_context
             TradeTariffRequest.attributes.slice(:request_id, :request_source, :client_id, :experiment)
-              .merge(as_of: actual_date.iso8601)
+              .merge(as_of: actual_date.iso8601, search_as_of: parse_date(params[:as_of]).iso8601)
           end
 
           def unavailable

@@ -5,10 +5,14 @@
   - default
   - within_1_hour
   - within_1_day
-  # Evaluation searches have their own queue (AI-1438) so a burst of them can never delay a
-  # real trader's search, and real traffic can never starve an evaluation run either -- each
-  # gets its own, independently-sized share of Sidekiq capacity instead of competing for the
-  # same slots.
+  # Evaluation searches have their own queue (AI-1438), kept separate from a real trader's
+  # search by name and by Redis list. This queue is still served by the single :concurrency
+  # pool below, alongside every other queue on this process, so it does not yet give either
+  # side an independently sized share of capacity: a burst of evaluation searches can still
+  # occupy every worker thread and delay a real trader's search queued at the same time, and
+  # vice versa. Full isolation needs a separate Sidekiq deployment for this queue (AI-1438
+  # review) -- left as a follow-up, since this queue already gets evaluation search off the
+  # Puma thread pool, which was the problem this ticket set out to fix.
   - evaluation
 :scheduler:
   :schedule:
