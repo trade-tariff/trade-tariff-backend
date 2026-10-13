@@ -21,11 +21,34 @@ class OpenaiClient
     end
   end
 
-  class DeadlineExceeded < StandardError
-    attr_reader :elapsed_seconds
+  # The HTTP request succeeded, but the Responses API reports that the model
+  # did not finish (body `status` is not `completed`).
+  class ResponseStatusError < ApiError
+    attr_reader :response_status, :reason
 
-    def initialize(timeout_seconds:, elapsed_seconds:)
+    def initialize(status:, body:, response_status:, reason: nil, ai_usage: nil)
+      super(status:, body:, ai_usage:)
+      @response_status = response_status
+      @reason = reason
+    end
+
+    def message
+      ["OpenAI response status=#{response_status || 'missing'}", ("reason=#{reason}" if reason)].compact.join(' ')
+    end
+  end
+
+  # Retried like other API errors.
+  class ResponseFailedError < ResponseStatusError; end
+
+  # Not retried: the same request stops at the same limit again.
+  class ResponseIncompleteError < ResponseStatusError; end
+
+  class DeadlineExceeded < StandardError
+    attr_reader :elapsed_seconds, :ai_usage
+
+    def initialize(timeout_seconds:, elapsed_seconds:, ai_usage: nil)
       @elapsed_seconds = elapsed_seconds.to_f
+      @ai_usage = ai_usage
       super("OpenAI operation exceeded #{(timeout_seconds.to_f * 1000).round}ms deadline")
     end
   end
@@ -58,53 +81,67 @@ class OpenaiClient
 
     body = {
       model: model,
-      messages: messages,
-      user: TradeTariffBackend.openai_user,
-      response_format: { type: 'json_object' },
+      input: messages,
+      safety_identifier: TradeTariffBackend.openai_user,
+      text: { format: { type: 'json_object' } },
+      store: false,
     }
-    body[:reasoning_effort] = reasoning_effort if reasoning_effort.present?
+    body[:reasoning] = { effort: reasoning_effort } if reasoning_effort.present?
     body = body.to_json
+
+    # Usage from earlier attempts that the provider billed (for example a
+    # `failed` response that consumed input tokens). It is added to the usage
+    # of the final result or error.
+    prior_usage = nil
+    attempt_usage = nil
+    usage_so_far = -> { AiUsage.merge_metadata(prior_usage, attempt_usage) }
 
     with_retry(
       max_attempts: MAX_RETRIES,
       retryable_errors: RETRYABLE_ERRORS,
       delay_calculator: method(:calculate_retry_delay),
       on_retry: lambda { |attempt:, delay:, error:, **|
-        raise_deadline_if_elapsed!(deadline:, timeout:, started_at:)
-        raise_if_delay_exceeds_deadline!(delay:, deadline:, timeout:, started_at:)
+        raise error if error.is_a?(ResponseIncompleteError)
+
+        prior_usage = usage_so_far.call if usage_reported?(attempt_usage)
+        attempt_usage = nil
+        raise_deadline_if_elapsed!(deadline:, timeout:, started_at:, ai_usage: prior_usage)
+        raise_if_delay_exceeds_deadline!(delay:, deadline:, timeout:, started_at:, ai_usage: prior_usage)
         Rails.logger.warn "OpenaiClient: #{error.class} on attempt #{attempt}, retrying in #{delay}s..."
       },
       on_exhausted: lambda { |attempt:, error:, **|
-        raise_deadline_if_elapsed!(deadline:, timeout:, started_at:)
+        raise_deadline_if_elapsed!(deadline:, timeout:, started_at:, ai_usage: usage_so_far.call)
         Rails.logger.error "OpenaiClient: #{error.class} after #{attempt} attempts, giving up"
       },
     ) do
       remaining = remaining_time(deadline)
-      raise_deadline!(timeout:, started_at:) if deadline && remaining <= 0
+      raise_deadline!(timeout:, started_at:, ai_usage: prior_usage) if deadline && remaining <= 0
 
       response = post(body, remaining:)
-      raise_on_error!(response, model:, event_kind:, reasoning_effort:) unless response.success?
+      attempt_usage = usage_metadata(response, model:, event_kind:, reasoning_effort:)
+      raise_on_error!(response, ai_usage: usage_so_far.call) unless response.success?
+      raise_on_unfinished_response!(response, ai_usage: usage_so_far.call)
 
-      json = response.body.dig('choices', 0, 'message', 'content') || ''
+      json = output_text(response.body)
       result = begin
         JSON.parse(json)
       rescue StandardError
         json
       end
 
-      raise_deadline!(timeout:, started_at:) if deadline && remaining_time(deadline) <= 0
-      AiUsage.attach_metadata(result, usage_metadata(response, model:, event_kind:, reasoning_effort:))
+      raise_deadline!(timeout:, started_at:, ai_usage: usage_so_far.call) if deadline && remaining_time(deadline) <= 0
+      AiUsage.attach_metadata(result, usage_so_far.call)
     end
   end
 
 private
 
   def post(body, remaining:)
-    return self.class.client.post('chat/completions', body) unless remaining
+    return self.class.client.post('responses', body) unless remaining
 
     timeout, open_timeout = transport_timeouts(remaining)
 
-    self.class.client.post('chat/completions', body) do |request|
+    self.class.client.post('responses', body) do |request|
       request.options.timeout = timeout
       request.options.open_timeout = open_timeout
     end
@@ -118,15 +155,36 @@ private
     [timeout * scale, open_timeout * scale]
   end
 
-  def raise_on_error!(response, model: nil, event_kind: nil, reasoning_effort: nil)
-    ai_usage = usage_metadata(response, model:, event_kind:, reasoning_effort:)
-
+  def raise_on_error!(response, ai_usage:)
     if response.status == 429
       retry_after = response.headers['Retry-After'] || response.headers['retry-after']
       raise RateLimitError.new(status: response.status, body: response.body, retry_after: retry_after, ai_usage:)
     end
 
     raise ApiError.new(status: response.status, body: response.body, ai_usage:)
+  end
+
+  def raise_on_unfinished_response!(response, ai_usage:)
+    body = response_body_hash(response)
+    response_status = body['status']
+    return if response_status == 'completed'
+
+    error_class = response_status == 'incomplete' ? ResponseIncompleteError : ResponseFailedError
+    raise error_class.new(
+      status: response.status,
+      body: response.body,
+      response_status:,
+      reason: unfinished_reason(body),
+      ai_usage:,
+    )
+  end
+
+  def usage_reported?(metadata)
+    metadata.present? && (metadata.input_tokens || metadata.total_tokens).present?
+  end
+
+  def unfinished_reason(body)
+    body.dig('incomplete_details', 'reason').presence || (body['error']['code'].presence if body['error'].is_a?(Hash))
   end
 
   def usage_metadata(response, model:, event_kind:, reasoning_effort: nil)
@@ -147,7 +205,7 @@ private
 
   def response_metadata(body, response, reasoning_effort:)
     {
-      finish_reason: body.dig('choices', 0, 'finish_reason'),
+      finish_reason: finish_reason(body),
       served_model: body['model'],
       service_tier: body['service_tier'],
       reasoning_effort: reasoning_effort.presence,
@@ -156,31 +214,47 @@ private
     }.compact
   end
 
+  def output_text(body)
+    return '' unless body.is_a?(Hash)
+
+    Array(body['output'])
+      .select { |item| item['type'] == 'message' }
+      .flat_map { |item| Array(item['content']) }
+      .select { |content| content['type'] == 'output_text' }
+      .map { |content| content['text'] }
+      .join
+  end
+
+  def finish_reason(body)
+    unfinished_reason(body) || body['status']
+  end
+
   def openai_request_id(response)
     return unless response.respond_to?(:headers)
 
     response.headers['x-request-id'].presence || response.headers['openai-request-id'].presence
   end
 
-  def raise_deadline_if_elapsed!(deadline:, timeout:, started_at:)
-    raise_deadline!(timeout:, started_at:) if deadline && remaining_time(deadline) <= 0
+  def raise_deadline_if_elapsed!(deadline:, timeout:, started_at:, ai_usage: nil)
+    raise_deadline!(timeout:, started_at:, ai_usage:) if deadline && remaining_time(deadline) <= 0
   end
 
-  def raise_if_delay_exceeds_deadline!(delay:, deadline:, timeout:, started_at:)
+  def raise_if_delay_exceeds_deadline!(delay:, deadline:, timeout:, started_at:, ai_usage: nil)
     return unless deadline
 
     remaining = remaining_time(deadline)
-    raise_deadline!(timeout:, started_at:) if delay >= remaining
+    raise_deadline!(timeout:, started_at:, ai_usage:) if delay >= remaining
   end
 
   def remaining_time(deadline)
     deadline && deadline - monotonic_time
   end
 
-  def raise_deadline!(timeout:, started_at:)
+  def raise_deadline!(timeout:, started_at:, ai_usage: nil)
     raise DeadlineExceeded.new(
       timeout_seconds: timeout,
       elapsed_seconds: monotonic_time - started_at,
+      ai_usage:,
     )
   end
 
