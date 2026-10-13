@@ -291,6 +291,36 @@ RSpec.describe ExpandSearchQueryService do
       end
     end
 
+    ['8471.30.10.00', '8471 30 10 00'].each do |formatted_code|
+      context "when an addition specifies #{formatted_code} below the supplied heading" do
+        let(:query) { '8471 laptop' }
+        let(:ai_response) do
+          { 'added_terms' => ['portable computers', "HS code #{formatted_code}"], 'reason' => 'Tariff terminology.' }
+        end
+
+        it 'rejects the more-specific code' do
+          expect(result.expanded_query).to eq('8471 laptop portable computers')
+        end
+      end
+    end
+
+    [
+      ['8471301000', '8471.30.10.00'],
+      ['8471.30.10.00', '8471301000'],
+      ['8471 30 10 00', '8471.30.10.00'],
+    ].each do |supplied_code, expanded_code|
+      context "when the supplied code #{supplied_code} is formatted as #{expanded_code}" do
+        let(:query) { "#{supplied_code} laptop" }
+        let(:ai_response) do
+          { 'added_terms' => ["HS code #{expanded_code}"], 'reason' => 'Tariff terminology.' }
+        end
+
+        it 'keeps the supplied complete code' do
+          expect(result.expanded_query).to eq("#{query} HS code #{expanded_code}")
+        end
+      end
+    end
+
     context 'when an added phrase repeats a number from the original query' do
       let(:query) { '8471 laptop' }
       let(:ai_response) { { 'added_terms' => ['portable computers', 'heading 8471'], 'reason' => 'The term is colloquial.' } }

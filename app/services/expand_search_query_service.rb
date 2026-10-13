@@ -1,6 +1,7 @@
 class ExpandSearchQueryService
   NUMERIC_CODE_PATTERN = /\A\d+\z/
-  TARIFF_CODE_REFERENCE_PATTERN = /\b(?:heading|subheading|(?:commodity|tariff|hs|cn)\s+code)\s*[:#]?\s*(\d{4}(?:\d{2}){0,3})\b/i
+  FORMATTED_NUMBER_PATTERN = /\d+(?:[.\s]+\d+)*/
+  TARIFF_CODE_REFERENCE_PATTERN = /\b(?:heading|subheading|(?:commodity|tariff|hs|cn)\s+code)\s*[:#]?\s*(#{FORMATTED_NUMBER_PATTERN})(?![.\s]*\d)\b/i
   MAX_ADDED_TERMS = 5
   CACHE_TTL = 7.days
   EXPANSION_TIMEOUT_SECONDS = 5.0
@@ -146,8 +147,12 @@ private
   def invents_commodity_code?(phrase)
     # A number alone may be a quantity, dimension or product identifier.
     # Only explicitly labelled tariff references are treated as added codes.
-    supplied_numbers = query.scan(/\d+/)
-    phrase.scan(TARIFF_CODE_REFERENCE_PATTERN).flatten.any? { |code| !supplied_numbers.include?(code) }
+    supplied_numbers = query.scan(FORMATTED_NUMBER_PATTERN).map { |number| code_digits(number) }
+    phrase.scan(TARIFF_CODE_REFERENCE_PATTERN).flatten.any? { |code| !supplied_numbers.include?(code_digits(code)) }
+  end
+
+  def code_digits(value)
+    value.delete('^0-9')
   end
 
   def record_failure(message, error_type: 'InvalidResponse')
