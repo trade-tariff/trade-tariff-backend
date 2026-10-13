@@ -63,129 +63,52 @@ RSpec.describe LabelService do
       )
     end
 
-    context 'when the AI returns a brand the contextual description does not name' do
-      let(:ai_response) do
-        {
-          'data' => [
-            {
-              'commodity_code' => '0101210000',
-              'description' => 'Purebred horses for breeding',
-              'known_brands' => %w[Sony],
-              'colloquial_terms' => ['stud horses'],
-              'synonyms' => ['breeding horses'],
-            },
-          ],
-        }
-      end
-
-      it 'drops the invented brand before building the label' do
-        described_class.new([goods_nomenclature]).call
-
-        expect(GoodsNomenclatureLabel).to have_received(:build).with(
-          goods_nomenclature,
-          hash_including('known_brands' => []),
-          contextual_description: 'Live animals >> Horses >> Pure-bred breeding animals',
-        )
-      end
-    end
-
-    context 'when the AI returns a brand the contextual description names' do
-      let(:ai_response) do
-        {
-          'data' => [
-            {
-              'commodity_code' => '0101210000',
-              'description' => 'Purebred horses for breeding',
-              'known_brands' => %w[Horses],
-              'colloquial_terms' => [],
-              'synonyms' => [],
-            },
-          ],
-        }
-      end
-
-      it 'keeps the named brand' do
-        described_class.new([goods_nomenclature]).call
-
-        expect(GoodsNomenclatureLabel).to have_received(:build).with(
-          goods_nomenclature,
-          hash_including('known_brands' => %w[Horses]),
-          contextual_description: 'Live animals >> Horses >> Pure-bred breeding animals',
-        )
-      end
-
-      it 'matches the brand without case sensitivity' do
-        ai_response['data'].first['known_brands'] = %w[hORSES]
-
-        described_class.new([goods_nomenclature]).call
-
-        expect(GoodsNomenclatureLabel).to have_received(:build).with(
-          goods_nomenclature,
-          hash_including('known_brands' => %w[hORSES]),
-          contextual_description: 'Live animals >> Horses >> Pure-bred breeding animals',
-        )
-      end
-    end
-
-    context 'when a brand name only occurs inside another word' do
-      let(:ai_response) do
-        {
-          'data' => [
-            {
-              'commodity_code' => '0101210000',
-              'description' => 'Purebred horses for breeding',
-              'known_brands' => %w[Horse orses],
-              'colloquial_terms' => [],
-              'synonyms' => [],
-            },
-          ],
-        }
-      end
-
-      it 'drops the brand' do
-        described_class.new([goods_nomenclature]).call
-
-        expect(GoodsNomenclatureLabel).to have_received(:build).with(
-          goods_nomenclature,
-          hash_including('known_brands' => []),
-          contextual_description: 'Live animals >> Horses >> Pure-bred breeding animals',
-        )
-      end
-    end
-
-    context 'when the contextual description names a brand with trailing punctuation' do
+    context 'with a generic commodity description' do
       let(:goods_nomenclature) do
         instance_double(
           GoodsNomenclature,
           goods_nomenclature_sid: 1,
-          goods_nomenclature_item_id: '0101210000',
-          ancestor_chain_description: 'Live animals >> Horses! >> Pure-bred breeding animals',
+          goods_nomenclature_item_id: '8517130000',
+          ancestor_chain_description: 'Telephone sets >> Smartphones',
           goods_nomenclature_label: nil,
-          as_json: { 'goods_nomenclature_item_id' => '0101210000' },
+          as_json: { 'goods_nomenclature_item_id' => '8517130000' },
         )
       end
       let(:ai_response) do
         {
           'data' => [
             {
-              'commodity_code' => '0101210000',
-              'description' => 'Purebred horses for breeding',
-              'known_brands' => %w[Horses! orses!],
+              'commodity_code' => '8517130000',
+              'description' => 'Smartphones',
+              'known_brands' => %w[Apple Samsung],
               'colloquial_terms' => [],
-              'synonyms' => [],
+              'synonyms' => ['mobile phones'],
             },
           ],
         }
       end
 
-      it 'keeps the brand with the trailing exclamation mark and rejects the substring brand' do
+      it 'keeps brand aliases absent from the description' do
         described_class.new([goods_nomenclature]).call
 
         expect(GoodsNomenclatureLabel).to have_received(:build).with(
           goods_nomenclature,
-          hash_including('known_brands' => ['Horses!']),
-          contextual_description: 'Live animals >> Horses! >> Pure-bred breeding animals',
+          hash_including('known_brands' => %w[Apple Samsung]),
+          contextual_description: 'Telephone sets >> Smartphones',
         )
+      end
+
+      it 'persists aliases in both label representations' do
+        commodity = create(:commodity, goods_nomenclature_item_id: '8517130000')
+        allow(commodity).to receive(:ancestor_chain_description).and_return('Telephone sets >> Smartphones')
+        allow(GoodsNomenclatureLabel).to receive(:build).and_call_original
+
+        generated = described_class.call([commodity]).first
+        generated.save
+        stored = GoodsNomenclatureLabel[commodity.goods_nomenclature_sid]
+
+        expect(stored.known_brands).to eq(%w[Apple Samsung])
+        expect(stored.labels['known_brands']).to eq(%w[Apple Samsung])
       end
     end
 

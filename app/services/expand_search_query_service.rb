@@ -1,6 +1,6 @@
 class ExpandSearchQueryService
   NUMERIC_CODE_PATTERN = /\A\d+\z/
-  COMMODITY_CODE_LIKE_PATTERN = /\d{4,}/
+  TARIFF_CODE_REFERENCE_PATTERN = /\b(?:heading|subheading|(?:commodity|tariff|hs|cn)\s+code)\s*[:#]?\s*(\d{4}(?:\d{2}){0,3})\b/i
   MAX_ADDED_TERMS = 5
   CACHE_TTL = 7.days
   EXPANSION_TIMEOUT_SECONDS = 5.0
@@ -144,7 +144,10 @@ private
   end
 
   def invents_commodity_code?(phrase)
-    phrase.scan(COMMODITY_CODE_LIKE_PATTERN).any? { |number| !query.include?(number) }
+    # A number alone may be a quantity, dimension or product identifier.
+    # Only explicitly labelled tariff references are treated as added codes.
+    supplied_numbers = query.scan(/\d+/)
+    phrase.scan(TARIFF_CODE_REFERENCE_PATTERN).flatten.any? { |code| !supplied_numbers.include?(code) }
   end
 
   def record_failure(message, error_type: 'InvalidResponse')
@@ -159,7 +162,7 @@ private
   end
 
   def cache_key
-    @cache_key ||= "expand_search_query/#{configured_model}/#{context_digest}/#{query.downcase}"
+    @cache_key ||= "expand_search_query/v2/#{configured_model}/#{context_digest}/#{query.downcase}"
   end
 
   def context_digest

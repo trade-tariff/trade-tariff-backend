@@ -177,6 +177,8 @@ RSpec.describe 'admin_configurations:seed' do
     expect(label_context.config_type).to eq('markdown')
     expect(label_context.value).to include('## Input fields')
     expect(label_context.value).to include('**commodity_code**')
+    expect(label_context.value).to include('A brand need not appear literally in the description.')
+    expect(label_context.value).to include('Do not invent brands or include unrelated brands.')
 
     search_context = AdminConfiguration.where(name: 'search_context').first
     expect(search_context.config_type).to eq('markdown')
