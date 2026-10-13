@@ -75,6 +75,9 @@ private
   end
 
   def most_requested_goods_nomenclature_item_ids(log_group_name:, lookback_hours:, limit:)
+    # No AWS credentials or search logs locally; PREWARM_COMMODITY_IDS still apply.
+    return [] if Rails.env.development?
+
     query_id = self.class.client.start_query(
       log_group_name:,
       start_time: (Time.current - lookback_hours.hours).to_i,

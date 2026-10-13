@@ -49,6 +49,8 @@ module Notifications
 
     def put_cloudwatch_metric(status)
       return unless METRIC_FAILURE_STATUSES.include?(status)
+      # No AWS credentials locally; the failure alarm only exists when deployed.
+      return if Rails.env.development?
 
       Aws::CloudWatch::Client.new.put_metric_data(
         namespace: METRIC_NAMESPACE,

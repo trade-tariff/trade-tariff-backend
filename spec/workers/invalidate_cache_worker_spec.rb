@@ -105,5 +105,15 @@ RSpec.describe InvalidateCacheWorker, type: :worker do
         expect(client.api_requests.pluck(:operation_name)).to eq([:list_distributions])
       end
     end
+
+    context 'when running in development' do
+      before { allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('development')) }
+
+      it 'does not call CloudFront, where there is no CDN or AWS credentials' do
+        worker.perform(client)
+
+        expect(client.api_requests).to be_empty
+      end
+    end
   end
 end

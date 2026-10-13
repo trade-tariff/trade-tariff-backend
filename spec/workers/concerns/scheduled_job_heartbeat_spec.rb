@@ -56,5 +56,13 @@ RSpec.describe ScheduledJobHeartbeat do
         a_string_including('scheduled_job_heartbeat_failed', 'TestWorker'),
       )
     end
+
+    it 'skips CloudWatch in development, where there are no AWS credentials' do
+      allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('development'))
+
+      worker.record_heartbeat
+
+      expect(Aws::CloudWatch::Client).not_to have_received(:new)
+    end
   end
 end

@@ -29,6 +29,9 @@ class SynchronizerCheckWorker
 private
 
   def record_age_metric(age_minutes)
+    # No AWS credentials locally; the staleness alarm only exists when deployed.
+    return if Rails.env.development?
+
     Aws::CloudWatch::Client.new.put_metric_data(
       namespace: AGE_METRIC_NAMESPACE,
       metric_data: [{

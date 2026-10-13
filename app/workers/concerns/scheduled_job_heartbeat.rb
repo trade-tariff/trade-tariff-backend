@@ -2,6 +2,9 @@ module ScheduledJobHeartbeat
   METRIC_NAMESPACE = 'TradeTariff/ScheduledJobs'.freeze
 
   def record_heartbeat
+    # No AWS credentials locally; heartbeat alarms only exist when deployed.
+    return if Rails.env.development?
+
     Aws::CloudWatch::Client.new.put_metric_data(
       namespace: METRIC_NAMESPACE,
       metric_data: [{

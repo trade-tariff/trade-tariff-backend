@@ -2,11 +2,13 @@ require 'erb'
 require 'yaml'
 
 RSpec.describe 'config/sidekiq.yml' do
-  def sidekiq_schedule(environment:, service: 'uk')
+  def sidekiq_schedule(environment:, service: 'uk', rails_env: 'production')
     original_environment = ENV.fetch('ENVIRONMENT', nil)
     original_service = ENV.fetch('SERVICE', nil)
+    original_rails_env = ENV.fetch('RAILS_ENV', nil)
     ENV['ENVIRONMENT'] = environment
     ENV['SERVICE'] = service
+    ENV['RAILS_ENV'] = rails_env
 
     begin
       YAML.safe_load(ERB.new(Rails.root.join('config/sidekiq.yml').read).result, permitted_classes: [Symbol], aliases: true)
@@ -15,6 +17,7 @@ RSpec.describe 'config/sidekiq.yml' do
     ensure
       ENV['ENVIRONMENT'] = original_environment
       ENV['SERVICE'] = original_service
+      ENV['RAILS_ENV'] = original_rails_env
     end
   end
 
@@ -57,5 +60,11 @@ RSpec.describe 'config/sidekiq.yml' do
       expect(schedule.fetch('SearchAnalyticsQueryWorker')).not_to include('enabled' => false)
       expect(schedule).not_to have_key('SearchAnalyticsSnapshotWorker')
     end
+  end
+
+  it 'does not schedule search analytics collection locally, where there are no AWS credentials' do
+    schedule = sidekiq_schedule(environment: 'development', rails_env: 'development')
+
+    expect(schedule.fetch('SearchAnalyticsQueryWorker')).to include('enabled' => false)
   end
 end

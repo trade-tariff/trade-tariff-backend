@@ -73,5 +73,18 @@ RSpec.describe SidekiqQueueMetricsWorker, type: :worker do
         )
       end
     end
+
+    context 'when running in development' do
+      before do
+        allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('development'))
+        allow(Sidekiq::Queue).to receive(:all)
+        perform
+      end
+
+      it 'skips CloudWatch, where there are no AWS credentials' do
+        expect(cloudwatch_client).not_to have_received(:put_metric_data)
+        expect(Sidekiq::Queue).not_to have_received(:all)
+      end
+    end
   end
 end

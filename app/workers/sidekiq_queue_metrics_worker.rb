@@ -11,6 +11,9 @@ class SidekiqQueueMetricsWorker
   end
 
   def perform
+    # No AWS credentials locally; CloudWatch metrics only matter when deployed.
+    return if Rails.env.development?
+
     metric_data = Sidekiq::Queue.all.flat_map { |queue| metrics_for(queue) }
 
     self.class.client.put_metric_data(
