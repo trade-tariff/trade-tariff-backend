@@ -706,7 +706,7 @@ module Api
         response = GoodsNomenclatureSearchSerializer.serialize(results)
         return response if results.blank? || !include_ancestors?
 
-        ::Search::ResultAncestors.attach(response, results, as_of:)
+        ::Search::ResultAncestors.attach(response, as_of:)
       end
 
       def include_ancestors?

@@ -33,7 +33,7 @@ RSpec.describe Search::ResultAncestors do
     before { chapter && heading }
 
     context 'with commodity results' do
-      subject(:attached) { described_class.attach(response, results, as_of: Time.zone.today) }
+      subject(:attached) { described_class.attach(response, as_of: Time.zone.today) }
 
       let(:results) { [result_for('0101210000', 1, score: 6.0)] }
       let(:response) { Api::Internal::GoodsNomenclatureSearchSerializer.serialize(results) }
@@ -91,7 +91,7 @@ RSpec.describe Search::ResultAncestors do
       let(:response) { Api::Internal::GoodsNomenclatureSearchSerializer.serialize(results) }
 
       it 'dedupes shared ancestors into one included copy', :aggregate_failures do
-        attached = described_class.attach(response, results, as_of: Time.zone.today)
+        attached = described_class.attach(response, as_of: Time.zone.today)
 
         expect(attached[:included].map { |resource| resource[:type] }).to contain_exactly(:heading, :chapter)
         expect(attached[:data]).to all(have_key(:relationships))
@@ -109,7 +109,7 @@ RSpec.describe Search::ResultAncestors do
       let(:response) { Api::Internal::GoodsNomenclatureSearchSerializer.serialize(results) }
 
       it 'does not repeat primary identities in included', :aggregate_failures do
-        attached = described_class.attach(response, results, as_of: Time.zone.today)
+        attached = described_class.attach(response, as_of: Time.zone.today)
 
         included_keys = (attached[:included] || []).map { |resource| [resource[:type].to_s, resource[:id].to_s] }
 
@@ -118,7 +118,7 @@ RSpec.describe Search::ResultAncestors do
       end
 
       it 'enriches the chapter linkage on the primary heading', :aggregate_failures do
-        attached = described_class.attach(response, results, as_of: Time.zone.today)
+        attached = described_class.attach(response, as_of: Time.zone.today)
 
         primary_heading = attached[:data].find { |item| item[:type] == :heading }
         primary_chapter = attached[:data].find { |item| item[:type] == :chapter }
@@ -131,7 +131,7 @@ RSpec.describe Search::ResultAncestors do
       end
 
       it 'links the primary commodity to the primary heading and chapter', :aggregate_failures do
-        attached = described_class.attach(response, results, as_of: Time.zone.today)
+        attached = described_class.attach(response, as_of: Time.zone.today)
 
         primary_commodity = attached[:data].find { |item| item[:type] == :commodity }
         primary_keys = attached[:data].map { |item| [item[:type].to_s, item[:id].to_s] }
@@ -156,7 +156,7 @@ RSpec.describe Search::ResultAncestors do
       let(:response) { Api::Internal::GoodsNomenclatureSearchSerializer.serialize(results) }
 
       it 'omits hidden ancestors while keeping visible ones', :aggregate_failures do
-        attached = described_class.attach(response, results, as_of: Time.zone.today)
+        attached = described_class.attach(response, as_of: Time.zone.today)
 
         expect(attached[:data].first[:relationships]).to eq(
           chapter: { data: { type: :chapter, id: chapter.goods_nomenclature_sid.to_s } },
@@ -179,7 +179,7 @@ RSpec.describe Search::ResultAncestors do
       let(:response) { Api::Internal::GoodsNomenclatureSearchSerializer.serialize(results) }
 
       it 'omits ancestors outside their validity range', :aggregate_failures do
-        attached = described_class.attach(response, results, as_of: Time.zone.today)
+        attached = described_class.attach(response, as_of: Time.zone.today)
 
         expect(attached[:data].first[:relationships]).to eq(
           chapter: { data: { type: :chapter, id: chapter.goods_nomenclature_sid.to_s } },
@@ -192,7 +192,7 @@ RSpec.describe Search::ResultAncestors do
       let(:response) { Api::Internal::GoodsNomenclatureSearchSerializer.serialize(results) }
 
       it 'leaves the response unchanged', :aggregate_failures do
-        attached = described_class.attach(response, results, as_of: Time.zone.today)
+        attached = described_class.attach(response, as_of: Time.zone.today)
 
         expect(attached).to equal(response)
         expect(attached).not_to have_key(:included)
@@ -204,7 +204,7 @@ RSpec.describe Search::ResultAncestors do
       let(:response) { { data: [] } }
 
       it 'returns the response unchanged' do
-        expect(described_class.attach(response, [], as_of: Time.zone.today)).to equal(response)
+        expect(described_class.attach(response, as_of: Time.zone.today)).to equal(response)
       end
     end
 
@@ -213,7 +213,7 @@ RSpec.describe Search::ResultAncestors do
         response = Api::Internal::GoodsNomenclatureSearchSerializer.serialize(results)
         ::SequelRails::Railties::LogSubscriber.reset_count
 
-        described_class.attach(response, results, as_of: Time.zone.today)
+        described_class.attach(response, as_of: Time.zone.today)
 
         ::SequelRails::Railties::LogSubscriber.count
       end

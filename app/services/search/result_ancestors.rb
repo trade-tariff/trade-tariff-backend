@@ -1,32 +1,28 @@
 module Search
   class ResultAncestors
-    def self.attach(response, results, as_of:)
-      new(results, as_of:).attach(response)
+    def self.attach(response, as_of:)
+      new(as_of:).attach(response)
     end
 
-    def initialize(results, as_of:)
-      @results = Array(results)
+    def initialize(as_of:)
       @as_of = as_of
     end
 
     def attach(response)
+      item_ids = Array(response[:data]).filter_map { |item| item.dig(:attributes, :goods_nomenclature_item_id).to_s.presence }
       return response if item_ids.empty?
 
       # Display context only. Shared heading and chapter codes are loaded once
       # after ranking, so this does not add a retrieval leg or change scores.
       TimeMachine.at(@as_of) do
-        records = load_records
+        records = load_records(item_ids)
         apply(response, index_by_code(records, Heading), index_by_code(records, Chapter))
       end
     end
 
   private
 
-    def item_ids
-      @item_ids ||= @results.filter_map { |result| result.goods_nomenclature_item_id.to_s.presence }
-    end
-
-    def load_records
+    def load_records(item_ids)
       codes = item_ids.flat_map { |item_id| [heading_code_for(item_id), chapter_code_for(item_id)] }.compact.uniq
       return [] if codes.empty?
 
