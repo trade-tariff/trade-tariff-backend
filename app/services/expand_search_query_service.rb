@@ -1,6 +1,7 @@
 class ExpandSearchQueryService
   NUMERIC_CODE_PATTERN = /\A\d+\z/
-  COMMODITY_CODE_LIKE_PATTERN = /\d{4,}/
+  FORMATTED_NUMBER_PATTERN = /\d+(?:[.\s]+\d+)*/
+  TARIFF_CODE_REFERENCE_PATTERN = /\b(?:heading|subheading|(?:commodity|tariff|hs|cn)\s+code)\s*[:#]?\s*(#{FORMATTED_NUMBER_PATTERN})(?![.\s]*\d)\b/i
   MAX_ADDED_TERMS = 5
   CACHE_TTL = 7.days
   EXPANSION_TIMEOUT_SECONDS = 5.0
@@ -144,7 +145,29 @@ private
   end
 
   def invents_commodity_code?(phrase)
-    phrase.scan(COMMODITY_CODE_LIKE_PATTERN).any? { |number| !query.include?(number) }
+    # A number alone may be a quantity, dimension or product identifier.
+    # Only explicitly labelled tariff references are treated as added codes.
+    supplied_numbers = supplied_numeric_references
+    phrase.scan(TARIFF_CODE_REFERENCE_PATTERN).flatten.any? { |code| !supplied_numbers.include?(code_digits(code)) }
+  end
+
+  def supplied_numeric_references
+    # Keep quantities separate. Only tariff-shaped groups gain an additional
+    # combined form: an initial 2/4/6/8 digits, followed by two-digit groups,
+    # with at most ten digits overall.
+    grouped = query.scan(FORMATTED_NUMBER_PATTERN).filter_map do |span|
+      parts = span.split(/[.\s]+/)
+      next if parts.one? || ![2, 4, 6, 8].include?(parts.first.length)
+      next unless parts.drop(1).all? { |part| part.length == 2 }
+
+      code = parts.join
+      code if code.length <= 10
+    end
+    (query.scan(/\d+/) + grouped).uniq
+  end
+
+  def code_digits(value)
+    value.delete('^0-9')
   end
 
   def record_failure(message, error_type: 'InvalidResponse')
@@ -159,7 +182,7 @@ private
   end
 
   def cache_key
-    @cache_key ||= "expand_search_query/#{configured_model}/#{context_digest}/#{query.downcase}"
+    @cache_key ||= "expand_search_query/v2/#{configured_model}/#{context_digest}/#{query.downcase}"
   end
 
   def context_digest

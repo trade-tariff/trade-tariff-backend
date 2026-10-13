@@ -244,6 +244,33 @@ RSpec.describe ExpandSearchQueryService do
       end
     end
 
+    context 'when an added phrase converts units' do
+      let(:query) { '2kW heater' }
+      let(:ai_response) { { 'added_terms' => ['2000 watt heater'], 'reason' => 'Convert kilowatts to watts.' } }
+
+      it 'keeps the numeric equivalent' do
+        expect(result.expanded_query).to eq('2kW heater 2000 watt heater')
+      end
+    end
+
+    context 'when an added phrase names a product standard' do
+      let(:query) { 'stainless steel' }
+      let(:ai_response) { { 'added_terms' => ['EN 10088 steel'], 'reason' => 'Related steel standard.' } }
+
+      it 'does not treat an identifier as a tariff code' do
+        expect(result.expanded_query).to eq('stainless steel EN 10088 steel')
+      end
+    end
+
+    context 'when a legacy rewrite converts units' do
+      let(:query) { '2kW heater' }
+      let(:ai_response) { { 'expanded_query' => '2000 watt heater', 'reason' => 'Convert kilowatts to watts.' } }
+
+      it 'keeps the original wording and the conversion' do
+        expect(result.expanded_query).to eq('2kW heater 2000 watt heater')
+      end
+    end
+
     context 'when an added phrase invents a commodity code' do
       let(:query) { 'laptop' }
       let(:ai_response) do
@@ -255,12 +282,78 @@ RSpec.describe ExpandSearchQueryService do
       end
     end
 
+    context 'when an added phrase explicitly names an HS code' do
+      let(:query) { 'laptop' }
+      let(:ai_response) { { 'added_terms' => ['portable computers', 'HS code: 8471301000'], 'reason' => 'Tariff terminology.' } }
+
+      it 'drops the new code reference' do
+        expect(result.expanded_query).to eq('laptop portable computers')
+      end
+    end
+
+    ['8471.30.10.00', '8471 30 10 00'].each do |formatted_code|
+      context "when an addition specifies #{formatted_code} below the supplied heading" do
+        let(:query) { '8471 laptop' }
+        let(:ai_response) do
+          { 'added_terms' => ['portable computers', "HS code #{formatted_code}"], 'reason' => 'Tariff terminology.' }
+        end
+
+        it 'rejects the more-specific code' do
+          expect(result.expanded_query).to eq('8471 laptop portable computers')
+        end
+      end
+    end
+
+    [
+      ['8471301000', '8471.30.10.00'],
+      ['8471.30.10.00', '8471301000'],
+      ['8471 30 10 00', '8471.30.10.00'],
+    ].each do |supplied_code, expanded_code|
+      context "when the supplied code #{supplied_code} is formatted as #{expanded_code}" do
+        let(:query) { "#{supplied_code} laptop" }
+        let(:ai_response) do
+          { 'added_terms' => ["HS code #{expanded_code}"], 'reason' => 'Tariff terminology.' }
+        end
+
+        it 'keeps the supplied complete code' do
+          expect(result.expanded_query).to eq("#{query} HS code #{expanded_code}")
+        end
+      end
+    end
+
+    context 'when a supplied heading is next to a quantity' do
+      let(:query) { '8471 2 laptops' }
+      let(:ai_response) { { 'added_terms' => ['heading 8471'], 'reason' => 'Repeat the supplied heading.' } }
+
+      it 'keeps the explicitly supplied heading' do
+        expect(result.expanded_query).to eq('8471 2 laptops heading 8471')
+      end
+    end
+
+    context 'when an addition combines a heading and a quantity into a code' do
+      let(:query) { '8471 2 laptops' }
+      let(:ai_response) { { 'added_terms' => ['HS code 84712'], 'reason' => 'Tariff terminology.' } }
+
+      it 'rejects the combined number' do
+        expect(result.expanded_query).to eq(query)
+      end
+    end
+
+    context 'when adjacent numbers have invalid code grouping' do
+      let(:query) { '2024 1000 printers' }
+      let(:ai_response) { { 'added_terms' => ['HS code 20241000'], 'reason' => 'Tariff terminology.' } }
+
+      it 'does not turn separate numbers into a code' do
+        expect(result.expanded_query).to eq(query)
+      end
+    end
+
     context 'when an added phrase repeats a number from the original query' do
       let(:query) { '8471 laptop' }
-      let(:ai_response) { { 'added_terms' => ['portable computers', 'code 8471'], 'reason' => 'The term is colloquial.' } }
+      let(:ai_response) { { 'added_terms' => ['portable computers', 'heading 8471'], 'reason' => 'The term is colloquial.' } }
 
       it 'keeps the phrase' do
-        expect(result.expanded_query).to eq('8471 laptop portable computers code 8471')
+        expect(result.expanded_query).to eq('8471 laptop portable computers heading 8471')
       end
     end
 
@@ -524,6 +617,24 @@ RSpec.describe ExpandSearchQueryService do
 
       expect(described_class.call(query).expanded_query).to eq('laptop Portable automatic data-processing machines')
       expect(OpenaiClient).to have_received(:call).once
+    end
+
+    context 'when the old guard cached a rejected conversion' do
+      let(:query) { '2kW heater' }
+      let(:ai_response) { { 'added_terms' => ['2000 watt heater'], 'reason' => 'Convert kilowatts to watts.' } }
+
+      it 'uses a new cache namespace' do
+        digest = Digest::MD5.hexdigest(default_context)[0, 8]
+        legacy_key = "expand_search_query/gpt-4.1-mini-2025-04-14/#{digest}/#{query.downcase}"
+        memory_store.write(legacy_key, { expanded_query: query, reason: nil })
+
+        fresh = described_class.call(query)
+        cached = described_class.call(query)
+
+        expect(fresh.expanded_query).to eq('2kW heater 2000 watt heater')
+        expect(cached).to eq(fresh)
+        expect(OpenaiClient).to have_received(:call).once
+      end
     end
 
     it 'treats queries case-insensitively' do

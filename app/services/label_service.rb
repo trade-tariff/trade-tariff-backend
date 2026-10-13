@@ -49,7 +49,7 @@ class LabelService
       end
 
       contextual_description = batch.contextual_description_for(goods_nomenclature)
-      item = GeneratedLabelFilter.call(item, contextual_description)
+      item = GeneratedLabelFilter.call(item)
       GoodsNomenclatureLabel.build(goods_nomenclature, item, contextual_description:)
     end
   end
