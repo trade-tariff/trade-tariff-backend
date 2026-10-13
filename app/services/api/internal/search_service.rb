@@ -41,6 +41,9 @@ module Api
         @skip_question = params[:skip_question].nil? ? nil : ActiveModel::Type::Boolean.new.cast(params[:skip_question])
         @configuration_overrides = params[:configuration_overrides] || {}
         @search_type = params[:search_type] || 'interactive'
+        @retrieval_method_override = params[:retrieval_method].to_s.presence
+        @resource_id = params[:resource_id].to_s.presence
+        @included_resources = normalize_included_resources(params[:include])
       end
 
       def call
@@ -97,7 +100,7 @@ module Api
 
         response = finish_terminal(
           with_search_failures_meta(
-            with_description_intercept_meta(GoodsNomenclatureSearchSerializer.serialize([exact])),
+            with_description_intercept_meta(serialize_results([exact])),
           ),
         )
         [response, completion_payload(result_count: 1, results_type: 'exact_match')]
@@ -251,7 +254,13 @@ module Api
       end
 
       def retrieval_method
+        return @retrieval_method_override if allowed_retrieval_method?(@retrieval_method_override)
+
         AdminConfiguration.option_value('retrieval_method')
+      end
+
+      def allowed_retrieval_method?(method)
+        method.in?(%w[hybrid opensearch vector])
       end
 
       def vector_short_list(search_expanded_query)
@@ -497,6 +506,18 @@ module Api
         ::SearchSuggestion.allowed_types
       end
 
+      # Matches the classic SearchService::ExactSearch contract: the frontend
+      # sends back the search_suggestion resource id it selected from
+      # autocomplete, so two suggestions sharing one label resolve to the
+      # selected goods nomenclature instead of the first label match.
+      # Autocomplete clients can send the literal string 'undefined' when no
+      # selection was made, mirroring SearchService::ExactSearch behaviour.
+      def selected_suggestion_id
+        return if @resource_id.blank? || @resource_id == 'undefined'
+
+        @resource_id
+      end
+
       def diagnostics_configuration
         {
           retrieval_method: retrieval_method,
@@ -563,12 +584,17 @@ module Api
       end
 
       def find_by_suggestion(query)
-        suggestion = ::SearchSuggestion
-          .declarable
-          .by_value(singular_and_plural(query.downcase))
+        scope = ::SearchSuggestion
+          .by_value(singular_and_plural(query.downcase), selected_suggestion_id)
           .where(type: allowed_suggestion_types)
-          .eager(:goods_nomenclature)
-          .first
+
+        # An explicit autocomplete selection wins even when the suggestion
+        # targets a non-declarable heading or chapter. Only implicit, no-ID
+        # label matching keeps the declarable-only shortlist. Hidden and
+        # intercept protections still apply after the suggestion resolves.
+        scope = scope.declarable unless selected_suggestion_id
+
+        suggestion = scope.eager(:goods_nomenclature).first
         if suggestion
           @exact_match_source = suggestion.type
           @exact_matched_value = suggestion.value
@@ -670,10 +696,25 @@ module Api
 
       def build_response(goods_nomenclatures, interactive_result, expanded_query)
         results = build_results_with_confidence(goods_nomenclatures, interactive_result)
-        response = GoodsNomenclatureSearchSerializer.serialize(results)
+        response = serialize_results(results)
         meta = build_meta(interactive_result, expanded_query)
         response[:meta] = meta if meta.present?
         with_search_failures_meta(response)
+      end
+
+      def serialize_results(results)
+        response = GoodsNomenclatureSearchSerializer.serialize(results)
+        return response if results.blank? || !include_ancestors?
+
+        ::Search::ResultAncestors.attach(response, results, as_of:)
+      end
+
+      def include_ancestors?
+        @included_resources.intersect?(%w[heading chapter])
+      end
+
+      def normalize_included_resources(value)
+        Array(value).flat_map { |entry| entry.to_s.split(',') }.map(&:strip).compact_blank
       end
 
       def build_results_with_confidence(goods_nomenclatures, interactive_result)

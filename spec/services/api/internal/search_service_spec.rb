@@ -321,6 +321,104 @@ RSpec.describe Api::Internal::SearchService do
       end
     end
 
+    context 'when two suggestions share one label' do
+      let!(:first_heading) do
+        create(:heading, :with_description,
+               goods_nomenclature_item_id: '0101000000',
+               description: 'live horses')
+      end
+      let!(:second_heading) do
+        create(:heading, :with_description,
+               goods_nomenclature_item_id: '0102000000',
+               description: 'bovine animals')
+      end
+
+      before do
+        create(:search_suggestion, :search_reference,
+               goods_nomenclature: first_heading,
+               value: 'livestock',
+               declarable: true)
+        create(:search_suggestion, :search_reference,
+               goods_nomenclature: second_heading,
+               value: 'livestock',
+               declarable: true)
+
+        allow(TradeTariffBackend.search_client).to receive(:search)
+      end
+
+      it 'resolves the selected suggestion from the supplied resource_id' do
+        result = described_class.new(q: 'livestock', resource_id: second_heading.goods_nomenclature_sid).call
+
+        expect(result[:data].length).to eq(1)
+        expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('0102000000')
+        expect(TradeTariffBackend.search_client).not_to have_received(:search)
+      end
+
+      it 'resolves the other same-label suggestion when its resource_id is supplied' do
+        result = described_class.new(q: 'livestock', resource_id: first_heading.goods_nomenclature_sid).call
+
+        expect(result[:data].length).to eq(1)
+        expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('0101000000')
+      end
+
+      it 'keeps the implicit label match when no resource_id is supplied' do
+        result = described_class.new(q: 'livestock').call
+
+        expect(result[:data].length).to eq(1)
+        expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to be_in(%w[0101000000 0102000000])
+      end
+
+      it 'ignores the literal string undefined as resource_id' do
+        result = described_class.new(q: 'livestock', resource_id: 'undefined').call
+
+        expect(result[:data].length).to eq(1)
+        expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to be_in(%w[0101000000 0102000000])
+      end
+
+      it 'falls back to retrieval when the resource_id matches no suggestion' do
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return('hits' => { 'hits' => [] })
+
+        result = described_class.new(q: 'livestock', resource_id: '999999999').call
+
+        expect(result[:data]).to eq([])
+        expect(TradeTariffBackend.search_client).to have_received(:search)
+      end
+    end
+
+    context 'when the selected suggestion is non-declarable' do
+      let!(:heading) do
+        create(:heading, :with_description,
+               goods_nomenclature_item_id: '0101000000',
+               description: 'live horses')
+      end
+
+      before do
+        create(:search_suggestion, :search_reference,
+               goods_nomenclature: heading,
+               value: 'livestock',
+               declarable: false)
+
+        allow(TradeTariffBackend.search_client).to receive(:search)
+      end
+
+      it 'honours an explicit non-declarable selection' do
+        result = described_class.new(q: 'livestock', resource_id: heading.goods_nomenclature_sid).call
+
+        expect(result[:data].length).to eq(1)
+        expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('0101000000')
+        expect(TradeTariffBackend.search_client).not_to have_received(:search)
+      end
+
+      it 'keeps the declarable-only shortlist for implicit label matching' do
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return('hits' => { 'hits' => [] })
+
+        result = described_class.new(q: 'livestock').call
+
+        expect(result[:data]).to eq([])
+        expect(TradeTariffBackend.search_client).to have_received(:search)
+      end
+    end
+
     context 'when exact match via padded numeric code' do
       let!(:chapter) do
         create(:chapter, :with_description,
@@ -358,6 +456,26 @@ RSpec.describe Api::Internal::SearchService do
 
       it 'falls back to GoodsNomenclature table when no suggestion exists' do
         result = described_class.new(q: '01').call
+
+        expect(result[:data].length).to eq(1)
+        expect(result[:data][0][:type]).to eq(:chapter)
+        expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('0100000000')
+        expect(TradeTariffBackend.search_client).not_to have_received(:search)
+      end
+    end
+
+    context 'when exact match code is dated relative to as_of' do
+      before do
+        create(:chapter, :with_description,
+               goods_nomenclature_item_id: '0100000000',
+               validity_start_date: Date.tomorrow,
+               description: 'live animals')
+
+        allow(TradeTariffBackend.search_client).to receive(:search)
+      end
+
+      it 'returns the exact code at its own validity boundary' do
+        result = described_class.new(q: '01', as_of: Time.zone.today.iso8601).call
 
         expect(result[:data].length).to eq(1)
         expect(result[:data][0][:type]).to eq(:chapter)
@@ -792,6 +910,238 @@ RSpec.describe Api::Internal::SearchService do
 
         types = result[:data].map { |d| d[:type] }
         expect(types).to eq(%i[chapter heading commodity])
+      end
+    end
+
+    context 'when include requests ancestor resources' do
+      let!(:chapter) do
+        create(:chapter, :with_description,
+               goods_nomenclature_item_id: '0100000000',
+               description: 'live animals')
+      end
+      let!(:heading) do
+        create(:heading, :with_description,
+               goods_nomenclature_item_id: '0101000000',
+               description: 'live horses')
+      end
+      let(:opensearch_response) do
+        {
+          'hits' => {
+            'hits' => [
+              {
+                '_score' => 10.0,
+                '_source' => {
+                  'goods_nomenclature_sid' => 3,
+                  'goods_nomenclature_item_id' => '0101210000',
+                  'producline_suffix' => '80',
+                  'goods_nomenclature_class' => 'Commodity',
+                  'description' => 'pure-bred breeding animals',
+                  'formatted_description' => 'Pure-bred breeding animals',
+                  'declarable' => true,
+                },
+              },
+              {
+                '_score' => 8.0,
+                '_source' => {
+                  'goods_nomenclature_sid' => 4,
+                  'goods_nomenclature_item_id' => '0101290000',
+                  'producline_suffix' => '80',
+                  'goods_nomenclature_class' => 'Commodity',
+                  'description' => 'other horses',
+                  'formatted_description' => 'Other horses',
+                  'declarable' => true,
+                },
+              },
+            ],
+          },
+        }
+      end
+
+      before do
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+      end
+
+      it 'omits ancestor relationships by default' do
+        result = described_class.new(q: 'animals').call
+
+        expect(result).not_to have_key(:included)
+        expect(result[:data].map { |item| item.key?(:relationships) }).to all(be_falsey)
+      end
+
+      it 'attaches heading and chapter context for heading,chapter' do
+        result = described_class.new({ 'q' => 'animals', 'include' => 'heading,chapter' }.with_indifferent_access).call
+
+        expect(result[:data].length).to eq(2)
+        expect(result[:data]).to all(have_key(:relationships))
+        expect(result[:included]).to contain_exactly(
+          hash_including(id: heading.goods_nomenclature_sid.to_s, type: :heading),
+          hash_including(id: chapter.goods_nomenclature_sid.to_s, type: :chapter),
+        )
+        expect(result[:data][0][:relationships]).to eq(
+          heading: { data: { type: :heading, id: heading.goods_nomenclature_sid.to_s } },
+          chapter: { data: { type: :chapter, id: chapter.goods_nomenclature_sid.to_s } },
+        )
+      end
+
+      it 'keeps result rank and order unchanged when including ancestors' do
+        result = described_class.new({ 'q' => 'animals', 'include' => 'heading,chapter' }.with_indifferent_access).call
+
+        expect(result[:data].map { |item| item[:attributes][:goods_nomenclature_item_id] })
+          .to eq(%w[0101210000 0101290000])
+        expect(result[:data].map { |item| item[:attributes][:score] }).to eq([10.0, 8.0])
+      end
+
+      it 'ignores unknown include values' do
+        result = described_class.new({ 'q' => 'animals', 'include' => 'measures' }.with_indifferent_access).call
+
+        expect(result).not_to have_key(:included)
+        expect(result[:data].map { |item| item.key?(:relationships) }).to all(be_falsey)
+      end
+
+      it 'attaches ancestor context to exact code matches' do
+        result = described_class.new({ 'q' => '0101000000', 'include' => 'heading,chapter' }.with_indifferent_access).call
+
+        expect(result[:data].length).to eq(1)
+        expect(result[:data][0][:type]).to eq(:heading)
+        expect(result[:data][0][:relationships]).to eq(
+          chapter: { data: { type: :chapter, id: chapter.goods_nomenclature_sid.to_s } },
+        )
+        expect(result[:included]).to contain_exactly(
+          hash_including(id: chapter.goods_nomenclature_sid.to_s, type: :chapter),
+        )
+      end
+
+      context 'with mixed primary resource types' do
+        let(:mixed_response) do
+          {
+            'hits' => {
+              'hits' => [
+                {
+                  '_score' => 10.0,
+                  '_source' => {
+                    'goods_nomenclature_sid' => chapter.goods_nomenclature_sid,
+                    'goods_nomenclature_item_id' => '0100000000',
+                    'producline_suffix' => '80',
+                    'goods_nomenclature_class' => 'Chapter',
+                    'description' => 'animals',
+                    'formatted_description' => 'Animals',
+                    'declarable' => false,
+                  },
+                },
+                {
+                  '_score' => 8.0,
+                  '_source' => {
+                    'goods_nomenclature_sid' => heading.goods_nomenclature_sid,
+                    'goods_nomenclature_item_id' => '0101000000',
+                    'producline_suffix' => '80',
+                    'goods_nomenclature_class' => 'Heading',
+                    'description' => 'live horses',
+                    'formatted_description' => 'Live horses',
+                    'declarable' => false,
+                  },
+                },
+                {
+                  '_score' => 6.0,
+                  '_source' => {
+                    'goods_nomenclature_sid' => 3,
+                    'goods_nomenclature_item_id' => '0101210000',
+                    'producline_suffix' => '80',
+                    'goods_nomenclature_class' => 'Commodity',
+                    'description' => 'pure-bred breeding animals',
+                    'formatted_description' => 'Pure-bred breeding animals',
+                    'declarable' => true,
+                  },
+                },
+              ],
+            },
+          }
+        end
+
+        before do
+          allow(TradeTariffBackend.search_client).to receive(:search).and_return(mixed_response)
+        end
+
+        it 'does not repeat primary identities in included' do
+          result = described_class.new({ 'q' => 'animals', 'include' => 'heading,chapter' }.with_indifferent_access).call
+
+          included_keys = (result[:included] || []).map { |resource| [resource[:type].to_s, resource[:id].to_s] }
+
+          expect(result[:data].length).to eq(3)
+          expect(included_keys).to be_empty
+        end
+
+        it 'enriches the chapter linkage on the primary heading' do
+          result = described_class.new({ 'q' => 'animals', 'include' => 'heading,chapter' }.with_indifferent_access).call
+
+          primary_heading = result[:data].find { |item| item[:type] == :heading }
+          primary_chapter = result[:data].find { |item| item[:type] == :chapter }
+
+          expect(primary_heading[:relationships]).to eq(
+            chapter: { data: { type: :chapter, id: chapter.goods_nomenclature_sid.to_s } },
+          )
+          expect(primary_heading.dig(:relationships, :chapter, :data, :id)).to eq(primary_chapter[:id])
+          expect(primary_chapter).not_to have_key(:relationships)
+        end
+      end
+    end
+
+    context 'when skip_question is supplied' do
+      let(:interactive_result) do
+        InteractiveSearchService::Result.new(
+          type: :questions,
+          data: [{ question: 'What is the material?', options: %w[Leather Synthetic] }],
+          attempt: 1,
+          model: 'gpt-5.2',
+          result_limit: 5,
+        )
+      end
+      let(:opensearch_response) do
+        {
+          'hits' => {
+            'hits' => [
+              {
+                '_score' => 10.0,
+                '_source' => {
+                  'goods_nomenclature_sid' => 1,
+                  'goods_nomenclature_item_id' => '4202210000',
+                  'producline_suffix' => '80',
+                  'goods_nomenclature_class' => 'Commodity',
+                  'description' => 'leather handbag',
+                  'formatted_description' => 'Leather handbag',
+                  'declarable' => true,
+                },
+              },
+            ],
+          },
+        }
+      end
+
+      before do
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+        allow(InteractiveSearchService).to receive(:call).and_return(interactive_result)
+      end
+
+      it 'returns results without a question round when skip_question is true' do
+        result = described_class.new({ 'q' => 'handbag', 'skip_question' => 'true' }.with_indifferent_access).call
+
+        expect(InteractiveSearchService).not_to have_received(:call)
+        expect(result[:data].length).to eq(1)
+        expect(result[:meta]).not_to have_key(:interactive_search)
+        expect(result.dig(:meta, :search_failures)).to eq([])
+      end
+
+      it 'runs the question round when skip_question is false' do
+        result = described_class.new({ 'q' => 'handbag', 'skip_question' => 'false' }.with_indifferent_access).call
+
+        expect(InteractiveSearchService).to have_received(:call)
+        expect(result[:meta]).to have_key(:interactive_search)
+      end
+
+      it 'runs the question round when skip_question is not supplied' do
+        result = described_class.new({ 'q' => 'handbag' }.with_indifferent_access).call
+
+        expect(InteractiveSearchService).to have_received(:call)
+        expect(result[:meta]).to have_key(:interactive_search)
       end
     end
 
@@ -1578,6 +1928,54 @@ RSpec.describe Api::Internal::SearchService do
             hash_including(filter_prefixes: %w[0101]),
           )
         end
+      end
+    end
+
+    context 'when retrieval_method is overridden per request' do
+      let(:vector_results) do
+        [
+          retrieval_result_class.new(
+            id: 1,
+            goods_nomenclature_item_id: '0101210000',
+            goods_nomenclature_sid: 1,
+            producline_suffix: '80',
+            goods_nomenclature_class: 'Commodity',
+            description: 'pure-bred breeding horses',
+            formatted_description: 'Pure-bred breeding horses',
+            self_text: nil,
+            classification_description: 'Pure-bred breeding horses',
+            full_description: 'Pure-bred breeding horses',
+            heading_description: nil,
+            declarable: true,
+            score: 0.95,
+            confidence: nil,
+          ),
+        ]
+      end
+
+      before do
+        allow(VectorRetrievalService).to receive(:call).and_return(vector_results)
+      end
+
+      it 'honours an allowed override ahead of the configured method' do
+        allow(TradeTariffBackend.search_client).to receive(:search)
+
+        result = described_class.new({ 'q' => 'horses', 'retrieval_method' => 'vector' }.with_indifferent_access).call
+
+        expect(result[:data].length).to eq(1)
+        expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('0101210000')
+        expect(VectorRetrievalService).to have_received(:call)
+        expect(TradeTariffBackend.search_client).not_to have_received(:search)
+      end
+
+      it 'falls back to the configured method for disallowed values' do
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return('hits' => { 'hits' => [] })
+
+        result = described_class.new({ 'q' => 'horses', 'retrieval_method' => 'crossencoder' }.with_indifferent_access).call
+
+        expect(result[:data]).to eq([])
+        expect(TradeTariffBackend.search_client).to have_received(:search)
+        expect(VectorRetrievalService).not_to have_received(:call)
       end
     end
 
