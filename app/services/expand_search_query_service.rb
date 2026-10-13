@@ -147,8 +147,23 @@ private
   def invents_commodity_code?(phrase)
     # A number alone may be a quantity, dimension or product identifier.
     # Only explicitly labelled tariff references are treated as added codes.
-    supplied_numbers = query.scan(FORMATTED_NUMBER_PATTERN).map { |number| code_digits(number) }
+    supplied_numbers = supplied_numeric_references
     phrase.scan(TARIFF_CODE_REFERENCE_PATTERN).flatten.any? { |code| !supplied_numbers.include?(code_digits(code)) }
+  end
+
+  def supplied_numeric_references
+    # Keep quantities separate. Only tariff-shaped groups gain an additional
+    # combined form: an initial 2/4/6/8 digits, followed by two-digit groups,
+    # with at most ten digits overall.
+    grouped = query.scan(FORMATTED_NUMBER_PATTERN).filter_map do |span|
+      parts = span.split(/[.\s]+/)
+      next if parts.one? || ![2, 4, 6, 8].include?(parts.first.length)
+      next unless parts.drop(1).all? { |part| part.length == 2 }
+
+      code = parts.join
+      code if code.length <= 10
+    end
+    (query.scan(/\d+/) + grouped).uniq
   end
 
   def code_digits(value)

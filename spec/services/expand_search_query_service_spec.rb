@@ -321,6 +321,33 @@ RSpec.describe ExpandSearchQueryService do
       end
     end
 
+    context 'when a supplied heading is next to a quantity' do
+      let(:query) { '8471 2 laptops' }
+      let(:ai_response) { { 'added_terms' => ['heading 8471'], 'reason' => 'Repeat the supplied heading.' } }
+
+      it 'keeps the explicitly supplied heading' do
+        expect(result.expanded_query).to eq('8471 2 laptops heading 8471')
+      end
+    end
+
+    context 'when an addition combines a heading and a quantity into a code' do
+      let(:query) { '8471 2 laptops' }
+      let(:ai_response) { { 'added_terms' => ['HS code 84712'], 'reason' => 'Tariff terminology.' } }
+
+      it 'rejects the combined number' do
+        expect(result.expanded_query).to eq(query)
+      end
+    end
+
+    context 'when adjacent numbers have invalid code grouping' do
+      let(:query) { '2024 1000 printers' }
+      let(:ai_response) { { 'added_terms' => ['HS code 20241000'], 'reason' => 'Tariff terminology.' } }
+
+      it 'does not turn separate numbers into a code' do
+        expect(result.expanded_query).to eq(query)
+      end
+    end
+
     context 'when an added phrase repeats a number from the original query' do
       let(:query) { '8471 laptop' }
       let(:ai_response) { { 'added_terms' => ['portable computers', 'heading 8471'], 'reason' => 'The term is colloquial.' } }
