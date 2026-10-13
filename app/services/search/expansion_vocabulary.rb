@@ -108,11 +108,17 @@ module Search
       end
 
       def worker_supported_words(candidates, at, atar)
-        return Set.new if candidates.empty?
-        return unless shared_exists?(at, atar)
+        key = shared_cache_key(at, atar)
+        exists, hits = Sidekiq.redis do |redis|
+          replies = redis.pipelined do |pipe|
+            pipe.call('EXISTS', key)
+            candidates.each { |word| pipe.call('SISMEMBER', key, word) }
+          end
+          [replies.shift.to_i.positive?, replies]
+        end
+        return unless exists
 
-        present = candidates.select { |word| shared_member?(at, atar, word) }
-        present.to_set
+        candidates.zip(hits).select { |_, hit| hit.to_i == 1 }.map(&:first).to_set
       end
 
       def publish_snapshot(at, atar, words)
@@ -139,10 +145,6 @@ module Search
 
       def shared_exists?(at, atar)
         Sidekiq.redis { |redis| redis.call('EXISTS', shared_cache_key(at, atar)).to_i.positive? }
-      end
-
-      def shared_member?(at, atar, word)
-        Sidekiq.redis { |redis| redis.call('SISMEMBER', shared_cache_key(at, atar), word).to_i == 1 }
       end
 
       def shared_cache_key(at, atar)

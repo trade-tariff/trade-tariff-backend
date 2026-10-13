@@ -34,6 +34,13 @@ RSpec.describe Search::ExpansionVocabularyFilter do
       expect(described_class.call(original_query: 'chicken', expanded_query: 'chicken chickens')).to eq('chicken chickens')
     end
 
+    it 'keeps the original query when a plural expansion is made before the vocabulary is ready' do
+      allow(Search::ExpansionVocabulary).to receive(:supported_words).and_return(nil)
+
+      expect(described_class.call(original_query: 'chicken', expanded_query: 'chickens')).to eq('chicken')
+      expect(Search::ExpansionVocabulary).to have_received(:supported_words).with([])
+    end
+
     it 'does not guess a singular when the plural has two stems' do
       expect(described_class.call(original_query: 'cases', expanded_query: 'cases cas')).to eq('cases')
       expect(described_class.call(original_query: 'cases', expanded_query: 'cases case')).to eq('cases')
@@ -238,6 +245,13 @@ RSpec.describe Search::ExpansionVocabularyFilter do
 
       expect(described_class.call(original_query: 'chicken', expanded_query: 'poultry meat'))
         .to eq('chicken poultry meat')
+    end
+
+    it 'checks the shared set in a worker even when there are no membership candidates' do
+      allow(Sidekiq).to receive(:server?).and_return(true)
+      Sidekiq.redis { |redis| redis.call('DEL', shared_key(Date.current)) }
+
+      expect(Search::ExpansionVocabulary.supported_words([])).to be_nil
     end
 
     it 'does not build a vocabulary in a worker process' do

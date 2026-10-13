@@ -134,8 +134,6 @@ module Search
     end
 
     def vocabulary_supported_words(candidate_words)
-      return Set.new if candidate_words.empty?
-
       ExpansionVocabulary.supported_words(candidate_words)
     end
   end
