@@ -75,6 +75,46 @@ RSpec.describe EvaluationRun do
       expect(run.status).to eq('queued')
     end
 
+    it "snapshots the experiment's gold query set size onto intended_result_count at the moment it starts" do
+      gold_query_set = create(:evaluation_gold_query_set)
+      create_list(:evaluation_gold_query, 3, evaluation_gold_query_set: gold_query_set)
+      experiment_with_set = create(:evaluation_experiment, name: 'experiment-with-set', gold_query_set_id: gold_query_set.id)
+
+      run = described_class.start!(experiment: experiment_with_set, triggered_by: 'operator', idempotency_key: SecureRandom.uuid)
+
+      expect(run.intended_result_count).to eq(3)
+    end
+
+    it 'leaves intended_result_count nil when the experiment has no gold query set' do
+      run = described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: SecureRandom.uuid)
+
+      expect(run.intended_result_count).to be_nil
+    end
+
+    it 'stores 0, not nil, when the experiment has a gold query set with no items in it' do
+      empty_gold_query_set = create(:evaluation_gold_query_set)
+      experiment_with_empty_set = create(:evaluation_experiment, name: 'experiment-with-empty-set', gold_query_set_id: empty_gold_query_set.id)
+
+      run = described_class.start!(experiment: experiment_with_empty_set, triggered_by: 'operator', idempotency_key: SecureRandom.uuid)
+
+      expect(run.intended_result_count).to eq(0)
+    end
+
+    it 'does not change a later run’s intended_result_count after the gold query set is edited afterward' do
+      gold_query_set = create(:evaluation_gold_query_set)
+      create_list(:evaluation_gold_query, 3, evaluation_gold_query_set: gold_query_set)
+      experiment_with_set = create(:evaluation_experiment, name: 'experiment-with-drifting-set', gold_query_set_id: gold_query_set.id)
+
+      first_run = described_class.start!(experiment: experiment_with_set, triggered_by: 'operator', idempotency_key: SecureRandom.uuid)
+
+      EvaluationGoldQuery.where(id: EvaluationGoldQuery.where(set_id: gold_query_set.id).select(:id).first[:id]).delete
+
+      second_run = described_class.start!(experiment: experiment_with_set, triggered_by: 'operator', idempotency_key: SecureRandom.uuid)
+
+      expect(first_run.intended_result_count).to eq(3)
+      expect(second_run.intended_result_count).to eq(2)
+    end
+
     it 'refuses to start a run with a disallowed run-time override' do
       expect {
         described_class.start!(

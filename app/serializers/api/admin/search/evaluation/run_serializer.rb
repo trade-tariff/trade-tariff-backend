@@ -30,7 +30,8 @@ module Api
                      :error_summary,
                      :aggregate_metrics,
                      :created_at,
-                     :idempotency_key
+                     :idempotency_key,
+                     :intended_result_count
 
           # Read from the run's experiment when the run is requested, so a run always
           # reports the set its experiment points at now. Known limitation, accepted:
