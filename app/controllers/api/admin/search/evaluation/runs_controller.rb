@@ -80,7 +80,7 @@ module Api
             dataset = dataset.where(status: params[:status]) if params[:status].present?
 
             if params[:from].present?
-              from = Date.parse(params[:from])
+              from = parse_date_param!(:from)
               dataset = dataset.where { created_at >= from }
             end
 
@@ -89,11 +89,24 @@ module Api
               # day). Comparing against the start of the *next* day instead of <= to (AI-1436)
               # makes the filter include every run created any time during the to date itself,
               # not just ones created before that date's midnight.
-              to = Date.parse(params[:to]) + 1
+              to = parse_date_param!(:to) + 1
               dataset = dataset.where { created_at < to }
             end
 
             dataset
+          end
+
+          # params[:from]/params[:to] are expected to be a plain date string. A structured value
+          # (e.g. ?from[]=2026-10-13 makes this an Array) fails Date.parse with TypeError instead
+          # of Date::Error, which the rescue_from above doesn't catch (AI-1436 review). Raising
+          # Date::Error here for a non-String value folds that case into the same 422 path,
+          # without rescuing TypeError itself, which could otherwise hide an unrelated bug
+          # elsewhere in the controller.
+          def parse_date_param!(key)
+            value = params[key]
+            raise Date::Error, "#{key} must be a date string" unless value.is_a?(String)
+
+            Date.parse(value)
           end
 
           def run
