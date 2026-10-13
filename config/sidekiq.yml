@@ -5,6 +5,11 @@
   - default
   - within_1_hour
   - within_1_day
+  # Evaluation searches have their own queue (AI-1438) so a burst of them can never delay a
+  # real trader's search, and real traffic can never starve an evaluation run either -- each
+  # gets its own, independently-sized share of Sidekiq capacity instead of competing for the
+  # same slots.
+  - evaluation
 :scheduler:
   :schedule:
     #
