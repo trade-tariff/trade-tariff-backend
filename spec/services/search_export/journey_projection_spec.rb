@@ -1,4 +1,6 @@
 RSpec.describe SearchExport::JourneyProjection do
+  after { TradeTariffRequest.reset }
+
   let(:response) do
     {
       data: [{ attributes: { goods_nomenclature_item_id: '0207141000', classification_description: 'Frozen cuts', confidence: 'good', score: 1 } }],
