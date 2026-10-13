@@ -334,6 +334,18 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
 
       it { is_expected.to have_http_status :unprocessable_content }
     end
+
+    context 'when the from date is a structured value rather than a string (AI-1436)' do
+      let(:filters) { { from: %w[2026-10-13] } }
+
+      it { is_expected.to have_http_status :unprocessable_content }
+    end
+
+    context 'when the to date is a structured value rather than a string (AI-1436)' do
+      let(:filters) { { to: %w[2026-10-13] } }
+
+      it { is_expected.to have_http_status :unprocessable_content }
+    end
   end
 
   describe 'GET #show' do
