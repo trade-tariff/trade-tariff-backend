@@ -202,7 +202,15 @@ RSpec.describe Search::ExpansionVocabularyPublisher do
       expect(result.status).to eq(:aborted)
       expect(result.reason).to eq('publish lease lost')
       expect(current_id).to eq(previous.generation)
-      expect(word_set_keys).to contain_exactly("#{namespace}/g:#{previous.generation}:words")
+      expect(scard(id: previous.generation)).to eq(2)
+      expect(manifest(id: instance.generation)).to be_empty
+      # Without ownership we leave staging to its bounded expiry, rather
+      # than risking deletion after an ambiguous publication outcome.
+      Sidekiq.redis do |redis|
+        expect(redis.call('GET', lock_key)).to eq('foreign-token')
+        expect(redis.call('TTL', "#{namespace}/g:#{instance.generation}:words"))
+          .to be_between(1, described_class::STAGING_TTL_SECONDS)
+      end
     end
 
     it 'aborts when the staged word set loses members before publication' do
@@ -280,6 +288,71 @@ RSpec.describe Search::ExpansionVocabularyPublisher do
       expect(result.reason).to include('database unavailable')
       expect(current_id).to eq(previous.generation)
       expect(word_set_keys).to contain_exactly("#{namespace}/g:#{previous.generation}:words")
+    end
+
+    it 'removes uncommitted staging before releasing the lease' do
+      previous = publish_with_words('fresh poultry')
+      instance = publisher
+      source = Array.new(described_class::SADD_BATCH) { |index| "word#{index}" }.join(' ')
+      allow(instance).to receive(:each_source_text) do |&block|
+        block.call(source)
+        raise StandardError, 'source read failed after staging'
+      end
+
+      result = instance.call
+
+      expect(result.status).to eq(:failed)
+      expect(current_id).to eq(previous.generation)
+      expect(word_set_keys).to contain_exactly("#{namespace}/g:#{previous.generation}:words")
+    end
+
+    it 'preserves publication after a lost reply', :aggregate_failures do
+      instance = publisher
+      allow(instance).to receive(:each_source_text).and_yield('fresh poultry')
+
+      Sidekiq.redis do |redis|
+        allow(redis).to receive(:call).and_wrap_original do |operation, *args|
+          reply = operation.call(*args)
+          if args.first == 'EVAL' && args[1] == described_class::PUBLISH_SCRIPT
+            raise RedisClient::ReadTimeoutError, 'publication reply lost'
+          end
+
+          reply
+        end
+
+        result = instance.call
+
+        expect(result.status).to eq(:failed)
+        expect(result.reason).to include('publication reply lost')
+      end
+
+      expect(current_id).to eq(instance.generation)
+      expect(scard(id: instance.generation)).to eq(2)
+      lookup = Search::ExpansionVocabulary.lookup(%w[fresh poultry])
+      expect(lookup).to be_ready
+      expect(lookup.words).to eq(Set['fresh', 'poultry'])
+    end
+
+    it 'caps each staging batch for large texts', :aggregate_failures do
+      words = Array.new(described_class::SADD_BATCH * 2 + 3) { |index| "word#{index}" }
+      batches = []
+      result = nil
+
+      Sidekiq.redis do |redis|
+        allow(redis).to receive(:call).and_wrap_original do |operation, *args|
+          if args.first == 'EVAL' && args[1] == described_class::STAGING_SADD_SCRIPT
+            batches << args.drop(5)
+          end
+          operation.call(*args)
+        end
+
+        result = publish_with_words('initial prefix', words.join(' '))
+      end
+
+      expect(result).to be_published
+      expect(batches.map(&:size)).to eq([described_class::SADD_BATCH, described_class::SADD_BATCH, 5])
+      expect(batches.flatten).to match_array(%w[initial prefix] + words)
+      expect(result.word_count).to eq(words.size + 2)
     end
 
     it 'does not let a cleanup failure hide a completed publication' do

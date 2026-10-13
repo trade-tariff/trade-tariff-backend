@@ -85,6 +85,19 @@ module Search
       return added
     LUA
 
+    # A lost publish reply does not mean Redis failed to publish. Clean up
+    # only an unpublished generation while this build still owns the lease.
+    # Otherwise leave its bounded expiry to reclaim it safely.
+    DELETE_STAGING_SCRIPT = <<~LUA
+      if redis.call('GET', KEYS[1]) ~= ARGV[1] then
+        return 0
+      end
+      if redis.call('GET', KEYS[2]) == ARGV[2] or redis.call('EXISTS', KEYS[3]) == 1 then
+        return 0
+      end
+      return redis.call('DEL', KEYS[4])
+    LUA
+
     Result = Data.define(:status, :generation, :word_count, :reason) do
       def published?
         status == :published
@@ -166,8 +179,8 @@ module Search
         Rails.logger.warn("Search expansion vocabulary publish failed: #{e.class} #{e.message}")
         failed_result("#{e.class}: #{e.message}")
       ensure
-        @lease&.release
         delete_staging unless @published
+        cleanup_guard { @lease.release }
       end
     end
 
@@ -329,11 +342,10 @@ module Search
     # Incremental tokenization into the staging generation. Bounded batches
     # are added to Redis immediately; no local copy of the word set exists.
     def add_text(text)
-      words = Search::ExpansionVocabulary.extract_words(text)
-      return if words.empty?
-
-      @batch.concat(words)
-      flush_batch if @batch.size >= SADD_BATCH
+      Search::ExpansionVocabulary.extract_words(text).each do |word|
+        @batch << word
+        flush_batch if @batch.size == SADD_BATCH
+      end
     end
 
     def flush_batch
@@ -403,7 +415,11 @@ module Search
     end
 
     def delete_staging
-      Sidekiq.redis { |redis| redis.call('DEL', words_key) }
+      Sidekiq.redis do |redis|
+        redis.call('EVAL', DELETE_STAGING_SCRIPT, 4,
+                   @lease.key, current_key, manifest_key, words_key,
+                   @lease.token, generation)
+      end
     rescue StandardError => e
       Rails.logger.warn("Search expansion vocabulary staging cleanup failed: #{e.class} #{e.message}")
     end
