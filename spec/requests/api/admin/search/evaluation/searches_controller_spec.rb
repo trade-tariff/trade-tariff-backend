@@ -10,9 +10,9 @@ RSpec.describe Api::Admin::Search::Evaluation::SearchesController, :admin do
   let(:make_request) { authenticated_post api_admin_search_evaluation_searches_path(format: :json), params: params, as: :json }
 
   before do
-    # Force the opensearch-only retrieval path (mirrors spec/requests/api/internal/search_controller_spec.rb
-    # and spec/services/api/internal/search_service_spec.rb) so a real Api::Internal::SearchService call
-    # doesn't fall into hybrid/vector retrieval, which would hit the live embeddings API and fail under WebMock.
+    # Force the opensearch-only retrieval path, with query expansion off, so a real search in
+    # these specs doesn't make a live OpenAI/embeddings call and fail under WebMock (mirrors
+    # the worker spec and the old synchronous controller spec).
     allow(AdminConfiguration).to receive(:option_value).and_call_original
     allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('opensearch')
     allow(AdminConfiguration).to receive(:enabled?).and_call_original
@@ -22,19 +22,23 @@ RSpec.describe Api::Admin::Search::Evaluation::SearchesController, :admin do
     end
   end
 
-  describe 'POST #create' do
-    context 'with a blank query' do
-      let(:params) { { q: '' } }
-
-      it { is_expected.to have_http_status :success }
-      it { expect(json_response).to eq('data' => [], 'meta' => { 'search_failures' => [] }) }
+  after do
+    EvaluationQueuedSearchWorker.jobs.each do |job|
+      QueuedSearch.new(job['args'].first).delete
     end
+  end
 
+  describe 'POST #create' do
     context 'with a disallowed configuration_overrides key' do
       let(:params) { { q: 'horses', configuration_overrides: { 'use_kg_context' => true } } }
 
       it { is_expected.to have_http_status :unprocessable_content }
       it { expect(json_response).to include('errors') }
+
+      it 'does not queue a search' do
+        api_response
+        expect(EvaluationQueuedSearchWorker.jobs).to be_empty
+      end
     end
 
     context 'with an allowed key but an invalid value' do
@@ -44,370 +48,149 @@ RSpec.describe Api::Admin::Search::Evaluation::SearchesController, :admin do
       it { expect(json_response).to include('errors') }
     end
 
-    context 'with an allowed configuration_overrides key' do
+    context 'with a valid query' do
       let(:params) { { q: 'horses', configuration_overrides: { 'candidate_limit' => 5 } } }
 
-      before do
-        allow(Api::Internal::SearchService).to receive(:new).and_call_original
+      it { is_expected.to have_http_status :accepted }
+      it { expect(json_response).to include('id' => be_present, 'status' => 'queued') }
+
+      it 'queues the search on the dedicated evaluation queue, not :default' do
+        api_response
+        expect(EvaluationQueuedSearchWorker.jobs.last['queue']).to eq('evaluation')
       end
 
-      it { is_expected.to have_http_status :success }
-
-      it 'passes configuration_overrides through to Api::Internal::SearchService' do
+      it 'stores configuration_overrides and the evaluation search_type on the queued search' do
         api_response
-        expect(Api::Internal::SearchService).to have_received(:new).with(
-          hash_including(configuration_overrides: hash_including('candidate_limit' => 5)),
+        id = json_response.fetch('id')
+        expect(QueuedSearch.new(id).payload.fetch('params')).to include(
+          'configuration_overrides' => { 'candidate_limit' => 5 }, 'search_type' => 'evaluation',
         )
       end
 
-      it "still tags the call with search_type: 'evaluation'" do
+      it 'does not execute the search in the request' do
+        allow(Api::Internal::SearchService).to receive(:new)
+
         api_response
-        expect(Api::Internal::SearchService).to have_received(:new).with(
-          hash_including(search_type: 'evaluation'),
-        )
+
+        expect(Api::Internal::SearchService).not_to have_received(:new)
+      end
+
+      it 'stores the request context for the worker' do
+        api_response
+        id = json_response.fetch('id')
+        expect(QueuedSearch.new(id).payload.fetch('context')).to include('request_id', 'as_of')
       end
     end
 
     context 'without any configuration_overrides' do
       let(:params) { { q: 'horses' } }
 
-      before do
-        allow(Api::Internal::SearchService).to receive(:new).and_call_original
-      end
-
-      it 'still calls Api::Internal::SearchService, with an empty configuration_overrides' do
+      it 'stores an empty configuration_overrides' do
         api_response
-        expect(Api::Internal::SearchService).to have_received(:new).with(
-          hash_including(configuration_overrides: {}),
-        )
+        id = json_response.fetch('id')
+        expect(QueuedSearch.new(id).payload.dig('params', 'configuration_overrides')).to eq({})
       end
     end
 
-    context 'with or without configuration_overrides' do
+    context 'when the enqueue is rejected' do
       let(:params) { { q: 'horses' } }
 
-      before do
-        allow(Api::Internal::SearchService).to receive(:new).and_call_original
+      it 'does not accept a rejected enqueue' do
+        id = SecureRandom.uuid
+        allow(SecureRandom).to receive(:uuid).and_return(id)
+        allow(EvaluationQueuedSearchWorker).to receive(:perform_async).and_return(nil)
+
+        api_response
+
+        expect(response).to have_http_status(:service_unavailable)
+        expect(json_response).not_to have_key('id')
+        expect(QueuedSearch.new(id).payload).to be_nil
       end
 
-      it "tags the call with search_type: 'evaluation', regardless of configuration_overrides" do
+      it 'does not accept an enqueue connection failure' do
+        id = SecureRandom.uuid
+        allow(SecureRandom).to receive(:uuid).and_return(id)
+        allow(EvaluationQueuedSearchWorker).to receive(:perform_async).and_raise(RedisClient::ConnectionError, 'unavailable')
+
         api_response
-        expect(Api::Internal::SearchService).to have_received(:new).with(
-          hash_including(search_type: 'evaluation'),
-        )
+
+        expect(response).to have_http_status(:service_unavailable)
+        expect(json_response).not_to have_key('id')
+      ensure
+        QueuedSearch.new(id).delete
+      end
+
+      it 'does not accept a Redis outage' do
+        allow(Sidekiq).to receive(:redis).and_raise(RedisClient::ConnectionError, 'unavailable')
+
+        api_response
+
+        expect(response).to have_http_status(:service_unavailable)
       end
     end
+  end
 
-    context 'when a real interactive search LLM call happens' do
-      let(:params) { { q: 'trainers' } }
-      let(:usage) { { 'prompt_tokens' => 120, 'completion_tokens' => 40, 'total_tokens' => 160 } }
-      let(:ai_response) do
-        AiUsage.attach_metadata(
-          '{"answers": [{"commodity_code": "6404110000", "confidence": "strong"}]}',
-          AiUsage.metadata_for(model: 'gpt-5.2', event_kind: 'interactive_search', usage:),
-        )
-      end
+  describe 'GET #show' do
+    let(:params) { { q: 'horses' } }
 
-      before do
-        # Index TWO real documents so opensearch_results.size > 1 and
-        # InteractiveSearchService doesn't take the single_result? short
-        # circuit (which makes no LLM call at all, and so would make this
-        # test pass for the wrong reason). Same real-indexing pattern
-        # spec/requests/api/internal/search_controller_spec.rb already uses
-        # (see its 'when query expansion times out' context) — copy that
-        # pattern exactly rather than hand-building GoodsNomenclatureResult
-        # objects, since the serializer touches more fields than are
-        # convenient to fake by hand.
-        index = Search::GoodsNomenclatureIndex.new
-        [
-          { sid: 98_001, item_id: '6404110000', description: 'trainers with rubber sole' },
-          { sid: 98_002, item_id: '6404190000', description: 'trainers with textile upper' },
-        ].each do |doc|
-          TradeTariffBackend.search_client.index_by_name(
-            index.name,
-            doc[:sid],
-            {
-              goods_nomenclature_sid: doc[:sid],
-              goods_nomenclature_item_id: doc[:item_id],
-              producline_suffix: '80',
-              goods_nomenclature_class: 'Commodity',
-              description: doc[:description],
-              formatted_description: doc[:description],
-              full_description: doc[:description],
-              heading_description: 'Footwear',
-              declarable: true,
-              validity_start_date: Time.zone.today.iso8601,
-            },
-          )
-        end
-        TradeTariffBackend.search_client.indices.refresh(index: 'tariff-test-*')
+    it 'reports queued without exposing inputs' do
+      api_response
+      id = json_response.fetch('id')
 
-        allow(AdminConfiguration).to receive(:enabled?).and_call_original
-        allow(AdminConfiguration).to receive(:enabled?).with('interactive_search_enabled').and_return(true)
-        allow(OpenaiClient).to receive(:call).and_return(ai_response)
-      end
+      get api_admin_search_evaluation_search_path(id, format: :json)
 
-      it 'includes meta.usage with cost and token data' do
-        api_response
-        usage_meta = json_response.dig('meta', 'usage')
-        expect(usage_meta).to include('total_tokens' => 160, 'provider_calls' => 1)
-        expect(usage_meta).to have_key('total_cost_usd')
-        expect(usage_meta).to have_key('duration_ms')
-      end
-
-      context 'when the hybrid embedding is malformed' do
-        before do
-          allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('hybrid')
-          embedding = AiUsage.attach_metadata(
-            [0.1],
-            AiUsage.metadata_for(
-              model: EmbeddingService::MODEL,
-              event_kind: 'vector_search_query_embedding',
-              usage: { 'prompt_tokens' => 42, 'total_tokens' => 42 },
-            ),
-          )
-          allow(EmbeddingService).to receive(:new).and_return(instance_double(EmbeddingService, embed: embedding))
-        end
-
-        it 'includes billed fallback usage' do
-          expect(api_response).to have_http_status(:success)
-          expect(json_response['data']).to be_present
-          expect(json_response.dig('meta', 'search_failures')).to eq(%w[embedding_generation_failed])
-          expect(json_response.dig('meta', 'usage')).to include('total_tokens' => 42, 'provider_calls' => 1)
-          expect(json_response.dig('meta', 'usage', 'total_cost_usd')).to be_positive
-        end
-      end
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)).to include('id' => id, 'status' => 'queued')
+      expect(JSON.parse(response.body).keys).not_to include('params', 'context')
     end
 
-    context 'when an unrelated concurrent search event fires during the request' do
-      let(:params) { { q: 'trainers' } }
-      let(:usage) { { 'prompt_tokens' => 120, 'completion_tokens' => 40, 'total_tokens' => 160 } }
-      let(:ai_response) do
-        AiUsage.attach_metadata(
-          '{"answers": [{"commodity_code": "6404110000", "confidence": "strong"}]}',
-          AiUsage.metadata_for(model: 'gpt-5.2', event_kind: 'interactive_search', usage:),
-        )
-      end
+    it 'returns the completed search once the worker has run' do
+      api_response
+      id = json_response.fetch('id')
+      EvaluationQueuedSearchWorker.new.perform(id)
 
-      before do
-        index = Search::GoodsNomenclatureIndex.new
-        [
-          { sid: 98_001, item_id: '6404110000', description: 'trainers with rubber sole' },
-          { sid: 98_002, item_id: '6404190000', description: 'trainers with textile upper' },
-        ].each do |doc|
-          TradeTariffBackend.search_client.index_by_name(
-            index.name,
-            doc[:sid],
-            {
-              goods_nomenclature_sid: doc[:sid],
-              goods_nomenclature_item_id: doc[:item_id],
-              producline_suffix: '80',
-              goods_nomenclature_class: 'Commodity',
-              description: doc[:description],
-              formatted_description: doc[:description],
-              full_description: doc[:description],
-              heading_description: 'Footwear',
-              declarable: true,
-              validity_start_date: Time.zone.today.iso8601,
-            },
-          )
-        end
-        TradeTariffBackend.search_client.indices.refresh(index: 'tariff-test-*')
+      get api_admin_search_evaluation_search_path(id, format: :json)
 
-        allow(AdminConfiguration).to receive(:enabled?).and_call_original
-        allow(AdminConfiguration).to receive(:enabled?).with('interactive_search_enabled').and_return(true)
-
-        allow(OpenaiClient).to receive(:call) do |*_args, **_kwargs|
-          # Simulate a concurrent, unrelated search's LLM call completing on the process-wide
-          # ActiveSupport::Notifications Fanout notifier while this request's controller is
-          # still subscribed (ActiveSupport::Notifications.subscribed subscribes on that single
-          # process-wide notifier for the block's duration, not scoped to this thread/request --
-          # see notifications.rb's `self.notifier = Fanout.new`). Puma runs multiple threads per
-          # worker with AdminApi and InternalApi mounted in the same process, so this is a
-          # realistic shape for what a live trader search, or a second concurrent eval request,
-          # would look like landing mid-request. The controller's request_id filter must exclude
-          # it from this request's totals.
-          ActiveSupport::Notifications.instrument(
-            'api_call_completed.search',
-            request_id: 'unrelated-concurrent-request-id',
-            total_tokens: 999_999,
-            total_cost_usd: 999.99,
-            duration_ms: 1.0,
-            pricing_known: true,
-          )
-
-          ai_response
-        end
-      end
-
-      it "excludes the foreign event from this request's meta.usage" do
-        api_response
-        usage_meta = json_response.dig('meta', 'usage')
-        expect(usage_meta).to include('total_tokens' => 160, 'provider_calls' => 1)
-        expect(usage_meta['total_tokens']).not_to eq(160 + 999_999)
-        expect(usage_meta['total_cost_usd']).not_to eq(999.99)
-      end
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)).to include('status' => 'completed', 'response_status' => 200)
     end
 
-    context 'when retrieval_method is vector, so a query-embedding call happens' do
-      let(:params) { { q: 'live horses' } }
-      let(:tagged_embedding) do
-        AiUsage.attach_metadata(
-          query_embedding_vector,
-          AiUsage.metadata_for(model: EmbeddingService::MODEL, event_kind: 'vector_search_query_embedding', usage: { 'total_tokens' => 42 }),
-        )
-      end
-      let(:ai_response) do
-        AiUsage.attach_metadata(
-          '{"answers": [{"commodity_code": "0101210000", "confidence": "strong"}]}',
-          AiUsage.metadata_for(model: 'gpt-5.2', event_kind: 'interactive_search', usage: { 'prompt_tokens' => 120, 'completion_tokens' => 40, 'total_tokens' => 160 }),
-        )
-      end
+    it 'serves terminal errors to the poller' do
+      api_response
+      id = json_response.fetch('id')
+      search = QueuedSearch.new(id)
+      search.claim
+      search.finish(result: { errors: [{ title: 'Invalid query' }] }, response_status: 422)
 
-      # A plain method, not a `let`, to keep this context's memoized-helper count under
-      # RuboCop's RSpec/MultipleMemoizedHelpers limit (it counts inherited `let`s too).
-      def query_embedding_vector
-        @query_embedding_vector ||= Array.new(1536) { 0.1 }
-      end
+      get api_admin_search_evaluation_search_path(id, format: :json)
 
-      before do
-        # Real pgvector-backed vector search, not a stubbed VectorRetrievalService result --
-        # same real-data pattern spec/services/vector_retrieval_service_spec.rb already uses
-        # (its top-level `it 'returns results with ORM-derived fields'` example): create real
-        # commodities with self-texts, then set search_embedding directly so
-        # GoodsNomenclatureSelfText.vector_search finds them by real cosine distance. Only
-        # EmbeddingService#embed (the actual OpenAI boundary) is stubbed, exactly as
-        # OpenaiClient.call is stubbed for the LLM side elsewhere in this file -- the
-        # embedding_api_call_completed.ai_usage event this test is proving gets summed is real
-        # instrumentation firing from real VectorRetrievalService code, not a fake.
-        [
-          { item_id: '0101210000', self_text: 'Pure-bred breeding horses' },
-          { item_id: '0101292000', self_text: 'Other live horses' },
-        ].each do |doc|
-          commodity = create(:commodity, :with_description, :declarable,
-                             goods_nomenclature_item_id: doc[:item_id],
-                             producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
-          create(:goods_nomenclature_self_text,
-                 goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-                 goods_nomenclature_item_id: doc[:item_id],
-                 self_text: doc[:self_text])
-          Sequel::Model.db.run(
-            "UPDATE goods_nomenclature_self_texts SET search_embedding = '[#{query_embedding_vector.join(',')}]'::vector " \
-            "WHERE goods_nomenclature_sid = #{commodity.goods_nomenclature_sid}",
-          )
-        end
-
-        allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('vector')
-
-        embedding_service = instance_double(EmbeddingService)
-        allow(EmbeddingService).to receive(:new).and_return(embedding_service)
-        allow(embedding_service).to receive(:embed).and_return(tagged_embedding)
-
-        allow(AdminConfiguration).to receive(:enabled?).and_call_original
-        allow(AdminConfiguration).to receive(:enabled?).with('interactive_search_enabled').and_return(true)
-        allow(OpenaiClient).to receive(:call).and_return(ai_response)
-      end
-
-      it 'sums the embedding call usage into meta.usage alongside the LLM call' do
-        api_response
-        usage_meta = json_response.dig('meta', 'usage')
-        expect(usage_meta).to include('total_tokens' => 202, 'provider_calls' => 2)
-      end
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)).to include('status' => 'failed', 'response_status' => 422)
+      expect(JSON.parse(response.body).fetch('result')).to eq('errors' => [{ 'title' => 'Invalid query' }])
     end
 
-    context 'when the duplicate-question-retry path fires more than one LLM call' do
-      let(:params) do
-        {
-          q: 'hiking boots',
-          answers: [
-            { question: 'Is this item made of leather or synthetic material?', answer: 'Leather', options: %w[Leather Synthetic] },
-          ],
-        }
-      end
+    it 'reports a polling Redis outage' do
+      allow(Sidekiq).to receive(:redis).and_raise(RedisClient::ConnectionError, 'unavailable')
 
-      # Three distinct AiUsage-tagged responses, one per real LLM call this path makes
-      # (see interactive_search_service.rb:437-443 and duplicate_question_guard.rb:115-136):
-      #   1. the initial interactive_search call, which repeats a question the user
-      #      already answered (so DuplicateQuestionGuard's repeated_question_text?
-      #      signal fires)
-      #   2. DuplicateQuestionGuard's own duplicate_question_validator call, confirming
-      #      it's a duplicate
-      #   3. InteractiveSearchService's duplicate_question_retry call, giving a final
-      #      answer
-      # Each carries a different total_tokens value so the test can prove the
-      # controller sums across all events instead of only reading the first one.
-      let(:call_responses) do
-        [
-          AiUsage.attach_metadata(
-            '{"questions": [{"question": "Is this item made of leather or synthetic material?", "options": ["Leather", "Synthetic"]}]}',
-            AiUsage.metadata_for(model: 'gpt-5.2', event_kind: 'interactive_search', usage: { 'total_tokens' => 100 }),
-          ),
-          AiUsage.attach_metadata(
-            '{"duplicate": true, "reason": "Repeats the already answered material distinction"}',
-            AiUsage.metadata_for(model: 'gpt-5.2', event_kind: 'duplicate_question_validator', usage: { 'total_tokens' => 50 }),
-          ),
-          AiUsage.attach_metadata(
-            '{"answers": [{"commodity_code": "6403910000", "confidence": "strong"}]}',
-            AiUsage.metadata_for(model: 'gpt-5.2', event_kind: 'duplicate_question_retry', usage: { 'total_tokens' => 60 }),
-          ),
-        ]
-      end
+      get api_admin_search_evaluation_search_path(SecureRandom.uuid, format: :json)
 
-      before do
-        index = Search::GoodsNomenclatureIndex.new
-        [
-          { sid: 98_101, item_id: '6403910000', description: 'hiking boots with rubber sole' },
-          { sid: 98_102, item_id: '6403990000', description: 'hiking boots with leather upper' },
-        ].each do |doc|
-          TradeTariffBackend.search_client.index_by_name(
-            index.name,
-            doc[:sid],
-            {
-              goods_nomenclature_sid: doc[:sid],
-              goods_nomenclature_item_id: doc[:item_id],
-              producline_suffix: '80',
-              goods_nomenclature_class: 'Commodity',
-              description: doc[:description],
-              formatted_description: doc[:description],
-              full_description: doc[:description],
-              heading_description: 'Footwear',
-              declarable: true,
-              validity_start_date: Time.zone.today.iso8601,
-            },
-          )
-        end
-        TradeTariffBackend.search_client.indices.refresh(index: 'tariff-test-*')
-
-        allow(AdminConfiguration).to receive(:enabled?).and_call_original
-        allow(AdminConfiguration).to receive(:enabled?).with('interactive_search_enabled').and_return(true)
-        allow(AdminConfiguration).to receive(:enabled?).with('interactive_search_duplicate_question_guard_enabled').and_return(true)
-
-        # Responses are matched by call order, not prompt content, because the
-        # duplicate-question-guard's validator prompt template
-        # (interactive_search_duplicate_question_guard_context) isn't seeded in the
-        # test database and would otherwise render as an empty string, making
-        # content-based matching unreliable.
-        responses = call_responses.dup
-        allow(OpenaiClient).to receive(:call) { responses.shift }
-      end
-
-      it 'sums usage across all LLM calls rather than only the first' do
-        api_response
-        usage_meta = json_response.dig('meta', 'usage')
-        expect(OpenaiClient).to have_received(:call).exactly(3).times
-        expect(usage_meta).to include('total_tokens' => 210, 'provider_calls' => 3)
-      end
+      expect(response).to have_http_status(:service_unavailable)
     end
 
-    context 'when no LLM call happens (blank query, no results)' do
-      let(:params) { { q: '' } }
+    it 'returns not found for unknown ids' do
+      get api_admin_search_evaluation_search_path(SecureRandom.uuid, format: :json)
 
-      it 'omits meta.usage entirely' do
-        api_response
-        # `not_include` isn't a real RSpec matcher (no such built-in exists); dig handles
-        # both "meta is absent" and "meta present but without usage" in one assertion.
-        expect(json_response.dig('meta', 'usage')).to be_nil
-      end
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it 'returns not found after expiry' do
+      api_response
+      id = json_response.fetch('id')
+      Sidekiq.redis { |redis| redis.expire(QueuedSearch.new(id).key, 0) }
+
+      get api_admin_search_evaluation_search_path(id, format: :json)
+
+      expect(response).to have_http_status(:not_found)
     end
   end
 end
