@@ -37,6 +37,7 @@ module Api
         TradeTariffRequest.request_id ||= @request_id
         @expanded_query = params[:expanded_query].to_s.strip.presence
         @query_expansion = params[:query_expansion]
+        @ai_expansion_terms = []
         @retrieval_expansion_terms = []
         @skip_question = params[:skip_question].nil? ? nil : ActiveModel::Type::Boolean.new.cast(params[:skip_question])
         @configuration_overrides = params[:configuration_overrides] || {}
@@ -221,12 +222,13 @@ module Api
         end
 
         normalised = normalised_query
-        retrieve_short_list_with_expanded_query(normalised.expanded_query, expansion_input: normalised.query)
+        @ai_expansion_terms = normalised.added_terms
+        retrieve_short_list_with_expanded_query(normalised.expanded_query)
       end
 
       def retrieve_short_list_with_conditional_expansion
         unexpanded_query = retrieval_query
-        preliminary_retrieval = retrieve_short_list_with_expanded_query(unexpanded_query, expansion_input: unexpanded_query)
+        preliminary_retrieval = retrieve_short_list_with_expanded_query(unexpanded_query)
         decision = SearchExpansionDecisionService.call(
           query: unexpanded_query,
           results: preliminary_retrieval.decision_results,
@@ -236,13 +238,13 @@ module Api
         return preliminary_retrieval unless decision.expand?
 
         expanded = expand_query(unexpanded_query)
-        return preliminary_retrieval if expanded == unexpanded_query
+        @ai_expansion_terms = expanded.accepted_terms
+        return preliminary_retrieval if expanded.expanded_query == unexpanded_query
 
-        retrieve_short_list_with_expanded_query(expanded, expansion_input: unexpanded_query)
+        retrieve_short_list_with_expanded_query(expanded.expanded_query)
       end
 
-      def retrieve_short_list_with_expanded_query(search_expanded_query, expansion_input:)
-        @expansion_input = expansion_input
+      def retrieve_short_list_with_expanded_query(search_expanded_query)
         case retrieval_method
         when 'vector' then vector_short_list(search_expanded_query)
         when 'hybrid' then hybrid_short_list(search_expanded_query)
@@ -381,15 +383,6 @@ module Api
 
       def remember_retrieval_expansion(search_expanded_query)
         synonym_terms = synonyms_applied? ? ::Search::SynonymExpander.added_terms(search_expanded_query) : []
-        @ai_expansion_terms = if expanded_query.present?
-                                supplied_ai_expansion_terms
-                              else
-                                ::SearchExport::ExpansionTerms.call(
-                                  expansion_input: @expansion_input || search_expanded_query,
-                                  sent_query: search_expanded_query,
-                                  synonym_terms: [],
-                                )
-                              end
         @retrieval_expansion_terms = @ai_expansion_terms&.then { |terms| (terms + synonym_terms).uniq }
       end
 
@@ -423,7 +416,11 @@ module Api
 
       def normalised_query
         if expanded_query.present?
-          return InternalSearchQueryNormaliserService::Result.new(query: q, expanded_query: refine_query(supplied_expanded_query))
+          return InternalSearchQueryNormaliserService::Result.new(
+            query: q,
+            expanded_query: refine_query(supplied_expanded_query),
+            added_terms: supplied_ai_expansion_terms,
+          )
         end
 
         @normalised_query ||= InternalSearchQueryNormaliserService.call(query: retrieval_query, request_id: request_id)
@@ -461,6 +458,7 @@ module Api
         ::Search::ExpansionVocabularyFilter.call(
           original_query: query,
           expanded_query: result.expanded_query,
+          added_terms: result.added_terms,
         )
       end
 

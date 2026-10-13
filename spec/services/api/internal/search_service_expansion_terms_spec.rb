@@ -19,7 +19,9 @@ RSpec.describe Api::Internal::SearchService do
     allow(AdminConfiguration).to receive(:enabled?).with('refine_search_with_answers_enabled').and_return(true)
     allow(AdminConfiguration).to receive(:enabled?).with('search_compressed_notes_enabled').and_return(false)
     allow(Search::Instrumentation).to receive(:search) { |**_kwargs, &block| block.call.first }
-    allow(Search::ExpansionVocabularyFilter).to receive(:call) { |**expansion| expansion[:expanded_query] }
+    allow(Search::ExpansionVocabulary).to receive(:lookup) do |words|
+      Search::ExpansionVocabulary::Lookup.new(status: :ready, words: words.to_set, generation: 'test')
+    end
     TradeTariffRequest.request_source = TradeTariffRequest::FRONTEND_REQUEST_SOURCE
     allow(SearchExport::JourneyProjection).to receive(:record).and_call_original
     allow(Search::Instrumentation).to receive(:evaluation_journey_recorded)
@@ -122,10 +124,14 @@ RSpec.describe Api::Internal::SearchService do
     end
 
     it 'records only the added terms the tariff vocabulary supports' do
-      allow(Search::ExpansionVocabularyFilter).to receive(:call).and_call_original
-      create(:goods_nomenclature_description, description: 'Meat of poultry')
+      allow(Search::ExpansionVocabulary).to receive(:lookup).and_return(
+        Search::ExpansionVocabulary::Lookup.new(status: :ready, words: Set.new(%w[poultry meat]), generation: 'test'),
+      )
       allow(ExpandSearchQueryService).to receive(:call).and_return(
-        ExpandSearchQueryService::Result.new(expanded_query: 'chicken poultry meat, zaptoxidinyl serum', reason: nil),
+        ExpandSearchQueryService::Result.new(
+          expanded_query: 'chicken poultry meat zaptoxidinyl serum', reason: nil,
+          added_terms: ['poultry meat', 'zaptoxidinyl serum']
+        ),
       )
 
       response = described_class.new(q: 'chicken', request_id: 'expansion-journey').call
@@ -134,6 +140,78 @@ RSpec.describe Api::Internal::SearchService do
       expect(response.dig(:meta, :interactive_search, :expanded_query)).to eq('chicken poultry meat')
       expect(InteractiveSearchService).to have_received(:call)
         .with(hash_including(expanded_query: 'chicken poultry meat'))
+    end
+
+    context 'with structured model proposals' do
+      before do
+        allow(Rails).to receive(:cache).and_return(ActiveSupport::Cache::MemoryStore.new)
+        allow(OpenaiClient).to receive(:call).and_return(
+          'added_terms' => ['poultry meat', 'zaptoxidinyl serum'], 'reason' => 'trade terms',
+        )
+        allow(Search::ExpansionVocabulary).to receive(:lookup).and_return(
+          Search::ExpansionVocabulary::Lookup.new(status: :ready, words: Set.new(%w[poultry meat]), generation: 'test'),
+        )
+      end
+
+      it 'preserves reporting through caching and answers', :aggregate_failures do
+        described_class.new(q: 'chicken', request_id: 'first-search').call
+        response = described_class.new(q: 'chicken', request_id: 'cached-search').call
+        # The frontend receives and returns JSON, not internal value objects.
+        interactive = JSON.parse(JSON.generate(response)).fetch('meta').fetch('interactive_search')
+        expect(interactive.fetch('expanded_query')).to eq('chicken poultry meat')
+        expect(interactive.fetch('query_expansion')).to eq('ai_terms' => ['poultry meat'])
+
+        allow(InteractiveSearchService).to receive(:call).and_return(nil)
+        described_class.new(
+          q: 'chicken', request_id: 'cached-search',
+          expanded_query: interactive.fetch('expanded_query'),
+          query_expansion: interactive.fetch('query_expansion'),
+          answers: [{ question: 'Which kind?', options: %w[Fillet Frozen], answer: 'Fillet' }]
+        ).call
+
+        expect(OpenaiClient).to have_received(:call).once
+        expect(Search::Instrumentation).to have_received(:evaluation_journey_recorded).with(
+          hash_including(
+            request_id: 'cached-search', query: 'chicken', expansion_terms: ['poultry meat'],
+            trace_version: 'classification_evaluation_trace.v2',
+            answers: [{ 'question' => 'Which kind?', 'options' => %w[Fillet Frozen], 'answer' => 'Fillet' }]
+          ),
+        ).once
+        expect(InteractiveSearchService).to have_received(:call)
+          .with(hash_including(expanded_query: 'chicken poultry meat Fillet'))
+        expect(TradeTariffRequest.search_failures).to be_blank
+      end
+
+      it 'preserves the same response through queued search' do
+        inputs = { q: 'chicken', request_id: 'same-journey', answers: [] }
+        synchronous = described_class.new(inputs).call
+        queued = QueuedSearch.create(
+          params: inputs,
+          context: { request_id: 'same-journey', request_source: 'frontend', as_of: Date.current.iso8601 },
+        )
+
+        QueuedSearchWorker.new.perform(queued.id)
+
+        expect(queued.payload).to include(
+          'status' => 'completed', 'response_status' => 200,
+          'result' => JSON.parse(JSON.generate(synchronous))
+        )
+      ensure
+        queued&.delete
+      end
+
+      it 'keeps vocabulary fallback eligible for reporting' do
+        allow(Search::ExpansionVocabulary).to receive(:lookup).and_return(
+          Search::ExpansionVocabulary::Lookup.new(status: :unavailable, words: Set.new, generation: nil),
+        )
+        allow(InteractiveSearchService).to receive(:call).and_return(nil)
+
+        described_class.new(q: 'chicken', request_id: 'unavailable-vocabulary').call
+
+        expect(Search::Instrumentation).to have_received(:evaluation_journey_recorded)
+          .with(hash_including(request_id: 'unavailable-vocabulary', expansion_terms: []))
+        expect(TradeTariffRequest.search_failures).to be_blank
+      end
     end
 
     it 'combines carried AI terms with synonyms from the current retrieval only' do

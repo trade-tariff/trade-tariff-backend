@@ -42,6 +42,21 @@ RSpec.describe 'config/sidekiq.yml' do
     )
   end
 
+  it 'publishes the search expansion vocabulary hourly for each backend service' do
+    uk_schedule = sidekiq_schedule(environment: 'production', service: 'uk')
+    xi_schedule = sidekiq_schedule(environment: 'production', service: 'xi')
+
+    [uk_schedule, xi_schedule].each do |schedule|
+      expect(schedule).to include(
+        'PublishSearchVocabularyWorker' => include(
+          'cron' => '0 * * * *',
+          'description' => 'Publishes the search expansion vocabulary generation for the current date of this service',
+        ),
+      )
+      expect(schedule.fetch('PublishSearchVocabularyWorker')).not_to include('enabled' => false)
+    end
+  end
+
   it 'schedules yesterday collection once daily for each backend service' do
     uk_schedule = sidekiq_schedule(environment: 'production', service: 'uk')
     xi_schedule = sidekiq_schedule(environment: 'production', service: 'xi')

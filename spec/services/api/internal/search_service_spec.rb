@@ -30,7 +30,9 @@ RSpec.describe Api::Internal::SearchService do
       ExpandSearchQueryService::Result.new(expanded_query: query, reason: nil)
     end
     allow(InteractiveSearchService).to receive(:call).and_return(nil)
-    allow(Search::ExpansionVocabularyFilter).to receive(:call) { |**expansion| expansion[:expanded_query] }
+    allow(Search::ExpansionVocabulary).to receive(:lookup) do |words|
+      Search::ExpansionVocabulary::Lookup.new(status: :ready, words: words.to_set, generation: 'test')
+    end
     allow(Search::Instrumentation).to receive(:search) { |**_kwargs, &block| block.call&.first }
     allow(Search::Instrumentation).to receive(:query_expanded).and_yield
     allow(Search::Instrumentation).to receive(:query_refined).and_call_original
@@ -980,6 +982,9 @@ RSpec.describe Api::Internal::SearchService do
 
       it 'drops added terms that the tariff vocabulary does not support' do
         allow(Search::ExpansionVocabularyFilter).to receive(:call).and_call_original
+        allow(Search::ExpansionVocabulary).to receive(:lookup).and_return(
+          Search::ExpansionVocabulary::Lookup.new(status: :ready, words: Set.new, generation: 'test'),
+        )
         allow(ExpandSearchQueryService).to receive(:call)
           .and_return(ExpandSearchQueryService::Result.new(expanded_query: 'laptop zaptoxidinyl screens', reason: nil))
         allow(Search::GoodsNomenclatureQuery).to receive(:new).and_call_original
@@ -987,7 +992,7 @@ RSpec.describe Api::Internal::SearchService do
         described_class.new(q: 'laptop').call
 
         expect(Search::ExpansionVocabularyFilter).to have_received(:call)
-          .with(original_query: 'laptop', expanded_query: 'laptop zaptoxidinyl screens')
+          .with(original_query: 'laptop', expanded_query: 'laptop zaptoxidinyl screens', added_terms: nil)
         expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
           'laptop',
           anything,
@@ -1061,11 +1066,14 @@ RSpec.describe Api::Internal::SearchService do
 
       it 'retains the preliminary retrieval when the vocabulary filter drops the whole rewrite' do
         allow(Search::ExpansionVocabularyFilter).to receive(:call).and_call_original
+        allow(Search::ExpansionVocabulary).to receive(:lookup).and_return(
+          Search::ExpansionVocabulary::Lookup.new(status: :ready, words: Set.new, generation: 'test'),
+        )
 
         described_class.new(q: 'CBD oil').call
 
         expect(Search::ExpansionVocabularyFilter).to have_received(:call)
-          .with(original_query: 'CBD oil', expanded_query: 'cannabidiol oil')
+          .with(original_query: 'CBD oil', expanded_query: 'cannabidiol oil', added_terms: nil)
         expect(TradeTariffBackend.search_client).to have_received(:search).once
       end
 
@@ -1102,7 +1110,7 @@ RSpec.describe Api::Internal::SearchService do
         expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
           'CBD oil',
           anything,
-          hash_including(expanded_query: 'cannabidiol oil'),
+          hash_including(expanded_query: 'CBD oil cannabidiol oil'),
         )
       end
 
@@ -1588,23 +1596,23 @@ RSpec.describe Api::Internal::SearchService do
         described_class.new(q: 'horses').call
 
         expect(VectorRetrievalService).to have_received(:call).with(
-          hash_including(query: 'pure-bred breeding horses'),
+          hash_including(query: 'horses pure-bred breeding horses'),
         )
       end
 
       it 'applies v2 synonyms to vector retrieval while preserving the semantic query' do
         allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v2')
         allow(Search::SynonymExpander).to receive(:call)
-          .with('pure-bred breeding horses')
-          .and_return('pure-bred breeding horses equines')
+          .with('horses pure-bred breeding horses')
+          .and_return('horses pure-bred breeding horses equines')
 
         described_class.new(q: 'horses').call
 
         expect(VectorRetrievalService).to have_received(:call).with(
-          hash_including(query: 'pure-bred breeding horses equines'),
+          hash_including(query: 'horses pure-bred breeding horses equines'),
         )
         expect(InteractiveSearchService).to have_received(:call).with(
-          hash_including(expanded_query: 'pure-bred breeding horses'),
+          hash_including(expanded_query: 'horses pure-bred breeding horses'),
         )
       end
 
@@ -1705,7 +1713,7 @@ RSpec.describe Api::Internal::SearchService do
         expect(HybridRetrievalService).to have_received(:call).with(
           hash_including(
             query: 'horses',
-            expanded_query: 'pure-bred breeding horses',
+            expanded_query: 'horses pure-bred breeding horses',
             search_type: 'interactive',
           ),
         )
@@ -2018,7 +2026,7 @@ RSpec.describe Api::Internal::SearchService do
       it 'includes expanded_query in interactive_search meta' do
         result = described_class.new(q: 'laptop').call
 
-        expect(result[:meta][:interactive_search]).to include(expanded_query: 'portable data processing machine')
+        expect(result[:meta][:interactive_search]).to include(expanded_query: 'laptop portable data processing machine')
       end
     end
 

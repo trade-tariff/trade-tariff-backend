@@ -45,6 +45,9 @@
     PopulateSearchSuggestionsWorker:
       cron: "0 18 * * *"
       description: "Populates search suggestions which are used in the frontend"
+    PublishSearchVocabularyWorker:
+      cron: "0 * * * *"
+      description: "Publishes the search expansion vocabulary generation for the current date of this service"
     SearchAnalyticsQueryWorker:
       cron: "0 4 * * *"
       queue: within_1_day

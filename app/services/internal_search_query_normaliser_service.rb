@@ -1,5 +1,9 @@
 class InternalSearchQueryNormaliserService
-  Result = Data.define(:query, :expanded_query)
+  Result = Data.define(:query, :expanded_query, :added_terms) do
+    def initialize(query:, expanded_query:, added_terms: nil)
+      super
+    end
+  end
 
   def self.call(query:, request_id: nil)
     new(query:, request_id:).call
@@ -11,24 +15,24 @@ class InternalSearchQueryNormaliserService
   end
 
   def call
-    Result.new(query: query, expanded_query: expanded_query)
+    unless AdminConfiguration.enabled?('expand_search_enabled')
+      return Result.new(query:, expanded_query: query, added_terms: [])
+    end
+
+    proposal = Search::Instrumentation.query_expanded(
+      request_id:,
+      original_query: query,
+    ) { ExpandSearchQueryService.call(query, request_id:) }
+
+    filtered = Search::ExpansionVocabularyFilter.call(
+      original_query: query,
+      expanded_query: proposal.expanded_query,
+      added_terms: proposal.added_terms,
+    )
+    Result.new(query:, expanded_query: filtered.expanded_query, added_terms: filtered.accepted_terms)
   end
 
 private
 
   attr_reader :query, :request_id
-
-  def expanded_query
-    return query unless AdminConfiguration.enabled?('expand_search_enabled')
-
-    result = Search::Instrumentation.query_expanded(
-      request_id: request_id,
-      original_query: query,
-    ) { ExpandSearchQueryService.call(query, request_id:) }
-
-    Search::ExpansionVocabularyFilter.call(
-      original_query: query,
-      expanded_query: result.expanded_query,
-    )
-  end
 end

@@ -6,7 +6,12 @@ class ExpandSearchQueryService
   EXPANSION_TIMEOUT_SECONDS = 5.0
   EXPANSION_TIMEOUT_MS = (EXPANSION_TIMEOUT_SECONDS * 1000).to_i
 
-  Result = Data.define(:expanded_query, :reason)
+  Result = Data.define(:expanded_query, :reason, :added_terms) do
+    # Older callers and response fixtures only supply the rendered query.
+    def initialize(expanded_query:, reason:, added_terms: nil)
+      super
+    end
+  end
 
   def initialize(query, request_id: nil)
     @query = query.to_s.strip
@@ -76,7 +81,7 @@ private
 
     if self.class.valid_response?(response)
       result = result_from_response(response)
-      Rails.cache.write(cache_key, { expanded_query: result.expanded_query, reason: result.reason }, expires_in: CACHE_TTL)
+      Rails.cache.write(cache_key, { added_terms: result.added_terms, reason: result.reason }, expires_in: CACHE_TTL)
       result
     else
       record_failure('Query expansion response was malformed')
@@ -101,7 +106,7 @@ private
     added_terms = added_phrases(response)
     expanded_query = added_terms.empty? ? query : [query, *added_terms].join(' ')
 
-    Result.new(expanded_query:, reason: response['reason'])
+    Result.new(expanded_query:, reason: response['reason'], added_terms:)
   end
 
   def added_phrases(response)
@@ -120,9 +125,8 @@ private
       .first(MAX_ADDED_TERMS)
   end
 
-  # A legacy response holds a single rewritten query. Treat it as added text.
-  # Strip the original query when the rewrite keeps it as a prefix. Then split
-  # the remainder into comma-separated phrases.
+  # A legacy rewrite has no reliable phrase boundaries. Keep its added text
+  # as one proposal rather than interpreting commas as a term list.
   def legacy_phrases(expanded_query)
     rewritten = expanded_query.to_s.strip
     return [] if rewritten.blank? || rewritten.downcase == query.downcase
@@ -130,7 +134,7 @@ private
     prefix_match = /\A#{Regexp.escape(query)}\s+/i.match(rewritten)
     added_text = prefix_match ? prefix_match.post_match : rewritten
 
-    added_text.split(',')
+    [added_text]
   end
 
   def phrase_already_in_query?(phrase)
@@ -159,7 +163,7 @@ private
   end
 
   def cache_key
-    @cache_key ||= "expand_search_query/#{configured_model}/#{context_digest}/#{query.downcase}"
+    @cache_key ||= "expand_search_query/v2/#{configured_model}/#{context_digest}/#{query.downcase}"
   end
 
   def context_digest
@@ -188,6 +192,6 @@ private
   end
 
   def unchanged_result
-    Result.new(expanded_query: query, reason: nil)
+    Result.new(expanded_query: query, reason: nil, added_terms: [])
   end
 end

@@ -1,38 +1,74 @@
 # frozen_string_literal: true
 
 module Search
-  # In-process word set for expansion filtering.
+  # Bounded membership lookup against a published search vocabulary.
   #
-  # A search request only checks this set. It does not scan descriptions.
-  # The set is built on a background thread after the first search in the
-  # process, then refreshed in the background when it is stale. A cold
-  # process has no set yet, so the filter keeps the original query.
+  # The vocabulary is a versioned derived search index, published to Sidekiq
+  # Redis by Search::ExpansionVocabularyPublisher. It is never built or
+  # refreshed inside a search request or a queued-search worker. A lookup
+  # reads one published generation atomically and checks only the candidate
+  # words. Web requests and queued searches use this same path.
   #
-  # The build reads one page at a time and returns the connection after
-  # each page. It does not hold a pooled connection for the whole build.
-  # The pool stays sized to the process threads. A refresh page waits for
-  # a free connection instead of reserving one.
+  # No vocabulary data is retained in this class or in process memory. The
+  # only retained state is a small dedicated connection pool for the
+  # optional membership check.
   #
-  # Only one snapshot is kept, for the current date and the ATaR flag.
-  # A time machine request for another date does not use that snapshot and
-  # does not start a rebuild. Those requests keep the original query.
-  # Historical dates are rare, and a second snapshot would replace this one
-  # and rebuild the whole set.
+  # Readiness is explicit. A published generation with no matching candidate
+  # words is ready. A missing generation, a wrong-date generation, a Redis
+  # error or a pool wait timeout is unavailable. The caller keeps the
+  # original query when the vocabulary is unavailable.
   #
-  # A worker does not build or retain the set. Queued search checks only the
-  # candidate words against a shared Redis set. A missing set keeps the
-  # original query.
+  # Membership is lexical evidence only: it cannot establish phrase relevance
+  # or legal classification correctness.
   class ExpansionVocabulary
-    TTL = 1.hour
-    SHARED_TTL = 26.hours
-    PAGE_SIZE = 1_000
-    REFRESH_JITTER_SECONDS = 3
+    # Bump when the published word normalization changes.
+    NORMALIZATION_VERSION = 'n1'
+    KEY_PREFIX = "search_vocabulary/#{NORMALIZATION_VERSION}".freeze
     WORD_PATTERN = /[\p{alnum}']+/
     OPENING_QUOTE_PATTERN = /(?<![\p{alnum}'"])["'](?=\p{alnum})/
     CLOSING_QUOTE_PATTERN = /(?<=\p{alnum})["'](?![\p{alnum}'"])/
-    MUTEX = Mutex.new
 
-    Snapshot = Data.define(:key, :words, :loaded_at)
+    # Optional-check I/O budget. POOL_WAIT bounds how long a lookup waits
+    # for a pooled connection. IO_TIMEOUT bounds the connect and socket
+    # timeouts of that dedicated connection, and no reconnect is attempted.
+    # Each timeout bounds one pool checkout or one socket operation; they do
+    # not imply a full end-to-end deadline for the whole search operation.
+    POOL_SIZE = 2
+    POOL_WAIT_SECONDS = 0.05
+    IO_TIMEOUT_SECONDS = 0.05
+
+    # One atomic read: resolve the current generation, confirm its manifest
+    # exists and its words set is intact against the manifest word count,
+    # then test each candidate word against that same generation. An
+    # explicitly published empty corpus has a word count of zero and an
+    # absent words set, which is ready; a missing words set behind a
+    # non-zero count is unavailable.
+    LOOKUP_SCRIPT = <<~LUA
+      local generation = redis.call('GET', KEYS[1])
+      if not generation then
+        return {0}
+      end
+      local manifest_key = KEYS[2] .. generation .. ':manifest'
+      local words_key = KEYS[2] .. generation .. ':words'
+      local word_count = redis.call('HGET', manifest_key, 'word_count')
+      if not word_count then
+        return {0}
+      end
+      if tonumber(word_count) ~= redis.call('SCARD', words_key) then
+        return {0}
+      end
+      local hits = {}
+      for i = 1, #ARGV do
+        hits[i] = redis.call('SISMEMBER', words_key, ARGV[i])
+      end
+      return {1, generation, hits}
+    LUA
+
+    Lookup = Data.define(:status, :words, :generation) do
+      def ready?
+        status == :ready
+      end
+    end
 
     class << self
       def extract_words(text)
@@ -45,273 +81,86 @@ module Search
         text.to_s.gsub(OPENING_QUOTE_PATTERN, '').gsub(CLOSING_QUOTE_PATTERN, '')
       end
 
-      # Returns the subset of candidates present in the loaded set.
-      # Returns nil when the set is not loaded yet. The caller keeps the
-      # original query in that case.
-      def supported_words(candidates)
-        at, atar = context
-        return nil unless current_date?(at)
-        return worker_supported_words(candidates, at, atar) if worker_process?
+      # Checks the candidate words against the current published generation.
+      # Availability and words always come from that single generation.
+      # Returns a Lookup value: :ready with the supported subset, or
+      # :unavailable with no words. Never raises on Redis or pool failures.
+      def lookup(candidates)
+        words = candidates.grep(String).map(&:to_s).uniq
+        service, date, profile = default_context
 
-        key = cache_key(at, atar)
-        snapshot = @snapshot
+        ready, generation, hits = read_generation(service:, date:, profile:, candidates: words)
+        return unavailable unless ready == 1 && generation.is_a?(String)
 
-        if snapshot&.key == key
-          schedule_refresh(atar) if !fresh?(snapshot) && !Rails.env.test?
-          schedule_shared_republish(at, atar, snapshot.words) if fresh?(snapshot) && !Rails.env.test?
-          return select_supported(snapshot.words, candidates)
-        end
-
-        return select_supported(build(at, atar), candidates) if Rails.env.test?
-
-        schedule_refresh(atar)
-        nil
+        Lookup.new(
+          status: :ready,
+          words: words.zip(hits || []).select { |_, hit| hit.to_i == 1 }.map(&:first).to_set,
+          generation:,
+        )
+      rescue RedisClient::Error, ConnectionPool::Error, ConnectionPool::TimeoutError
+        unavailable
       end
 
-      def remember!(words, at: vocabulary_date, atar: atar_enabled?)
-        @snapshot = Snapshot.new(key: cache_key(at, atar), words: words.to_set, loaded_at: Time.current)
+      # Source profile shared with the publisher: the union of eligible
+      # searchable goods sources. ATAR terms are included only when the
+      # search ATAR flag is enabled.
+      def source_profile(atar_enabled: atar_terms_enabled?)
+        profile = %w[self_text descriptions references labels]
+        profile << 'atar' if atar_enabled
+        profile.join('+')
       end
 
+      # Drops the memoized lookup connection pool. Test support only.
       def reset!
-        @snapshot = nil
-        @refreshing = false
+        @lookup_pool = nil
       end
 
     private
 
-      def select_supported(words, candidates)
-        candidates.select { |word| words.include?(word) }.to_set
+      def unavailable
+        Lookup.new(status: :unavailable, words: Set.new, generation: nil)
       end
 
-      def context
-        [vocabulary_date, atar_enabled?]
+      def read_generation(service:, date:, profile:, candidates:)
+        namespace = "#{KEY_PREFIX}/#{service}/#{date}/#{profile}"
+        lookup_pool.with do |client|
+          client.call('EVAL', LOOKUP_SCRIPT, 2,
+                      "#{namespace}/current", "#{namespace}/g:", *candidates)
+        end
       end
 
-      def vocabulary_date
-        TradeTariffRequest.time_machine_now&.to_date || Date.current
+      def lookup_pool
+        @lookup_pool ||= ConnectionPool.new(size: POOL_SIZE, timeout: POOL_WAIT_SECONDS) do
+          RedisClient.new(**pool_client_config)
+        end
       end
 
-      def atar_enabled?
+      # Same Sidekiq Redis endpoint and database as the application, but with
+      # bounded optional-check timeouts and no reconnects. This pool is not a
+      # vocabulary cache: it holds connections only.
+      def pool_client_config
+        config = TradeTariffBackend.sidekiq_redis_config
+        {
+          url: config[:url],
+          db: config[:db] || 0,
+          timeout: IO_TIMEOUT_SECONDS,
+          read_timeout: IO_TIMEOUT_SECONDS,
+          write_timeout: IO_TIMEOUT_SECONDS,
+          connect_timeout: IO_TIMEOUT_SECONDS,
+          reconnect_attempts: 0,
+        }
+      end
+
+      def default_context
+        [
+          TradeTariffBackend.service,
+          TradeTariffRequest.time_machine_now&.to_date || Date.current,
+          source_profile,
+        ]
+      end
+
+      def atar_terms_enabled?
         AdminConfiguration.enabled?('search_atars_enabled')
-      end
-
-      def current_date?(at)
-        at == Date.current
-      end
-
-      SHARED_CACHE_PREFIX = 'search_expansion_vocabulary/v1'
-
-      # Queued search runs this filter inside Sidekiq. Read the shared cache
-      # only. Do not build or retain the set in the worker.
-      def worker_process?
-        Sidekiq.server?
-      end
-
-      def worker_supported_words(candidates, at, atar)
-        key = shared_cache_key(at, atar)
-        exists, hits = Sidekiq.redis do |redis|
-          replies = redis.pipelined do |pipe|
-            pipe.call('EXISTS', key)
-            candidates.each { |word| pipe.call('SISMEMBER', key, word) }
-          end
-          [replies.shift.to_i.positive?, replies]
-        end
-        return unless exists
-
-        candidates.zip(hits).select { |_, hit| hit.to_i == 1 }.map(&:first).to_set
-      end
-
-      def publish_snapshot(at, atar, words)
-        word_set = words.to_set
-        @snapshot = Snapshot.new(key: cache_key(at, atar), words: word_set, loaded_at: Time.current)
-        write_shared(at, atar, word_set)
-        word_set
-      end
-
-      def write_shared(at, atar, words)
-        return if words.blank?
-
-        key = shared_cache_key(at, atar)
-        staging = "#{key}:staging:#{SecureRandom.hex(8)}"
-        Sidekiq.redis do |redis|
-          redis.call('DEL', staging)
-          words.each_slice(500) { |slice| redis.call('SADD', staging, *slice) }
-          redis.call('EXPIRE', staging, SHARED_TTL.to_i)
-          # Rename is atomic. Readers see the old complete set or the new one.
-          redis.call('RENAME', staging, key)
-        end
-        @shared_written_at = Time.current
-      end
-
-      def shared_exists?(at, atar)
-        Sidekiq.redis { |redis| redis.call('EXISTS', shared_cache_key(at, atar)).to_i.positive? }
-      end
-
-      def shared_cache_key(at, atar)
-        "#{SHARED_CACHE_PREFIX}/#{TradeTariffBackend.service}/#{at}/#{atar}"
-      end
-
-      def cache_key(at, atar)
-        [at, atar]
-      end
-
-      def fresh?(snapshot)
-        snapshot.loaded_at > TTL.ago
-      end
-
-      def schedule_shared_republish(at, atar, words)
-        return if @shared_checked_at && @shared_checked_at > 5.minutes.ago
-
-        @shared_checked_at = Time.current
-        Thread.new(at, atar, words.to_a) do |refresh_at, refresh_atar, refresh_words|
-          Rails.application.executor.wrap do
-            write_shared(refresh_at, refresh_atar, refresh_words) unless shared_exists?(refresh_at, refresh_atar)
-          end
-        rescue StandardError => e
-          Rails.logger.warn("Search expansion vocabulary republish failed: #{e.class} #{e.message}")
-        end
-      end
-
-      def claim_refresh_lock?
-        Rails.cache.write(refresh_lock_key, true, expires_in: 2.minutes, unless_exist: true)
-      end
-
-      def refresh_lock_key
-        "#{SHARED_CACHE_PREFIX}/#{TradeTariffBackend.service}/refresh_lock"
-      end
-
-      def schedule_refresh(atar)
-        return if worker_process? || @refreshing
-
-        MUTEX.synchronize do
-          return if @refreshing
-          return unless claim_refresh_lock?
-
-          @refreshing = true
-          @refresh_thread = Thread.new(atar) do |refresh_atar|
-            # Spread cold starts so web processes do not all read at once.
-            sleep(refresh_delay)
-            Rails.application.executor.wrap do
-              started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-              refresh_at = Date.current
-              words = with_read_connection { build(refresh_at, refresh_atar) }
-              publish_snapshot(refresh_at, refresh_atar, words)
-              elapsed_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started) * 1000).round
-              Rails.logger.info("Search expansion vocabulary refreshed in #{elapsed_ms}ms with #{words.size} words")
-            end
-          rescue StandardError => e
-            Rails.logger.warn("Search expansion vocabulary refresh failed: #{e.class} #{e.message}")
-          ensure
-            @refreshing = false
-          end
-        end
-      end
-
-      def refresh_delay
-        rand(0.0..REFRESH_JITTER_SECONDS)
-      end
-
-      def with_read_connection(&block)
-        if Sequel::Model.db.servers.include?(:reader)
-          Sequel::Model.db.with_server(:reader, &block)
-        else
-          yield
-        end
-      end
-
-      def build(at, atar)
-        words = Set.new
-        db = Sequel::Model.db
-
-        each_description(db, at, words)
-        each_page(db[:search_references].where(usage: 'search').exclude(title: nil).order(:id), :id) do |row|
-          add_words(words, row[:title])
-        end
-        each_page(db[:goods_nomenclature_labels].where(expired: false).order(:goods_nomenclature_sid), :goods_nomenclature_sid) do |row|
-          add_label_words(words, row)
-        end
-
-        if atar
-          each_page(current_atar_rulings(db, at), :id) do |row|
-            add_atar_words(words, row)
-          end
-        end
-
-        words
-      end
-
-      def current_atar_rulings(db, at)
-        db[:tariff_knowledge_public_atar_rulings]
-          .where(Sequel[:validity_start_date] <= at)
-          .where(Sequel.lit('validity_end_date >= ? OR validity_end_date IS NULL', at))
-          .order(:id)
-      end
-
-      def each_description(db, at, words)
-        last_sid = 0
-        last_period_sid = 0
-
-        loop do
-          rows = db.fetch(description_page_sql, at, at, last_sid, last_period_sid).all
-          break if rows.empty?
-
-          rows.each { |row| add_words(words, row[:description]) }
-          break if rows.size < PAGE_SIZE
-
-          last = rows.last
-          last_sid = last[:goods_nomenclature_sid]
-          last_period_sid = last[:goods_nomenclature_description_period_sid]
-        end
-      end
-
-      def description_page_sql
-        <<~SQL
-          SELECT d.description,
-                 d.goods_nomenclature_sid,
-                 d.goods_nomenclature_description_period_sid
-          FROM goods_nomenclature_descriptions d
-          JOIN goods_nomenclature_description_periods p
-            ON p.goods_nomenclature_description_period_sid = d.goods_nomenclature_description_period_sid
-           AND p.goods_nomenclature_sid = d.goods_nomenclature_sid
-          WHERE d.description IS NOT NULL
-            AND p.validity_start_date <= ?
-            AND (p.validity_end_date >= ? OR p.validity_end_date IS NULL)
-            AND (d.goods_nomenclature_sid, d.goods_nomenclature_description_period_sid) > (?, ?)
-          ORDER BY d.goods_nomenclature_sid, d.goods_nomenclature_description_period_sid
-          LIMIT #{PAGE_SIZE}
-        SQL
-      end
-
-      def each_page(dataset, key, &block)
-        last = nil
-
-        loop do
-          page = dataset
-          page = page.where(Sequel[key] > last) if last
-          rows = page.limit(PAGE_SIZE).all
-          break if rows.empty?
-
-          rows.each(&block)
-          break if rows.size < PAGE_SIZE
-
-          last = rows.last[key]
-        end
-      end
-
-      def add_label_words(words, row)
-        add_words(words, row[:description])
-        Array(row[:synonyms]).each { |text| add_words(words, text) }
-        Array(row[:colloquial_terms]).each { |text| add_words(words, text) }
-        Array(row[:known_brands]).each { |text| add_words(words, text) }
-      end
-
-      def add_atar_words(words, row)
-        Array(row[:keywords]).each { |text| add_words(words, text) }
-        Array(row[:derived_facts]).each { |text| add_words(words, text) }
-      end
-
-      def add_words(words, text)
-        extract_words(text).each { |word| words << word }
       end
     end
   end

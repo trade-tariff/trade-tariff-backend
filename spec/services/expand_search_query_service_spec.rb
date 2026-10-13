@@ -168,7 +168,8 @@ RSpec.describe ExpandSearchQueryService do
         { 'added_terms' => ['portable computers', 'notebook computers'], 'reason' => 'The term is colloquial.' }
       end
 
-      it 'appends each term after the unchanged original query' do
+      it 'preserves the individual proposals' do
+        expect(result.added_terms).to eq(['portable computers', 'notebook computers'])
         expect(result.expanded_query).to eq('laptop portable computers notebook computers')
       end
 
@@ -282,8 +283,9 @@ RSpec.describe ExpandSearchQueryService do
         }
       end
 
-      it 'keeps the original query and appends at most five comma-separated phrases' do
-        expect(result.expanded_query).to eq('laptop portable computers notebooks netbooks tablets smartphones')
+      it 'keeps the opaque proposal intact' do
+        expect(result.added_terms).to eq([ai_response.fetch('expanded_query')])
+        expect(result.expanded_query).to eq("laptop #{ai_response.fetch('expanded_query')}")
       end
     end
 
@@ -475,12 +477,13 @@ RSpec.describe ExpandSearchQueryService do
 
       expect(second_result.expanded_query).to eq(first_result.expanded_query)
       expect(second_result.reason).to eq(first_result.reason)
+      expect(second_result.added_terms).to eq(first_result.added_terms)
     end
 
     it 'replaces malformed cached data', :aggregate_failures do
       described_class.call(query)
       allow(memory_store).to receive(:read).and_wrap_original do |original, key, **options|
-        original.call(key, **options).merge(expanded_query: 123)
+        original.call(key, **options).merge(added_terms: 123)
       end
 
       expect(described_class.call(query).expanded_query).to eq('laptop Portable automatic data-processing machines')
@@ -495,7 +498,7 @@ RSpec.describe ExpandSearchQueryService do
       expect(described_class.call(query).expanded_query).to eq('laptop Portable automatic data-processing machines')
     end
 
-    it 'caches the rebuilt expanded query' do
+    it 'caches phrases without flattening them' do
       allow(memory_store).to receive(:write).and_wrap_original do |original, key, value, **options|
         original.call(key, value, **options)
         value
@@ -504,7 +507,7 @@ RSpec.describe ExpandSearchQueryService do
       described_class.call(query)
 
       expect(memory_store).to have_received(:write)
-        .with(anything, hash_including(expanded_query: 'laptop Portable automatic data-processing machines'), anything)
+        .with(a_string_starting_with('expand_search_query/v2/'), hash_including(added_terms: ['Portable automatic data-processing machines']), anything)
     end
 
     it 'rebuilds a cached rewrite that replaced the original query' do
@@ -523,6 +526,15 @@ RSpec.describe ExpandSearchQueryService do
       allow(OpenaiClient).to receive(:call).and_return({ 'added_terms' => %w[ignored], 'reason' => 'fresh' })
 
       expect(described_class.call(query).expanded_query).to eq('laptop Portable automatic data-processing machines')
+      expect(OpenaiClient).to have_received(:call).once
+    end
+
+    it 'preserves multiple cached phrases' do
+      allow(OpenaiClient).to receive(:call).and_return('added_terms' => ['poultry meat', 'zaptoxidinyl serum'])
+      described_class.call('chicken')
+      cached = described_class.call('chicken')
+
+      expect(cached.added_terms).to eq(['poultry meat', 'zaptoxidinyl serum'])
       expect(OpenaiClient).to have_received(:call).once
     end
 
