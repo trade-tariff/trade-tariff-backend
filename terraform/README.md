@@ -6,20 +6,20 @@ Terraform to deploy the service into AWS.
 ## Requirements
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.12.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 5 |
 
 ## Providers
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | 5.100.0 |
 
 ## Modules
 
 | Name | Source | Version |
-| ---- | ------ | ------- |
+|------|--------|---------|
 | <a name="module_ai_costs_dashboard"></a> [ai\_costs\_dashboard](#module\_ai\_costs\_dashboard) | ./modules/ai_costs_dashboard | n/a |
 | <a name="module_backend-job"></a> [backend-job](#module\_backend-job) | git::https://github.com/trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.6.0 |
 | <a name="module_backend_uk"></a> [backend\_uk](#module\_backend\_uk) | git::https://github.com/trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.6.0 |
@@ -39,7 +39,7 @@ Terraform to deploy the service into AWS.
 ## Resources
 
 | Name | Type |
-| ---- | ---- |
+|------|------|
 | [aws_cloudwatch_event_rule.database_backup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule) | resource |
 | [aws_cloudwatch_event_rule.database_backup_freshness_check](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule) | resource |
 | [aws_cloudwatch_event_target.database_backup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_target) | resource |
@@ -48,15 +48,18 @@ Terraform to deploy the service into AWS.
 | [aws_cloudwatch_metric_alarm.database_backup_freshness](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_cloudwatch_metric_alarm.search_degradation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_iam_policy.eventbridge_pass_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_policy.eventbridge_tag_task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_role.eventbridge_ecs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role_policy_attachment.eventbridge_pass_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.eventbridge_run_task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.eventbridge_tag_task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_ecs_cluster.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ecs_cluster) | data source |
 | [aws_ecs_task_definition.backend_job](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ecs_task_definition) | data source |
 | [aws_iam_policy_document.eventbridge_assume_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.eventbridge_pass_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.eventbridge_tag_task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_lb_target_group.backend_uk_https](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/lb_target_group) | data source |
 | [aws_lb_target_group.backend_xi_https](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/lb_target_group) | data source |
@@ -81,7 +84,7 @@ Terraform to deploy the service into AWS.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-| ---- | ----------- | ---- | ------- | :------: |
+|------|-------------|------|---------|:--------:|
 | <a name="input_backend_uk_scheduled_scaling_actions"></a> [backend\_uk\_scheduled\_scaling\_actions](#input\_backend\_uk\_scheduled\_scaling\_actions) | Map of scheduled scaling actions keyed by a unique name. Each value must include:<br/>  - schedule     : AWS cron expression in UTC, e.g. 'cron(0 7 ? * MON-FRI *)'<br/>  - min\_capacity : minimum desired tasks at schedule time<br/>  - max\_capacity : maximum desired tasks at schedule time | <pre>map(object({<br/>    schedule     = string<br/>    min_capacity = number<br/>    max_capacity = number<br/>  }))</pre> | `{}` | no |
 | <a name="input_backend_xi_scheduled_scaling_actions"></a> [backend\_xi\_scheduled\_scaling\_actions](#input\_backend\_xi\_scheduled\_scaling\_actions) | n/a | <pre>map(object({<br/>    schedule     = string<br/>    min_capacity = number<br/>    max_capacity = number<br/>  }))</pre> | `{}` | no |
 | <a name="input_cpu"></a> [cpu](#input\_cpu) | CPU units to use. | `number` | n/a | yes |
@@ -101,7 +104,7 @@ Terraform to deploy the service into AWS.
 ## Outputs
 
 | Name | Description |
-| ---- | ----------- |
+|------|-------------|
 | <a name="output_ai_costs_dashboard_url"></a> [ai\_costs\_dashboard\_url](#output\_ai\_costs\_dashboard\_url) | URL to the AI Costs CloudWatch dashboard |
 | <a name="output_label_generator_dashboard_url"></a> [label\_generator\_dashboard\_url](#output\_label\_generator\_dashboard\_url) | URL to the Label Generator CloudWatch dashboard |
 | <a name="output_puma_capacity_dashboard_name"></a> [puma\_capacity\_dashboard\_name](#output\_puma\_capacity\_dashboard\_name) | Dashboard for Puma web request capacity. |
