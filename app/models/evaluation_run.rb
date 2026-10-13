@@ -122,7 +122,13 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
     set_id = experiment.gold_query_set_id
     return nil if set_id.nil?
 
-    EvaluationGoldQuerySet.gold_query_counts([set_id])[set_id]
+    # gold_query_counts groups by set_id over EvaluationGoldQuery rows, so a set with zero
+    # items produces no group at all -- its key is simply absent from the returned hash,
+    # not present with a value of 0. Without the explicit default, a genuinely empty set
+    # would collapse into the same nil this method returns for "no set at all" above,
+    # even though "a set with nothing in it" and "no set" are different claims (AI-1435
+    # review).
+    EvaluationGoldQuerySet.gold_query_counts([set_id]).fetch(set_id, 0)
   end
   private_class_method :intended_result_count_for
 
