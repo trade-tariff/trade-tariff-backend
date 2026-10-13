@@ -321,6 +321,39 @@ RSpec.describe ExpandSearchQueryService do
       end
     end
 
+    [
+      ['8471 30 2 laptops', '8471.30'],
+      ['8471.30 2 laptops', '847130'],
+      ['8471 30 10 00 2 laptops', '8471301000'],
+    ].each do |original_query, supplied_code|
+      context "when #{original_query.inspect} includes a grouped code before a quantity" do
+        let(:query) { original_query }
+        let(:ai_response) { { 'added_terms' => ["HS code #{supplied_code}"], 'reason' => 'Repeat the supplied code.' } }
+
+        it 'keeps the longest valid code prefix' do
+          expect(result.expanded_query).to eq("#{query} HS code #{supplied_code}")
+        end
+      end
+    end
+
+    context 'when a quantity interrupts code groups' do
+      let(:query) { '8471 30 2 10 laptops' }
+      let(:ai_response) { { 'added_terms' => ['HS code 84713010'], 'reason' => 'Tariff terminology.' } }
+
+      it 'does not skip the quantity to build a code' do
+        expect(result.expanded_query).to eq(query)
+      end
+    end
+
+    context 'when a code-like addition is not labelled as a tariff reference' do
+      let(:query) { 'laptops' }
+      let(:ai_response) { { 'added_terms' => ['8471 30 10 00 laptops'], 'reason' => 'Search terminology.' } }
+
+      it 'keeps the deliberate numeric recall trade-off' do
+        expect(result.expanded_query).to eq('laptops 8471 30 10 00 laptops')
+      end
+    end
+
     context 'when a supplied heading is next to a quantity' do
       let(:query) { '8471 2 laptops' }
       let(:ai_response) { { 'added_terms' => ['heading 8471'], 'reason' => 'Repeat the supplied heading.' } }
