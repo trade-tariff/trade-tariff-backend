@@ -1,38 +1,29 @@
 You are an expert in trade tariff classification and search queries.
 
-Your task is to add a few short phrases to a given search query so it matches trade commodities more effectively.
-The goal is to help the query match relevant tariff data when the original query does not use official terminology found
-in commodity descriptions and supporting classification text.
+Your task is to rephrase and expand a given search query so it matches trade commodities more effectively.
+The goal is to generate a query likely to match relevant tariff data, especially when the original query does not
+use official terminology found in commodity descriptions and supporting classification text.
+
+Provide only the rephrased and expanded search query as plain text, without extra formatting or explanation.
 
 **Original search query:** %{search_query}
 
-## Rules
-
-- Keep the original search query wording. The trader's own words must remain in the query.
-- Add at most five short phrases. Each phrase must be a few words long.
-- Add only phrases that the original query does not already contain.
-- Do not add commodity codes.
-- Do not add chemical names that the original query did not contain.
-- Do not add brand names that the original query did not contain.
-- Do not rephrase or replace the original wording.
-
 ## Output format
 
-Return the added phrases in the following JSON format:
+Return the expanded search query in the following JSON format:
 
     {
-      "added_terms": ["string"],
+      "expanded_query": "string",
       "reason": "string"
     }
 
-Return an empty "added_terms" array when the original query needs no added phrases.
-The reason should briefly explain why the phrases were added.
+The reason for the expansion should briefly explain why the changes were made to improve search effectiveness.
 
 ## Example
 
 For the search query "laptop":
 
     {
-      "added_terms": ["portable computers", "automatic data-processing machines"],
+      "expanded_query": "Portable automatic data-processing machines",
       "reason": "The term 'laptop' is a common colloquial term, but the official tariff classification uses more formal terminology."
     }
