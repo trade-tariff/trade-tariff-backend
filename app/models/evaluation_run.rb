@@ -100,6 +100,7 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
       simulator_model: effective_configuration['simulator_model'],
       idempotency_key:,
       run_time_overrides:,
+      intended_result_count: intended_result_count_for(experiment),
     )
     trigger_eval_app!(run)
     run
@@ -109,6 +110,21 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
 
     resolve_reused_key!(winner, idempotency_key:, experiment:, triggered_by:, run_time_overrides:)
   end
+
+  # The experiment's gold query set's size RIGHT NOW, read once and stored on the run rather
+  # than fetched again later -- a set can be edited after a run has used it (an item deleted,
+  # or the experiment repointed at a different set entirely), and without this snapshot, a
+  # run's "did it answer everything it was meant to" check would silently drift with whatever
+  # the set looks like today instead of what it looked like when this run actually executed
+  # (AI-1435). nil, not 0, when the experiment has no gold query set at all -- 0 would read as
+  # "this run was meant to answer zero queries", a different claim than "unknown".
+  def self.intended_result_count_for(experiment)
+    set_id = experiment.gold_query_set_id
+    return nil if set_id.nil?
+
+    EvaluationGoldQuerySet.gold_query_counts([set_id])[set_id]
+  end
+  private_class_method :intended_result_count_for
 
   def self.trigger_eval_app!(run)
     EvalAppClient.start_run!(run.id)

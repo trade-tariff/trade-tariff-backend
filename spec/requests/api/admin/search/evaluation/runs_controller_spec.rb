@@ -234,6 +234,14 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
       end
     end
 
+    context 'when a run has a stored intended_result_count' do
+      before { create(:evaluation_run, evaluation_experiment: experiment, intended_result_count: 5) }
+
+      it 'includes it as a plain stored value, not a fresh gold query set lookup' do
+        expect(json_response['data'].map { |run| run['attributes']['intended_result_count'] }).to eq([5])
+      end
+    end
+
     context 'when listing runs' do
       let(:experiment) { create(:evaluation_experiment, name: 'Baseline search') }
 
