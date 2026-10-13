@@ -137,5 +137,18 @@ RSpec.describe PrewarmCommoditiesWorker do
         expect(CachedCommodityService).to have_received(:new).with(commodities.fetch(:preconfigured), Date.current)
       end
     end
+
+    context 'when running in development' do
+      before { allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('development')) }
+
+      it 'skips the CloudWatch query and still prewarms preconfigured ids' do
+        allow(ENV).to receive(:fetch).with('PREWARM_COMMODITY_IDS', '').and_return('0202301000')
+
+        worker.perform
+
+        expect(client).not_to have_received(:start_query)
+        expect(CachedCommodityService).to have_received(:new).with(commodities.fetch(:preconfigured), Date.current)
+      end
+    end
   end
 end

@@ -198,5 +198,18 @@ RSpec.describe SynchronizerCheckWorker, type: :worker do
         end
       end
     end
+
+    context 'when running in development' do
+      let(:service) { 'uk' }
+
+      before do
+        allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('development'))
+        perform
+      end
+
+      it 'skips CloudWatch, where there are no AWS credentials' do
+        expect(Aws::CloudWatch::Client).not_to have_received(:new)
+      end
+    end
   end
 end

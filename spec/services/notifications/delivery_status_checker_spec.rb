@@ -140,5 +140,15 @@ RSpec.describe Notifications::DeliveryStatusChecker do
 
       expect(Rails.logger).to have_received(:error).with(a_string_including('notify_cloudwatch_metric_failed'))
     end
+
+    it 'skips the CloudWatch metric in development, where there are no AWS credentials' do
+      allow(client).to receive(:get_email_status).and_return('permanent-failure')
+      allow(Notifications::Instrumentation).to receive(:delivery_failed)
+      allow(SlackNotifierService).to receive(:call)
+      allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('development'))
+
+      expect(checker.call).to eq('permanent-failure')
+      expect(Aws::CloudWatch::Client).not_to have_received(:new)
+    end
   end
 end

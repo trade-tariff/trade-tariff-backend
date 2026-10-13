@@ -49,6 +49,8 @@
       cron: "0 4 * * *"
       queue: within_1_day
       description: "Queues missing daily search analytics queries for yesterday"
+      # Reads CloudWatch Logs; there are no AWS credentials locally. ERB runs before Rails boots, so check RAILS_ENV.
+      enabled: <%= ENV.fetch('RAILS_ENV', 'development') != 'development' %>
     ReportWorker:
       cron: "30 10 * * *"
       enabled: false

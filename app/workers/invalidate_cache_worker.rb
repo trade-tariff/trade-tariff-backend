@@ -8,6 +8,9 @@ class InvalidateCacheWorker
   PATHS = %w[/api/*].freeze
 
   def perform(client = self.class.client)
+    # No CloudFront CDN or AWS credentials locally.
+    return if Rails.env.development?
+
     cdn = client.list_distributions.distribution_list.items.find do |d|
       d.comment == "#{TradeTariffBackend.environment.capitalize} CDN"
     end
