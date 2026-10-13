@@ -300,6 +300,40 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
         expect(json_response['data'].size).to eq(1)
       end
     end
+
+    context 'when a run was created later the same day as the to date (AI-1436)' do
+      let(:filters) { { to: Time.zone.today.iso8601 } }
+
+      before { create(:evaluation_run, evaluation_experiment: experiment, created_at: Time.zone.now.end_of_day - 1.minute) }
+
+      it { is_expected.to have_http_status :success }
+
+      it 'includes the run created later that day, instead of excluding every run from the to date' do
+        expect(json_response['data'].size).to eq(1)
+      end
+    end
+
+    context 'when from and to are both set to today (AI-1436)' do
+      let(:filters) { { from: Time.zone.today.iso8601, to: Time.zone.today.iso8601 } }
+
+      before { create(:evaluation_run, evaluation_experiment: experiment, created_at: Time.zone.now) }
+
+      it 'returns the run created today, instead of returning nothing' do
+        expect(json_response['data'].size).to eq(1)
+      end
+    end
+
+    context 'when the from date cannot be parsed (AI-1436)' do
+      let(:filters) { { from: 'not-a-date' } }
+
+      it { is_expected.to have_http_status :unprocessable_content }
+    end
+
+    context 'when the to date cannot be parsed (AI-1436)' do
+      let(:filters) { { to: 'not-a-date' } }
+
+      it { is_expected.to have_http_status :unprocessable_content }
+    end
   end
 
   describe 'GET #show' do

@@ -4,6 +4,15 @@ module Api
       module Evaluation
         class RunsController < AdminController
           RECONCILING_STATUSES = %w[completed partially_failed failed cancelled].freeze
+
+          # A from/to value that doesn't parse as a date (AI-1436) is a malformed request, the same
+          # category of problem ActionController::ParameterMissing/OverrideValidationError already
+          # render as 422 elsewhere in this app -- not a 500, which is reserved for the server's own
+          # bugs, not bad input the client sent.
+          rescue_from Date::Error do |exception|
+            serializer = TradeTariffBackend.error_serializer(request)
+            render json: serializer.serialized_errors({ error: exception.message, url: request.url }), status: :unprocessable_content
+          end
           # evaluation_runs.idempotency_key is an unbounded `text` column with a unique
           # btree index on it — Postgres btree entries are capped at roughly a third of a
           # page (~2.7KB on the default 8KB page size), so a sufficiently large header
@@ -76,8 +85,12 @@ module Api
             end
 
             if params[:to].present?
-              to = Date.parse(params[:to])
-              dataset = dataset.where { created_at <= to }
+              # created_at is a full timestamp; to is a bare Date (midnight at the start of that
+              # day). Comparing against the start of the *next* day instead of <= to (AI-1436)
+              # makes the filter include every run created any time during the to date itself,
+              # not just ones created before that date's midnight.
+              to = Date.parse(params[:to]) + 1
+              dataset = dataset.where { created_at < to }
             end
 
             dataset
