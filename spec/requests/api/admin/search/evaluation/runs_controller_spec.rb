@@ -575,5 +575,61 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
         expect(api_response).to have_http_status :no_content
       end
     end
+
+    context 'when run_ids is missing from the request' do
+      let(:make_request) { authenticated_delete bulk_destroy_api_admin_search_evaluation_runs_path(format: :json) }
+
+      it { is_expected.to have_http_status :bad_request }
+      it { expect { api_response }.not_to change(EvaluationRun, :count) }
+    end
+
+    context 'when run_ids is an empty array' do
+      def run_ids
+        []
+      end
+
+      it { is_expected.to have_http_status :bad_request }
+      it { expect { api_response }.not_to change(EvaluationRun, :count) }
+    end
+
+    context 'when run_ids contains something that is not an integer (AI-1441 review)' do
+      def run_ids
+        [run_a.id, 'not-an-id']
+      end
+
+      it 'rejects the request with 400, rather than letting a malformed id reach Postgres as a 500' do
+        expect(api_response).to have_http_status :bad_request
+      end
+
+      it 'does not delete anything from the valid part of the selection either' do
+        expect { api_response }.not_to change(EvaluationRun, :count)
+      end
+    end
+
+    # Mirrors the same technique PATCH #update's own race-condition spec already uses: stub the
+    # read to mutate the row, via a separate update, at the exact point this action reads it,
+    # proving the status check sees the current value instead of one captured earlier and
+    # reused after the fact (AI-1441 review -- Copilot and Will both independently flagged this:
+    # the original implementation checked status from a plain `.all`, taken before any
+    # transaction or lock, so a PATCH landing between that check and the later `.destroy` could
+    # flip a selected run to "running" and still have it deleted).
+    context "when another request changes a selected run's status to running right as this one reads it" do
+      def run_ids
+        [run_a.id, run_b.id]
+      end
+
+      before do
+        allow(EvaluationRun).to receive(:where).and_wrap_original do |original, *args|
+          EvaluationRun.dataset.where(id: run_a.id).update(status: 'running')
+          original.call(*args)
+        end
+      end
+
+      it { is_expected.to have_http_status :conflict }
+
+      it 'deletes neither run, because the status is re-checked on the locked, current value' do
+        expect { api_response }.not_to change(EvaluationRun, :count)
+      end
+    end
   end
 end

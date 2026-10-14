@@ -71,11 +71,31 @@ module Api
           # deleting everything except the in-progress run would leave the operator unsure
           # which of their selection actually went, and does nothing to surface that one run
           # still needs cancelling first.
+          #
+          # The status check and the deletes happen inside one transaction, against rows
+          # locked with for_update, so both see the same, current data (AI-1441 review). The
+          # earlier version read the rows with a plain `.all` outside any transaction, checked
+          # their status, and only locked them later inside `each(&:destroy)` -- a PATCH
+          # landing in the gap between that check and the delete could flip a selected run to
+          # "running" and still have it deleted along with its results. Locking the rows before
+          # checking closes that gap: any concurrent PATCH on a selected row now waits for this
+          # transaction to finish first.
           def bulk_destroy
-            selected = EvaluationRun.where(id: Array(params[:run_ids])).all
-            return render_in_use if selected.any? { |run| %w[queued running].include?(run.status) }
+            ids = parsed_run_ids!
+            in_use = false
 
-            EvaluationRun.db.transaction { selected.each(&:destroy) }
+            EvaluationRun.db.transaction do
+              selected = EvaluationRun.where(id: ids).for_update.all
+              if selected.any? { |run| %w[queued running].include?(run.status) }
+                in_use = true
+                raise Sequel::Rollback
+              end
+
+              selected.each(&:destroy)
+            end
+
+            return render_in_use if in_use
+
             head :no_content
           end
 
@@ -83,6 +103,21 @@ module Api
 
           IN_USE_DETAIL = 'One or more selected runs are queued or running. Wait for them to finish, or cancel them, ' \
                           'then try again.'.freeze
+
+          # Malformed input (a non-integer id, or no ids at all) is rejected here, before it
+          # ever reaches a query -- otherwise a bad id reaches Postgres as a raw integer-column
+          # comparison and raises an unhandled 500, and a missing/empty run_ids silently
+          # "succeeds" at deleting nothing (AI-1441 review).
+          def parsed_run_ids!
+            raw = Array(params[:run_ids])
+            raise ActionController::BadRequest, 'run_ids is required' if raw.empty?
+
+            raw.map do |id|
+              Integer(id)
+            rescue ArgumentError, TypeError
+              raise ActionController::BadRequest, "run_ids must contain only integers (got #{id.inspect})"
+            end
+          end
 
           def render_in_use
             render json: {
