@@ -29,7 +29,7 @@ module TariffSynchronizer
                      "#{filename_without_suffix}.xml"
                    end
 
-        where(filename:).take
+        take(filename:)
       end
 
       def applied

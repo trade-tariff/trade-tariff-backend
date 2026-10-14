@@ -63,12 +63,12 @@ module Api
         end
 
         def file
-          @file ||= ExchangeRateFile.where(
+          @file ||= ExchangeRateFile.take(
             type:,
             period_year: year,
             period_month: month,
             format: format.to_s,
-          ).take
+          )
         end
       end
     end

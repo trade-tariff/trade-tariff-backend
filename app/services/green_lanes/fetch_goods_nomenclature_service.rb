@@ -51,8 +51,7 @@ module GreenLanes
         GoodsNomenclature
           .actual
           .eager(EAGER_LOAD)
-          .where(goods_nomenclature_item_id: length_adjusted_digit_id)
-          .take
+          .take(goods_nomenclature_item_id: length_adjusted_digit_id)
       else
         raise Sequel::RecordNotFound
       end
