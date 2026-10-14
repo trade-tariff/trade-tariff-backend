@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 module SearchAnalytics
-  # rubocop:disable Style/NumericPredicate
   class MaterializedProjection
     SERIES = JourneyOutcomes::SERIES
     VIEW_HOURS = {
@@ -100,7 +99,7 @@ module SearchAnalytics
         }, table_alias: :journey)
         .where(Sequel[:query_result][:service] => @service, Sequel[:query_result][:reporting_date] => @cost_dates, Sequel[:journey][:reporting_date] => @dates, Sequel[:query_result][:name] => 'ai_cost_trend', Sequel[:query_result][:fingerprint] => @cost_fingerprint)
         .exclude(key => nil)
-        .where { Sequel[:journey][hours] > 0 }
+        .where(sql_positive(Sequel[:journey][hours]))
         .select(Sequel.function(:encode, Sequel[:journey][:journey_key], 'hex').as(:key))
         .distinct
         .from_self(alias: :matched)
@@ -116,9 +115,9 @@ module SearchAnalytics
       chosen = RepeatedJourney.where(service: @service, reporting_date: @dates)
       states = db[:chosen].select(
         :journey_key,
-        (Sequel.function(:bit_or, :all_hours) > 0).as(:all_seen),
-        (Sequel.function(:bit_or, :classic_hours) > 0).as(:classic_seen),
-        (Sequel.function(:bit_or, :internal_hours) > 0).as(:internal_seen),
+        sql_positive(Sequel.function(:bit_or, :all_hours)).as(:all_seen),
+        sql_positive(Sequel.function(:bit_or, :classic_hours)).as(:classic_seen),
+        sql_positive(Sequel.function(:bit_or, :internal_hours)).as(:internal_seen),
         Sequel.function(:search_analytics_mv_latest_state, :terminal).as(:terminal),
         Sequel.function(:bit_or, :flags).as(:flags),
       ).group(:journey_key)
@@ -190,7 +189,7 @@ module SearchAnalytics
     end
 
     def hour_present
-      return Sequel[:origin][:hours] > 0 unless @period.single_day?
+      return sql_positive(Sequel[:origin][:hours]) unless @period.single_day?
 
       Sequel.lit('(origin.hours & (CAST(1 AS bigint) << hour_of_day)) > 0')
     end
@@ -201,8 +200,8 @@ module SearchAnalytics
         [
           [bits =~ 1, 'completed'],
           [bits =~ 2, 'failed'],
-          [Sequel.|({ Sequel[:terminal] !~ nil => true }, (Sequel[:flags].sql_number & 8) > 0), 'unknown'],
-          [(Sequel[:flags].sql_number & 4) > 0, 'nonterminal'],
+          [Sequel.|({ Sequel[:terminal] !~ nil => true }, sql_positive(Sequel[:flags].sql_number & 8)), 'unknown'],
+          [sql_positive(Sequel[:flags].sql_number & 4), 'nonterminal'],
         ],
         'unknown',
       )
@@ -214,8 +213,8 @@ module SearchAnalytics
         Sequel.function(:count).*.as(:journeys),
         *SERIES.map do |name|
           predicate = case name
-                      when 'selected' then (flags.sql_number & 1) > 0
-                      when 'zero_result' then (flags.sql_number & 2) > 0
+                      when 'selected' then sql_positive(flags.sql_number & 1)
+                      when 'zero_result' then sql_positive(flags.sql_number & 2)
                       else status =~ name
                       end
           Sequel.function(:count).*.filter(predicate).as(name)
@@ -246,6 +245,10 @@ module SearchAnalytics
     def collate_c(column)
       Sequel.lit('? COLLATE "C"', column)
     end
+
+    # Sequel expressions do not implement Numeric#positive?.
+    def sql_positive(expression, minimum = 0)
+      expression > minimum
+    end
   end
-  # rubocop:enable Style/NumericPredicate
 end
