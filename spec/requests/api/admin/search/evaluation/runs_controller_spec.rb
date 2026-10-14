@@ -606,29 +606,65 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
       end
     end
 
-    # Mirrors the same technique PATCH #update's own race-condition spec already uses: stub the
-    # read to mutate the row, via a separate update, at the exact point this action reads it,
-    # proving the status check sees the current value instead of one captured earlier and
-    # reused after the fact (AI-1441 review -- Copilot and Will both independently flagged this:
-    # the original implementation checked status from a plain `.all`, taken before any
-    # transaction or lock, so a PATCH landing between that check and the later `.destroy` could
-    # flip a selected run to "running" and still have it deleted).
-    context "when another request changes a selected run's status to running right as this one reads it" do
+    # A single-process spec can mutate a row before a query runs, but it cannot make a second,
+    # genuinely concurrent transaction race this one on the same connection -- FOR UPDATE's
+    # whole purpose is to block a *different* transaction, which a single-threaded stub can't
+    # exercise. What a spec here can honestly prove is that the mechanism is actually wired up:
+    # that the SELECT this action runs is a locking one, not a plain read (AI-1441 review --
+    # Copilot correctly flagged an earlier version of this spec that stubbed the mutation before
+    # the very first read in *either* the old or new implementation, so it passed against both
+    # and proved nothing about the fix specifically).
+    context 'with the row-locking mechanism' do
       def run_ids
         [run_a.id, run_b.id]
       end
 
-      before do
-        allow(EvaluationRun).to receive(:where).and_wrap_original do |original, *args|
-          EvaluationRun.dataset.where(id: run_a.id).update(status: 'running')
-          original.call(*args)
+      it 'selects the rows with FOR UPDATE, so a concurrent PATCH on one of them has to wait for this transaction to finish' do
+        # Sequel datasets are frozen, so stubbing a method on one directly (e.g. via
+        # allow(dataset).to receive(:for_update)) silently never fires. Reading the real SQL
+        # Sequel sends to Postgres, through its own query logger, sidesteps that entirely.
+        log = StringIO.new
+        EvaluationRun.db.loggers << Logger.new(log)
+
+        begin
+          api_response
+        ensure
+          EvaluationRun.db.loggers.pop
         end
+
+        expect(log.string).to match(/FOR UPDATE/i)
+      end
+    end
+
+    context 'when run_ids is not an array at all' do
+      let(:make_request) { authenticated_delete bulk_destroy_api_admin_search_evaluation_runs_path(format: :json), params: { run_ids: run_a.id } }
+
+      it 'rejects it rather than silently treating the single value as a one-id selection' do
+        expect(api_response).to have_http_status :bad_request
       end
 
-      it { is_expected.to have_http_status :conflict }
-
-      it 'deletes neither run, because the status is re-checked on the locked, current value' do
+      it 'does not delete the run that the bare id happened to name' do
         expect { api_response }.not_to change(EvaluationRun, :count)
+      end
+    end
+
+    context 'when run_ids contains a float (AI-1441 review)' do
+      let(:make_request) { authenticated_delete bulk_destroy_api_admin_search_evaluation_runs_path(format: :json), params: { run_ids: [run_a.id, 1.9] } }
+
+      it 'rejects it, rather than truncating 1.9 into a real id via Integer() coercion' do
+        expect(api_response).to have_http_status :bad_request
+      end
+
+      it 'does not delete anything from the valid part of the selection either' do
+        expect { api_response }.not_to change(EvaluationRun, :count)
+      end
+    end
+
+    context "when run_ids contains an id too large for Postgres's integer column (AI-1441 review)" do
+      let(:make_request) { authenticated_delete bulk_destroy_api_admin_search_evaluation_runs_path(format: :json), params: { run_ids: [run_a.id, 2_147_483_648] } }
+
+      it 'rejects it with 400, rather than letting it overflow into a 500' do
+        expect(api_response).to have_http_status :bad_request
       end
     end
   end

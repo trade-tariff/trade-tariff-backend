@@ -104,19 +104,44 @@ module Api
           IN_USE_DETAIL = 'One or more selected runs are queued or running. Wait for them to finish, or cancel them, ' \
                           'then try again.'.freeze
 
-          # Malformed input (a non-integer id, or no ids at all) is rejected here, before it
-          # ever reaches a query -- otherwise a bad id reaches Postgres as a raw integer-column
-          # comparison and raises an unhandled 500, and a missing/empty run_ids silently
-          # "succeeds" at deleting nothing (AI-1441 review).
-          def parsed_run_ids!
-            raw = Array(params[:run_ids])
-            raise ActionController::BadRequest, 'run_ids is required' if raw.empty?
+          # Postgres's `integer` column is 4 bytes, signed (AI-1441 review). A value outside this
+          # range never matches a real row -- confirmed directly against Postgres, a query like
+          # `WHERE id = 99999999999999999999` just returns zero rows, not an error, so this isn't
+          # guarding against a 500 the way an invalid-looking string id is. It's rejected anyway,
+          # with a clear 400, because an id that can never exist at all is a different kind of
+          # invalid input than one that simply doesn't match anything right now, and the caller
+          # is better served knowing that than seeing it silently treated as a no-op.
+          MIN_RUN_ID = -2_147_483_648
+          MAX_RUN_ID = 2_147_483_647
 
-            raw.map do |id|
-              Integer(id)
-            rescue ArgumentError, TypeError
+          # Malformed input is rejected here, before it ever reaches a query:
+          # - run_ids missing, or not a genuine array (e.g. a bare scalar) -- Array(params[...])
+          #   would otherwise silently wrap a single stray value into a one-id selection.
+          # - an element that isn't a whole number -- Integer(1.9) does not raise, it truncates
+          #   to 1, so a float id would otherwise silently delete a different, real run.
+          # - an element that doesn't look like an id at all -- reaches Postgres as a raw
+          #   integer-column comparison and raises an unhandled 500 otherwise.
+          # - an element outside Postgres's integer range -- see MIN_RUN_ID/MAX_RUN_ID above.
+          def parsed_run_ids!
+            raw = params[:run_ids]
+            raise ActionController::BadRequest, 'run_ids must be a non-empty array' unless raw.is_a?(Array) && raw.any?
+
+            raw.map { |id| valid_run_id!(id) }
+          end
+
+          RUN_ID_PATTERN = /\A-?\d+\z/
+
+          def valid_run_id!(id)
+            unless id.is_a?(Integer) || (id.is_a?(String) && RUN_ID_PATTERN.match?(id))
               raise ActionController::BadRequest, "run_ids must contain only integers (got #{id.inspect})"
             end
+
+            integer = Integer(id)
+            unless (MIN_RUN_ID..MAX_RUN_ID).cover?(integer)
+              raise ActionController::BadRequest, "run_ids must be within the valid range (got #{id.inspect})"
+            end
+
+            integer
           end
 
           def render_in_use
