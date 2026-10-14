@@ -242,6 +242,22 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
       end
     end
 
+    context 'when a run has a generated label' do
+      before { create(:evaluation_run, evaluation_experiment: experiment, label: 'vector based retrieval') }
+
+      it 'includes it (AI-1437)' do
+        expect(json_response['data'].map { |run| run['attributes']['label'] }).to eq(['vector based retrieval'])
+      end
+    end
+
+    context "when a run's label hasn't been generated yet" do
+      before { create(:evaluation_run, evaluation_experiment: experiment) }
+
+      it 'includes it as nil, not an error or a missing key' do
+        expect(json_response['data'].first['attributes']).to include('label' => nil)
+      end
+    end
+
     context 'when listing runs' do
       let(:experiment) { create(:evaluation_experiment, name: 'Baseline search') }
 

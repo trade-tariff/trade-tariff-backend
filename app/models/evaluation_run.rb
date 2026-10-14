@@ -103,6 +103,7 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
       intended_result_count: intended_result_count_for(experiment),
     )
     trigger_eval_app!(run)
+    GenerateRunLabelWorker.perform_async(run.id)
     run
   rescue Sequel::UniqueConstraintViolation
     winner = find_by_idempotency_key(idempotency_key)
