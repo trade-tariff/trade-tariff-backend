@@ -20,12 +20,17 @@ parameter rules as the existing internal search endpoint:
 - `request_id` (the search journey's correlation ID, not the queued payload ID)
 - `expanded_query`
 - `skip_question`
+- `retrieval_method`: `hybrid`, `opensearch` or `vector`
+- `resource_id`: the goods nomenclature SID returned by internal autocomplete
+- `include`: `heading,chapter` for ancestor context
 - `answers`, containing `question`, `answer` and `options`
+- `query_expansion`, containing `ai_terms`
 
-As in synchronous search, `options` can be a JSON-encoded array string. This
-endpoint does not expand the existing parameter contract or accept configuration
-overrides. Query sanitisation and search validation happen in the worker through
-the existing search service.
+As in synchronous search, `options` can be a JSON-encoded array string. The
+optional retrieval, selection and ancestor fields follow the same rules as
+[synchronous internal search](search-and-indexing.md#classic-interface-with-internal-retrieval).
+This endpoint does not accept configuration overrides. Query sanitisation and
+search validation happen in the worker through the existing search service.
 
 Example body:
 

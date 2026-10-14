@@ -29,6 +29,30 @@ RSpec.describe 'Queued internal searches', :internal do
       expect(QueuedSearch.new(id).payload.fetch('params')).to eq(inputs.deep_stringify_keys)
     end
 
+    it 'passes the same retrieval, selection and ancestor options through both search paths', :aggregate_failures do
+      options = { retrieval_method: 'hybrid', resource_id: '12345', include: 'heading,chapter' }
+      submitted = inputs.merge(options, configuration_overrides: { candidate_limit: 999 })
+      result = { data: [], meta: { search_failures: [] } }
+      service = instance_double(Api::Internal::SearchService, call: result)
+      allow(Api::Internal::SearchService).to receive(:new).and_return(service)
+
+      post '/uk/internal/search', params: submitted, as: :json
+      expect(response).to have_http_status(:ok)
+      synchronous_result = response.parsed_body
+
+      post path, params: submitted, as: :json
+      expect(response).to have_http_status(:accepted)
+      id = response.parsed_body.fetch('id')
+      expect(QueuedSearch.new(id).payload.fetch('params')).to eq(inputs.merge(options).deep_stringify_keys)
+
+      QueuedSearchWorker.new.perform(id)
+      get "#{path}/#{id}"
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body.fetch('result')).to eq(synchronous_result)
+      expect(Api::Internal::SearchService).to have_received(:new).with(hash_including(options.stringify_keys)).twice
+    end
+
     it 'preserves an explicitly empty expansion list' do
       post path, params: inputs.merge(query_expansion: { ai_terms: [] }), as: :json
 
