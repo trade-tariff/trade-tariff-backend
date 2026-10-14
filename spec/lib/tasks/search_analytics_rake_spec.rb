@@ -65,6 +65,32 @@ RSpec.describe 'search analytics rake tasks' do
     end
   end
 
+  describe 'search_analytics:render_dashboard_queries' do
+    subject(:task) { Rake::Task['search_analytics:render_dashboard_queries'] }
+
+    before { task.reenable }
+
+    it 'runs without booting the Rails environment' do
+      expect(task.prerequisites).not_to include('environment')
+    end
+
+    it 'writes formatted catalog JSON' do
+      catalog = { 'search_dashboard/volume' => 'fields @timestamp' }
+      allow(ENV).to receive(:fetch).and_call_original
+      allow(ENV).to receive(:fetch).with('CLOUDWATCH_QUERY_VALIDATION_LOG_GROUP').and_return('validation-logs')
+      allow(SearchAnalytics::DashboardQueryCatalog).to receive(:call).and_return(catalog)
+
+      Tempfile.create(['dashboard-queries', '.json']) do |file|
+        allow(ENV).to receive(:fetch).with('CLOUDWATCH_DASHBOARD_QUERIES_FILE').and_return(file.path)
+
+        task.invoke
+
+        expect(SearchAnalytics::DashboardQueryCatalog).to have_received(:call).with(log_group_name: 'validation-logs')
+        expect(File.read(file.path)).to eq(JSON.pretty_generate(catalog))
+      end
+    end
+  end
+
   describe 'search_analytics:validate_cloudwatch_queries' do
     subject(:task) { Rake::Task['search_analytics:validate_cloudwatch_queries'] }
 
