@@ -79,10 +79,6 @@ Rails/FindBy:
 Rails/SaveBang:
   Enabled: false
 
-Style/OptionalBooleanParameter:
-  Exclude:
-    - "app/workers/**/*.rb" # Sidekiq doesn't support kwargs syntax for jobs
-
 Style/StringLiterals:
   EnforcedStyle: single_quotes
 
