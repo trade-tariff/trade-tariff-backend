@@ -37,5 +37,20 @@ RSpec.describe Sequel::Model do
         expect { taken }.to raise_error(Sequel::RecordNotFound)
       end
     end
+
+    context 'with a matching block condition' do
+      subject(:taken) do
+        target_sid = commodity.goods_nomenclature_sid
+        Commodity.take { goods_nomenclature_sid =~ target_sid }
+      end
+
+      let(:commodity) { create(:commodity) }
+
+      before { create(:commodity) }
+
+      it 'returns the matching record' do
+        expect(taken).to eq(commodity)
+      end
+    end
   end
 end
