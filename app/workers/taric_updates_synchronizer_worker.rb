@@ -3,7 +3,9 @@ class TaricUpdatesSynchronizerWorker
 
   sidekiq_options queue: :sync, retry: false
 
-  def perform(reapply_data_migrations = false, download_retry_count = 0)
+  DEFAULT_REAPPLY_DATA_MIGRATIONS = false
+
+  def perform(reapply_data_migrations = DEFAULT_REAPPLY_DATA_MIGRATIONS, download_retry_count = 0)
     return unless TradeTariffBackend.xi?
 
     Thread.current[:tariff_sync_run_id] = SecureRandom.uuid
