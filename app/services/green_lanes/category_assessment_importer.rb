@@ -8,7 +8,9 @@ module GreenLanes
         assessments = GreenLanes::CategoryAssessment.all.index_by { |assessment| category_assessment_key(assessment) }
 
         GreenLanes::CategoryAssessment.db.transaction do
-          GreenLanes::CategoryAssessmentJson.all.each do |json_ca|
+          json_category_assessments = GreenLanes::CategoryAssessmentJson.all
+
+          json_category_assessments.each do |json_ca|
             import_category_assessment(json_ca, themes, assessments, missing_theme_handler)
           end
         end

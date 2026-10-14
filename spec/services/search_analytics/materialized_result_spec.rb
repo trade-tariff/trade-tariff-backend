@@ -247,7 +247,9 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
     end
 
     it 'sums daily term counts across search types the same way as the existing reader' do
-      SearchAnalyticsQueryResult.where(name: 'search_term_improvements').each do |row|
+      term_improvement_results = SearchAnalyticsQueryResult.where(name: 'search_term_improvements')
+
+      term_improvement_results.each do |row|
         rows = [
           { 'query' => 'shared-term', 'search_type' => 'classic', 'zero_results' => '10' },
           { 'query' => 'shared-term', 'search_type' => 'interactive', 'zero_results' => '3' },

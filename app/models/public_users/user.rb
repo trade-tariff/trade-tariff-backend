@@ -101,7 +101,8 @@ module PublicUsers
     end
 
     def invalidate!
-      subscriptions_dataset.where(active: true).each(&:invalidate)
+      active_subscriptions = subscriptions_dataset.where(active: true)
+      active_subscriptions.each(&:invalidate)
       soft_delete!
     end
 

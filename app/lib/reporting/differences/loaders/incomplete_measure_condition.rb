@@ -22,7 +22,7 @@ module Reporting
 
         def each_incomplete_measure(&block)
           TimeMachine.now do
-            Measure
+            incomplete_measures = Measure
               .actual
               .dedupe_similar
               .with_regulation_dates_query
@@ -46,7 +46,8 @@ module Reporting
                 ),
               )
               .all
-              .each(&block)
+
+            incomplete_measures.each(&block)
           end
         end
 

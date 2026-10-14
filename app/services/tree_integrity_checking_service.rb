@@ -7,7 +7,9 @@ class TreeIntegrityCheckingService
   end
 
   def check!
-    Chapter.actual.exclude(chapter_short_code: EXCLUDED_CHAPTER).all.each do |chapter|
+    chapters = Chapter.actual.exclude(chapter_short_code: EXCLUDED_CHAPTER).all
+
+    chapters.each do |chapter|
       check_for_tree_break!(chapter)
     end
 

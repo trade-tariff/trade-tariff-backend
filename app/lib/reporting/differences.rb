@@ -265,19 +265,20 @@ module Reporting
 
     def each_chapter(eager:, as_of: Time.zone.today.iso8601)
       TimeMachine.at(as_of) do
-        Chapter
+        chapters = Chapter
           .actual
           .non_hidden
           .non_classifieds
           .all
-          .each do |chapter|
-            eager_chapter = Chapter.actual
-              .where(goods_nomenclature_sid: chapter.goods_nomenclature_sid)
-              .eager(eager)
-              .take
 
-            yield eager_chapter
-          end
+        chapters.each do |chapter|
+          eager_chapter = Chapter.actual
+            .where(goods_nomenclature_sid: chapter.goods_nomenclature_sid)
+            .eager(eager)
+            .take
+
+          yield eager_chapter
+        end
       end
     end
 
