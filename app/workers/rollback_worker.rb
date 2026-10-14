@@ -3,7 +3,9 @@ class RollbackWorker
 
   sidekiq_options queue: :sync, retry: false
 
-  def perform(date, redownload = false)
+  DEFAULT_REDOWNLOAD = false
+
+  def perform(date, redownload = DEFAULT_REDOWNLOAD)
     Thread.current[:tariff_sync_run_id] = SecureRandom.uuid
     start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 

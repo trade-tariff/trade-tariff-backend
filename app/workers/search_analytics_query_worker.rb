@@ -7,6 +7,7 @@ class SearchAnalyticsQueryWorker
 
   MAX_CONCURRENT = 3
   LOCK_NAMESPACE = 1_287_000
+  DEFAULT_FORCE = false
 
   def self.enqueue_backfill(region:, days: 30, log_group_name: SearchAnalytics::DailyQuery::SEARCH_LOG_GROUP_NAME, force: false, now: Time.current)
     unless days.is_a?(Integer) && days.between?(1, SearchAnalytics::DateRange::MAX_DAYS)
@@ -61,7 +62,7 @@ class SearchAnalyticsQueryWorker
     SearchAnalytics::OutcomeRatesViews.refresh!(wait: true, only_if_populated: true)
   end
 
-  def perform(date = nil, name = nil, region = nil, log_group_name = SearchAnalytics::DailyQuery::SEARCH_LOG_GROUP_NAME, force = false, service = TradeTariffBackend.service)
+  def perform(date = nil, name = nil, region = nil, log_group_name = SearchAnalytics::DailyQuery::SEARCH_LOG_GROUP_NAME, force = DEFAULT_FORCE, service = TradeTariffBackend.service)
     # Jobs queued by the previous version put service before date.
     if %w[uk xi].include?(date)
       date, name, region, log_group_name, force, service = name, region, log_group_name, force, service == true, date

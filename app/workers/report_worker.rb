@@ -15,7 +15,9 @@ class ReportWorker
     Reporting::TariffUpdates,
   ].freeze
 
-  def perform(trigger_differences_report = true)
+  DEFAULT_TRIGGER_DIFFERENCES_REPORT = true
+
+  def perform(trigger_differences_report = DEFAULT_TRIGGER_DIFFERENCES_REPORT)
     return if Rails.env.development?
 
     failures = []
