@@ -663,7 +663,7 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
     context "when run_ids contains an id too large for Postgres's integer column (AI-1441 review)" do
       let(:make_request) { authenticated_delete bulk_destroy_api_admin_search_evaluation_runs_path(format: :json), params: { run_ids: [run_a.id, 2_147_483_648] } }
 
-      it 'rejects it with 400, rather than letting it overflow into a 500' do
+      it 'rejects it with 400 because it cannot be a valid run id' do
         expect(api_response).to have_http_status :bad_request
       end
     end
