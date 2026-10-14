@@ -3,7 +3,7 @@
 Sequel.migration do
   change do
     # A refreshed result replaces the same service/day/query slot.
-    create_table :search_analytics_query_results do # rubocop:disable Rails/CreateTableWithTimestamps
+    create_table :search_analytics_query_results do
       primary_key :id
       String :service, null: false
       Date :reporting_date, null: false
