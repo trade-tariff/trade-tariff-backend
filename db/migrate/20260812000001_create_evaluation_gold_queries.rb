@@ -1,6 +1,5 @@
 Sequel.migration do
   change do
-    # rubocop:disable Rails/CreateTableWithTimestamps
     create_table(:evaluation_gold_queries) do
       primary_key :id
       column :source_type, String, null: false
@@ -17,6 +16,5 @@ Sequel.migration do
       index :expected_code
       index %i[source_type source_id persona], unique: true, name: :evaluation_gold_queries_source_persona_uidx
     end
-    # rubocop:enable Rails/CreateTableWithTimestamps
   end
 end

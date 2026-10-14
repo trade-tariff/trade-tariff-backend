@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-Sequel.migration do # rubocop:disable Metrics/BlockLength
+Sequel.migration do
   up do
     %w[
       search_analytics_mv_latest_state
@@ -29,4 +29,4 @@ Sequel.migration do # rubocop:disable Metrics/BlockLength
       DROP FUNCTION IF EXISTS search_analytics_mv_latest_state(bigint, bigint);
     SQL
   end
-end # rubocop:enable Metrics/BlockLength
+end
