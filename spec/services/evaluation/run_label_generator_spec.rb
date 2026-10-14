@@ -1,15 +1,13 @@
 require 'rails_helper'
 
 RSpec.describe Evaluation::RunLabelGenerator do
-  subject(:result) { described_class.call(run, ai_client:) }
+  subject(:result) { described_class.call(run, overrides, ai_client:) }
 
   let(:ai_client) { instance_double(OpenaiClient) }
-  let(:experiment) { create(:evaluation_experiment, configuration_overrides: experiment_overrides) }
-  let(:experiment_overrides) { {} }
-  let(:run) { create(:evaluation_run, evaluation_experiment: experiment, run_time_overrides:) }
-  let(:run_time_overrides) { {} }
+  let(:run) { create(:evaluation_run) }
+  let(:overrides) { {} }
 
-  context 'when the run has no overrides at all, at either the experiment or run level' do
+  context 'when there are no overrides at all' do
     before { allow(ai_client).to receive(:call) }
 
     it 'stores "default settings" without calling the AI client' do
@@ -20,8 +18,8 @@ RSpec.describe Evaluation::RunLabelGenerator do
     end
   end
 
-  context 'when the run has run-level overrides' do
-    let(:run_time_overrides) { { 'retrieval_method' => 'vector' } }
+  context 'when there are overrides' do
+    let(:overrides) { { 'retrieval_method' => 'vector' } }
 
     before { allow(ai_client).to receive(:call).and_return({ 'label' => 'vector based retrieval' }) }
 
@@ -45,40 +43,24 @@ RSpec.describe Evaluation::RunLabelGenerator do
     end
   end
 
-  context 'when the run has only experiment-level overrides' do
-    let(:experiment_overrides) { { 'max_rounds' => 2 } }
-
-    before { allow(ai_client).to receive(:call).and_return({ 'label' => 'short question limit' }) }
-
-    it 'includes the experiment override in the prompt' do
-      result
-
-      expect(ai_client).to have_received(:call).once.with(
-        array_including(hash_including(role: 'user', content: a_string_including('max_rounds: 2'))),
-        anything,
-      )
-    end
-  end
-
-  context 'when the same key is overridden at both experiment and run level' do
-    let(:experiment_overrides) { { 'candidate_limit' => 20 } }
-    let(:run_time_overrides) { { 'candidate_limit' => 80 } }
+  context 'with more than one overridden key' do
+    let(:overrides) { { 'candidate_limit' => 80, 'max_rounds' => 2 } }
 
     before { allow(ai_client).to receive(:call).and_return({ 'label' => 'wide candidate pool' }) }
 
-    it "sends only the run's own winning value, not both layers" do
+    it 'includes every overridden key in the prompt, exactly as given -- it never merges or re-derives anything itself' do
       result
 
       expect(ai_client).to have_received(:call) do |messages, **|
         user_message = messages.last[:content]
         expect(user_message).to include('candidate_limit: 80')
-        expect(user_message).not_to include('candidate_limit: 20')
+        expect(user_message).to include('max_rounds: 2')
       end
     end
   end
 
   context 'when the model returns an acceptable label on the first attempt' do
-    let(:run_time_overrides) { { 'retrieval_method' => 'hybrid' } }
+    let(:overrides) { { 'retrieval_method' => 'hybrid' } }
 
     before { allow(ai_client).to receive(:call).and_return({ 'label' => 'hybrid search strategy' }) }
 
@@ -90,7 +72,7 @@ RSpec.describe Evaluation::RunLabelGenerator do
   end
 
   context 'when the first attempt fails validation and the second succeeds' do
-    let(:run_time_overrides) { { 'retrieval_method' => 'vector' } }
+    let(:overrides) { { 'retrieval_method' => 'vector' } }
 
     before do
       allow(ai_client).to receive(:call).and_return(
@@ -106,7 +88,7 @@ RSpec.describe Evaluation::RunLabelGenerator do
   end
 
   context 'when every attempt fails validation' do
-    let(:run_time_overrides) { { 'retrieval_method' => 'vector' } }
+    let(:overrides) { { 'retrieval_method' => 'vector' } }
 
     before { allow(ai_client).to receive(:call).and_return({ 'label' => 'two words' }) }
 
@@ -118,7 +100,7 @@ RSpec.describe Evaluation::RunLabelGenerator do
   end
 
   context 'when the AI client raises a retryable error on every attempt' do
-    let(:run_time_overrides) { { 'retrieval_method' => 'vector' } }
+    let(:overrides) { { 'retrieval_method' => 'vector' } }
 
     before do
       allow(ai_client).to receive(:call).and_raise(OpenaiClient::ApiError.new(status: 500, body: 'nope'))
@@ -133,7 +115,7 @@ RSpec.describe Evaluation::RunLabelGenerator do
   end
 
   context 'when the AI client exceeds its per-attempt deadline on every attempt' do
-    let(:run_time_overrides) { { 'retrieval_method' => 'vector' } }
+    let(:overrides) { { 'retrieval_method' => 'vector' } }
 
     before do
       allow(ai_client).to receive(:call).and_raise(
@@ -150,7 +132,7 @@ RSpec.describe Evaluation::RunLabelGenerator do
   end
 
   describe 'the acceptability filter' do
-    let(:run_time_overrides) { { 'retrieval_method' => 'vector' } }
+    let(:overrides) { { 'retrieval_method' => 'vector' } }
 
     # A plain method, not a `let`, to keep this describe block's memoized-helper count under
     # RuboCop's RSpec/MultipleMemoizedHelpers limit (it counts inherited `let`s too).
@@ -185,7 +167,7 @@ RSpec.describe Evaluation::RunLabelGenerator do
   end
 
   context 'when the label value is not a String' do
-    let(:run_time_overrides) { { 'retrieval_method' => 'vector' } }
+    let(:overrides) { { 'retrieval_method' => 'vector' } }
 
     before { allow(ai_client).to receive(:call).and_return({ 'label' => %w[vector based retrieval] }) }
 

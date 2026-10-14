@@ -8,10 +8,15 @@ class GenerateRunLabelWorker
 
   sidekiq_options queue: :within_1_hour, retry: 3
 
-  def perform(run_id)
+  # overrides is the run's own launch-time configuration snapshot, resolved once by
+  # EvaluationRun.start! and passed through as a job argument rather than re-read from
+  # run.evaluation_experiment here -- that association is live, and an experiment's
+  # configuration_overrides can be edited after this job was enqueued but before Sidekiq
+  # actually runs it (AI-1437 review).
+  def perform(run_id, overrides)
     run = EvaluationRun[run_id]
     return unless run # The run was deleted while this job waited in the queue.
 
-    Evaluation::RunLabelGenerator.call(run)
+    Evaluation::RunLabelGenerator.call(run, overrides)
   end
 end

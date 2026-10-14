@@ -23,10 +23,19 @@ RSpec.describe EvaluationRun do
       expect(run.idempotency_key).to eq(key)
     end
 
-    it 'enqueues label generation for the new run, fire-and-forget (AI-1437)' do
+    it 'enqueues label generation for the new run, fire-and-forget, with its own launch-time overrides (AI-1437)' do
       run = described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: SecureRandom.uuid)
 
-      expect(GenerateRunLabelWorker.jobs.map { |job| job['args'] }).to include([run.id])
+      expect(GenerateRunLabelWorker.jobs.map { |job| job['args'] }).to include([run.id, { 'simulator_model' => 'gpt-4o-mini' }])
+    end
+
+    it "enqueues the run's own run_time_overrides winning over the experiment's, on a key set at both levels" do
+      run = described_class.start!(
+        experiment:, triggered_by: 'operator', idempotency_key: SecureRandom.uuid,
+        run_time_overrides: { 'simulator_model' => 'gpt-4o' }
+      )
+
+      expect(GenerateRunLabelWorker.jobs.map { |job| job['args'] }).to include([run.id, { 'simulator_model' => 'gpt-4o' }])
     end
 
     it 'does not enqueue label generation again when an idempotency key is reused for a genuine retry' do

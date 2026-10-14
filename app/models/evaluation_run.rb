@@ -103,7 +103,10 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
       intended_result_count: intended_result_count_for(experiment),
     )
     trigger_eval_app!(run)
-    GenerateRunLabelWorker.perform_async(run.id)
+    # Passed through as this exact launch-time snapshot, not re-read later from
+    # run.evaluation_experiment -- that association is live, and an experiment's own
+    # configuration_overrides can be edited after this run started (AI-1437 review).
+    GenerateRunLabelWorker.perform_async(run.id, overrides)
     run
   rescue Sequel::UniqueConstraintViolation
     winner = find_by_idempotency_key(idempotency_key)

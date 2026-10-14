@@ -50,16 +50,24 @@ module Evaluation
 
     def self.call(...) = new(...).call
 
-    def initialize(run, ai_client: TradeTariffBackend.ai_client)
+    # overrides must be the run's own launch-time configuration snapshot (what
+    # EvaluationRun.start! already resolves from the experiment's configuration_overrides
+    # merged with run_time_overrides, at the moment the run launches), passed in by the
+    # caller -- never re-derived here from run.evaluation_experiment. That association is
+    # live: an experiment's configuration_overrides can be edited after a run started
+    # (ExperimentsController#update), and this generator runs later, in a background job, so
+    # reading it at call time could label a run with configuration it never actually executed
+    # with (AI-1437 review).
+    def initialize(run, overrides, ai_client: TradeTariffBackend.ai_client)
       @run = run
+      @overrides = overrides
       @ai_client = ai_client
     end
 
     def call
-      overrides = distinctive_overrides
       return persist(DEFAULT_LABEL) if overrides.empty?
 
-      label = generate_label(overrides)
+      label = generate_label
       return nil unless label
 
       persist(label)
@@ -67,34 +75,21 @@ module Evaluation
 
   private
 
-    attr_reader :run, :ai_client
+    attr_reader :run, :overrides, :ai_client
 
-    # The run's own winning value for every key either layer touches -- run_time_overrides
-    # wins over the experiment's own configuration_overrides on a shared key, matching the
-    # precedence EvaluationConfiguration::Merger already applies when a run starts. Never the
-    # full effective_configuration: that includes the baseline too, which is the same ~10 keys
-    # on every run and would bury what's actually distinctive about this one under default
-    # noise the model would have to guess is unimportant.
-    def distinctive_overrides
-      EvaluationConfiguration::Merger.call(
-        run.evaluation_experiment&.configuration_overrides || {},
-        run.run_time_overrides || {},
-      )
-    end
-
-    def generate_label(overrides)
+    def generate_label
       MAX_ATTEMPTS.times do
-        label = attempt(overrides)
+        label = attempt
         return label if label
       end
       nil
     end
 
-    def attempt(overrides)
+    def attempt
       response = AiUsage::Instrumentation.api_call(
         event_kind: 'evaluation_run_label_generation',
         model: MODEL,
-      ) { ai_client.call(messages(overrides), model: MODEL, event_kind: 'evaluation_run_label_generation', timeout: ATTEMPT_TIMEOUT) }
+      ) { ai_client.call(messages, model: MODEL, event_kind: 'evaluation_run_label_generation', timeout: ATTEMPT_TIMEOUT) }
       accepted_label(response)
     rescue *OpenaiClient::RETRYABLE_ERRORS, OpenaiClient::DeadlineExceeded => e
       Rails.logger.warn("Run label generation failed for run #{run.id}: #{failure_log_context(e)}")
@@ -134,14 +129,14 @@ module Evaluation
       true
     end
 
-    def messages(overrides)
+    def messages
       [
         { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: user_message(overrides) },
+        { role: 'user', content: user_message },
       ]
     end
 
-    def user_message(overrides)
+    def user_message
       lines = overrides.map { |key, value| "#{key}: #{value}" }
       "Overridden settings:\n#{lines.join("\n")}"
     end
