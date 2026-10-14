@@ -219,8 +219,9 @@ class CwliExpression
   def parse_or
     left = parse_and
     while accept?('or')
+      # `||=` would skip parse_and when left is set and leave right-hand tokens unconsumed.
       right = parse_and
-      left = left || right # rubocop:disable Style/SelfAssignment
+      left = right if left.nil? || left == false
     end
     left
   end
@@ -231,7 +232,7 @@ private
     left = parse_not
     while accept?('and')
       right = parse_not
-      left = left && right # rubocop:disable Style/SelfAssignment
+      left = right if left
     end
     left
   end
