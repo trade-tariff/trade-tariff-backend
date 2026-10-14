@@ -13,6 +13,8 @@ RSpec.describe Api::Admin::SearchExport::WorkbooksController do
     post "#{path}.json", params: { from: '2026-09-23', to: '2026-09-24' }, headers: request_headers, as: :json
   end
 
+  def create_workbook_export(**dates) = SearchExport::WorkbookExport.create(**dates)
+
   it 'queues dates without running CloudWatch in the request' do
     travel_to(today) do
       submit
@@ -65,7 +67,7 @@ RSpec.describe Api::Admin::SearchExport::WorkbooksController do
   end
 
   it 'does not read workbook bytes during polling' do
-    export = SearchExport::WorkbookExport.create(from_date: Date.yesterday, to_date: Date.current)
+    export = create_workbook_export(from_date: Date.yesterday, to_date: Date.current)
     allow(SearchExport::WorkbookExport).to receive(:find).with(export.id).and_return(export)
     allow(export).to receive(:file)
     get "#{path}/#{export.id}.json", headers: request_headers
@@ -74,7 +76,7 @@ RSpec.describe Api::Admin::SearchExport::WorkbooksController do
   end
 
   it 'keeps a pending export available after fifteen minutes' do
-    export = SearchExport::WorkbookExport.create(from_date: Date.yesterday, to_date: Date.current)
+    export = create_workbook_export(from_date: Date.yesterday, to_date: Date.current)
     travel 16.minutes do
       get "#{path}/#{export.id}.json", headers: request_headers
       expect(response.parsed_body.dig('data', 'attributes', 'status')).to eq('queued')

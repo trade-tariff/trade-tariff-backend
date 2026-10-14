@@ -13,10 +13,7 @@ module Api
             overrides = configuration_overrides
             EvaluationConfiguration::AllowlistValidator.call(overrides)
 
-            search = QueuedSearch.create(
-              params: search_params.to_h.merge(configuration_overrides: overrides, search_type: 'evaluation'),
-              context: search_context,
-            )
+            search = create_queued_search(overrides)
             unless EvaluationQueuedSearchWorker.perform_async(search.id)
               search.delete
               return unavailable
@@ -37,6 +34,13 @@ module Api
           end
 
         private
+
+          def create_queued_search(overrides)
+            QueuedSearch.create(
+              params: search_params.to_h.merge(configuration_overrides: overrides, search_type: 'evaluation'),
+              context: search_context,
+            )
+          end
 
           def search_context
             TradeTariffRequest.attributes.slice(:request_id, :request_source, :client_id, :experiment)

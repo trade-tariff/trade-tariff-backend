@@ -292,6 +292,8 @@ RSpec.describe Api::User::UserService do
   end
 
   describe '.create' do
+    def create_user(token) = described_class.create(token)
+
     let(:external_id) { 'new-user-123' }
     let(:email) { 'new@example.com' }
     let(:token) { 'valid.jwt.token' }
@@ -304,7 +306,7 @@ RSpec.describe Api::User::UserService do
       end
 
       it 'returns the Result object' do
-        result = described_class.create(token)
+        result = create_user(token)
 
         expect(result).to eq(invalid_result)
       end
@@ -336,7 +338,7 @@ RSpec.describe Api::User::UserService do
       end
 
       it 'returns the created user with email from token payload' do
-        result = described_class.create(token)
+        result = create_user(token)
 
         expect(result).to be_a(PublicUsers::User)
         expect(result.external_id).to eq(external_id)
