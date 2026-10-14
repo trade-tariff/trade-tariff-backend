@@ -48,6 +48,27 @@ RSpec.describe EvaluationRun do
       expect(GenerateRunLabelWorker.jobs).to be_empty
     end
 
+    context 'when Redis is unavailable for the label enqueue (AI-1437 review)' do
+      before do
+        allow(GenerateRunLabelWorker).to receive(:perform_async).and_raise(RedisClient::ConnectionError, 'unavailable')
+        allow(Rails.logger).to receive(:warn)
+      end
+
+      it 'still returns the successfully created, successfully eval-app-triggered run, not an error' do
+        run = described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: SecureRandom.uuid)
+
+        expect(run.id).to be_present
+        expect(run.status).to eq('queued')
+        expect(EvalAppClient).to have_received(:start_run!)
+      end
+
+      it 'logs a warning instead of silently losing the failure' do
+        described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: SecureRandom.uuid)
+
+        expect(Rails.logger).to have_received(:warn).with(/Could not enqueue label generation/)
+      end
+    end
+
     it 'applies run-time overrides on top of the experiment overrides' do
       run = described_class.start!(
         experiment:, triggered_by: 'operator', idempotency_key: SecureRandom.uuid,

@@ -103,10 +103,7 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
       intended_result_count: intended_result_count_for(experiment),
     )
     trigger_eval_app!(run)
-    # Passed through as this exact launch-time snapshot, not re-read later from
-    # run.evaluation_experiment -- that association is live, and an experiment's own
-    # configuration_overrides can be edited after this run started (AI-1437 review).
-    GenerateRunLabelWorker.perform_async(run.id, overrides)
+    enqueue_label_generation(run, overrides)
     run
   rescue Sequel::UniqueConstraintViolation
     winner = find_by_idempotency_key(idempotency_key)
@@ -142,6 +139,23 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
     run.update(status: 'failed', error_summary: e.message)
   end
   private_class_method :trigger_eval_app!
+
+  # overrides is this exact launch-time snapshot, not re-read later from
+  # run.evaluation_experiment -- that association is live, and an experiment's own
+  # configuration_overrides can be edited after this run started (AI-1437 review).
+  #
+  # A label is best-effort and nothing may ever depend on it being present (see the label
+  # column's own migration comment) -- so a Redis blip here must never fail the request that
+  # creates and launches the run, even though the run and its eval-app trigger above already
+  # succeeded. Letting this raise would turn a successful launch into a 500, and a retry with
+  # the same idempotency_key would return the existing run without ever reaching this line
+  # again, so the label would never recover either (AI-1437 review).
+  def self.enqueue_label_generation(run, overrides)
+    GenerateRunLabelWorker.perform_async(run.id, overrides)
+  rescue RedisClient::Error => e
+    Rails.logger.warn("Could not enqueue label generation for run #{run.id}: #{e.message}")
+  end
+  private_class_method :enqueue_label_generation
 
   def self.find_by_idempotency_key(idempotency_key)
     where(idempotency_key:).first

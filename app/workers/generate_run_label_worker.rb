@@ -6,6 +6,12 @@
 class GenerateRunLabelWorker
   include Sidekiq::Worker
 
+  # retry: 3 never fires for an OpenAI failure -- RunLabelGenerator already owns and exhausts
+  # its own 3-attempt budget against OpenaiClient::RETRYABLE_ERRORS internally, returning nil
+  # rather than raising, exactly like GenerateGoldQueryItemWorker/GoldQueryGenerator's
+  # identical split does. It still matters for what's outside the generator's own rescue
+  # scope: a transient Sequel::DatabaseError from the EvaluationRun[run_id] lookup above or
+  # run.update(label:) inside the generator (AI-1437 review).
   sidekiq_options queue: :within_1_hour, retry: 3
 
   # overrides is the run's own launch-time configuration snapshot, resolved once by
