@@ -139,12 +139,12 @@ end
 
 namespace :swagger do
   desc 'Generate swagger documentation from spec metadata (no database required)'
-  task :generate do
+  Rake::Task.define_task(:generate) do
     SwaggerRakeTasks.generate
   end
 
   desc 'Check every public V2 controller has a swagger spec (intended for CI)'
-  task :check_coverage do
+  Rake::Task.define_task(:check_coverage) do
     SwaggerRakeTasks.check_coverage
   end
 end
