@@ -132,12 +132,12 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
   end
 
   describe '#mark_as_applied' do
-    subject(:mark_as_applied) { update.mark_as_applied }
+    subject(:mark_as_applied) { tariff_update.mark_as_applied }
 
-    let(:update) { create(:cds_update, :pending) }
+    let(:tariff_update) { create(:cds_update, :pending) }
 
     it 'transitions the update to applied state' do
-      expect { mark_as_applied }.to change { update.reload.state }.from('P').to('A')
+      expect { mark_as_applied }.to change { tariff_update.reload.state }.from('P').to('A')
     end
 
     it 'records the state change' do
@@ -149,7 +149,7 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
       mark_as_applied
       change_record = TariffSynchronizer::TariffUpdateStateChange.last
       expect(change_record).to have_attributes(
-        tariff_update_filename: update.filename,
+        tariff_update_filename: tariff_update.filename,
         from_state: 'P',
         to_state: 'A',
       )
@@ -157,12 +157,12 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
   end
 
   describe '#mark_as_failed' do
-    subject(:mark_as_failed) { update.mark_as_failed }
+    subject(:mark_as_failed) { tariff_update.mark_as_failed }
 
-    let(:update) { create(:cds_update, :pending) }
+    let(:tariff_update) { create(:cds_update, :pending) }
 
     it 'transitions the update to failed state' do
-      expect { mark_as_failed }.to change { update.reload.state }.from('P').to('F')
+      expect { mark_as_failed }.to change { tariff_update.reload.state }.from('P').to('F')
     end
 
     it 'records the state change' do
@@ -174,7 +174,7 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
       mark_as_failed
       change_record = TariffSynchronizer::TariffUpdateStateChange.last
       expect(change_record).to have_attributes(
-        tariff_update_filename: update.filename,
+        tariff_update_filename: tariff_update.filename,
         from_state: 'P',
         to_state: 'F',
       )
@@ -182,12 +182,12 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
   end
 
   describe '#mark_as_pending' do
-    subject(:mark_as_pending) { update.mark_as_pending }
+    subject(:mark_as_pending) { tariff_update.mark_as_pending }
 
-    let(:update) { create(:cds_update, :applied) }
+    let(:tariff_update) { create(:cds_update, :applied) }
 
     it 'transitions the update to pending state' do
-      expect { mark_as_pending }.to change { update.reload.state }.from('A').to('P')
+      expect { mark_as_pending }.to change { tariff_update.reload.state }.from('A').to('P')
     end
 
     it 'records the state change' do
@@ -199,7 +199,7 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
       mark_as_pending
       change_record = TariffSynchronizer::TariffUpdateStateChange.last
       expect(change_record).to have_attributes(
-        tariff_update_filename: update.filename,
+        tariff_update_filename: tariff_update.filename,
         from_state: 'A',
         to_state: 'P',
       )
@@ -207,7 +207,7 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
   end
 
   describe '.by_filename' do
-    subject(:update) {}
+    subject(:tariff_update) {}
 
     before do
       allow(TradeTariffBackend).to receive(:service).and_return(service)

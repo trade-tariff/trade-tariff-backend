@@ -9,7 +9,7 @@ RSpec.describe Api::Admin::GreenLanes::UpdateNotificationsController, :admin do
   end
 
   let(:json_response) { JSON.parse(api_response.body) }
-  let(:update) { create :update_notification }
+  let(:update_notification) { create :update_notification }
 
   describe 'GET to #index' do
     let(:make_request) do
@@ -17,7 +17,7 @@ RSpec.describe Api::Admin::GreenLanes::UpdateNotificationsController, :admin do
     end
 
     context 'with some update_notification' do
-      before { update }
+      before { update_notification }
 
       it { is_expected.to have_http_status :success }
       it { expect(json_response).to include('data') }
@@ -36,7 +36,7 @@ RSpec.describe Api::Admin::GreenLanes::UpdateNotificationsController, :admin do
     end
 
     context 'with existent update notification' do
-      let(:id) { update.id }
+      let(:id) { update_notification.id }
 
       it { is_expected.to have_http_status :success }
       it { expect(json_response).to include('data') }
@@ -50,7 +50,7 @@ RSpec.describe Api::Admin::GreenLanes::UpdateNotificationsController, :admin do
   end
 
   describe 'PATCH to #update' do
-    let(:id) { update.id }
+    let(:id) { update_notification.id }
 
     let(:make_request) do
       authenticated_patch api_admin_green_lanes_update_notification_path(id, format: :json)
@@ -58,14 +58,14 @@ RSpec.describe Api::Admin::GreenLanes::UpdateNotificationsController, :admin do
 
     context 'with valid params' do
       it { is_expected.to have_http_status :success }
-      it { expect { api_response }.not_to change(update.reload, :status) }
+      it { expect { api_response }.not_to change(update_notification.reload, :status) }
     end
 
     context 'with unknown update notification' do
       let(:id) { 9999 }
 
       it { is_expected.to have_http_status :not_found }
-      it { expect { api_response }.not_to change(update.reload, :status) }
+      it { expect { api_response }.not_to change(update_notification.reload, :status) }
     end
   end
 end

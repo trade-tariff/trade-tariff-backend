@@ -24,15 +24,15 @@ RSpec.describe Api::Admin::CustomsTariffUpdatesController do
   end
 
   describe 'GET #show' do
-    let!(:update) { create(:customs_tariff_update) }
+    let!(:tariff_update) { create(:customs_tariff_update) }
 
     it 'returns the update' do
-      get "/uk/admin/customs_tariff_updates/#{update.version}", headers: request_headers(format: :json)
+      get "/uk/admin/customs_tariff_updates/#{tariff_update.version}", headers: request_headers(format: :json)
 
       expect(response.status).to eq(200)
       data = JSON.parse(response.body)['data']
       expect(data['type']).to eq('customs_tariff_update')
-      expect(data.dig('attributes', 'version')).to eq(update.version)
+      expect(data.dig('attributes', 'version')).to eq(tariff_update.version)
       expect(data.dig('attributes', 'import_error')).to be_nil
     end
 

@@ -51,7 +51,7 @@ RSpec.describe Api::Admin::UpdatesController do
       end
 
       let(:make_request) do
-        get "/uk/admin/updates/#{update.to_param}.json", headers: request_headers(format: :json)
+        get "/uk/admin/updates/#{tariff_update.to_param}.json", headers: request_headers(format: :json)
       end
 
       let(:pattern) do
@@ -69,7 +69,7 @@ RSpec.describe Api::Admin::UpdatesController do
         }
       end
 
-      let(:update) { create(:cds_update) }
+      let(:tariff_update) { create(:cds_update) }
 
       it { expect(api_response.body).to match_json_expression pattern }
     end

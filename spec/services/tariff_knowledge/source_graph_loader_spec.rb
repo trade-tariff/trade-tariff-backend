@@ -1,6 +1,6 @@
 RSpec.describe TariffKnowledge::SourceGraphLoader do
   describe '.call' do
-    let(:update) { create(:customs_tariff_update, :approved, version: '1.31') }
+    let(:tariff_update) { create(:customs_tariff_update, :approved, version: '1.31') }
     let(:chapter) { create(:chapter, goods_nomenclature_item_id: '0100000000') }
     let(:heading) { create(:heading, parent: chapter, goods_nomenclature_item_id: '0101000000') }
 
@@ -16,7 +16,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       create(
         :customs_tariff_chapter_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '01',
         content: 'Heading 0101 covers live horses. Chapter 02 is excluded.',
       )
@@ -71,7 +71,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       create(
         :customs_tariff_chapter_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '72',
         content: [
           '1. In this chapter the following expressions have the meanings hereby assigned to them:',
@@ -92,7 +92,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       create(
         :customs_tariff_chapter_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '01',
         content: [
           '1. In this chapter the following expressions have the meanings hereby assigned to them:',
@@ -149,7 +149,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       create(
         :customs_tariff_chapter_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '72',
         content: [
           '1. In this chapter the following expressions have the meanings hereby assigned to them:',
@@ -193,7 +193,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       note = create(
         :customs_tariff_chapter_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '01',
         content: [
           '1. In this chapter the following expressions have the meanings hereby assigned to them:',
@@ -243,7 +243,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       create(
         :customs_tariff_chapter_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '01',
         content: 'Live animals are classified in this chapter.',
       )
@@ -272,7 +272,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       create(
         :customs_tariff_chapter_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '01',
         content: 'Live animals are classified in this chapter.',
       )
@@ -295,7 +295,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       create(
         :customs_tariff_chapter_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '01',
         content: 'Heading 0101 covers live horses.',
       )
@@ -335,7 +335,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       create(
         :customs_tariff_chapter_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '01',
         content: 'Heading 0101 covers live horses.',
       )
@@ -349,7 +349,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       create(
         :customs_tariff_chapter_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '01',
         content: '1. This chapter covers live animals. a. Pure-bred breeding animals are defined here.',
       )
@@ -371,7 +371,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       create(
         :customs_tariff_chapter_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '01',
         content: "m. abrasive paper is excluded; n. cellulose wadding is excluded. For these goods: (a). pure-bred animals; ii. other animals; ij. arms. 1. A. The following expressions have the meanings assigned to them.\n\n— the goods comply with the Cereal Seeds Regulations 1974 or\n— it is established that the goods are actually intended for sowing\n6. The duty rate applicable to mixtures falling in Chapter 10 can be found in Part Four.",
       )
@@ -400,7 +400,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       create(
         :customs_tariff_chapter_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '01',
         content: 'The headings do not apply to other preparations of headings 3207, 3208, 3209, 3210, 3212, 3213 and 3215. Subheading 8481 20 takes precedence over all other subheadings of heading 8481. Textile garments means garments of headings 6201 to 6211. Oceanic sharks are of codes 0304 88 29. The goods comply with The Seed Potatoes Regulations 1991. Temperature is measured at 20 C. Classification follows Rule 3.',
       )
@@ -430,7 +430,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       create(
         :customs_tariff_section_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         section_id: section.id,
         content: 'Section I covers live animals and animal products.',
       )
@@ -451,7 +451,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       create(
         :customs_tariff_general_rule,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         rule_label: '1',
         content: 'Classification shall be determined according to the terms of the headings.',
       )
@@ -472,7 +472,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       create(
         :customs_tariff_chapter_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '01',
         content: 'Heading 0101 covers live horses.',
       )
@@ -490,26 +490,26 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
     it 'loads chapter, section, and general rule source associations from the latest non-failed update' do
       create(
         :customs_tariff_chapter_note,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '01',
         content: 'Heading 0101 covers chapter note horses.',
       )
       create(
         :customs_tariff_section_note,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         section_id: 1,
         content: 'Heading 0101 covers section note horses.',
       )
       create(
         :customs_tariff_general_rule,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         rule_label: '1',
         content: 'Heading 0101 covers general rule horses.',
       )
       create(
         :customs_tariff_chapter_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '02',
         content: 'Heading 0201 is approved.',
       )
@@ -584,7 +584,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       create(
         :customs_tariff_chapter_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '01',
         content: 'Heading 0101 covers current horses.',
       )
@@ -620,7 +620,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       create(
         :customs_tariff_chapter_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '01',
         content: 'Heading 0101 covers current horses.',
       )
@@ -635,7 +635,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       described_class.call
 
       expect(TariffKnowledge::Node.where(node_type: TariffKnowledge::Node::NOTE_SOURCE).select_map(:source_version))
-        .to contain_exactly(update.version)
+        .to contain_exactly(tariff_update.version)
       expect(TariffKnowledge::Node.by_key('note_source:customs_tariff_chapter_note:1.31:01').first.content)
         .to eq('Heading 0101 covers current horses.')
     end
@@ -675,19 +675,19 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
     it 'loads all chapter notes from the selected update' do
       create(
         :customs_tariff_chapter_note,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '01',
         content: 'Heading 0101 covers source horses.',
       )
       create(
         :customs_tariff_chapter_note,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '02',
         content: 'Heading 0201 covers source cattle.',
       )
       create(
         :customs_tariff_chapter_note,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '03',
         content: 'Heading 0301 covers source sheep.',
       )
@@ -743,7 +743,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       create(
         :customs_tariff_chapter_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '01',
         content: 'Heading 0101 covers current horses.',
       )
@@ -758,7 +758,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       create(
         :customs_tariff_chapter_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '01',
         content: 'Heading 0101 covers live horses; Chapter 02 is excluded.',
       )
@@ -773,7 +773,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       note = create(
         :customs_tariff_chapter_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '01',
         content: 'Heading 0101 covers live horses. Heading 0201 covers bovine animals.',
       )
@@ -795,7 +795,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       create(
         :customs_tariff_chapter_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '01',
         content: 'Chapter content.',
       )
@@ -813,7 +813,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       note = create(
         :customs_tariff_chapter_note,
         :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: tariff_update,
         chapter_id: '01',
         content: 'Heading 0101 covers live horses.',
       )
