@@ -184,7 +184,7 @@ private
   end
 
   def cache_key
-    @cache_key ||= "expand_search_query/v2/#{configured_model}/#{context_digest}/#{query.downcase}"
+    @cache_key ||= "expand_search_query/v3/#{configured_model}/#{context_digest}/#{query.downcase}"
   end
 
   def context_digest
