@@ -26,7 +26,9 @@ module_function
     sanitiser = GenerateSelfText::EncodingArtefactSanitiser
     fixed = 0
 
-    GoodsNomenclatureSelfText.where(generation_type: %w[ai ai_non_other]).each do |record|
+    ai_self_texts = GoodsNomenclatureSelfText.where(generation_type: %w[ai ai_non_other])
+
+    ai_self_texts.each do |record|
       fixed += fix_encoding_artefact(record, sanitiser)
     end
 

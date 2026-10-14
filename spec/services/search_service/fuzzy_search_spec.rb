@@ -101,7 +101,8 @@ RSpec.describe SearchService::FuzzySearch do
         # Explicitly index test data
         index_model(chapter)
         index_model(heading)
-        SearchReference.all.each { |sr| index_model(sr) }
+        search_references = SearchReference.all
+        search_references.each { |sr| index_model(sr) }
       end
 
       it 'returns reference matches' do

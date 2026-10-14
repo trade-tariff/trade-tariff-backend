@@ -233,7 +233,8 @@ RSpec.describe EvaluationGoldQuerySet do
 
     it 'also deletes the history of items that were deleted from the set earlier' do
       create_gold_query_item(gold_query_set, source_id: '600000002')
-      gold_query_set.evaluation_gold_queries_dataset.where(source_id: '600000002').all.each(&:destroy)
+      removed_gold_queries = gold_query_set.evaluation_gold_queries_dataset.where(source_id: '600000002').all
+      removed_gold_queries.each(&:destroy)
 
       expect { gold_query_set.destroy }.to change { Version.where(item_type: 'EvaluationGoldQuery').count }.from(9).to(0)
     end
