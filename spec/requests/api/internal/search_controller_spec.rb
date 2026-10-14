@@ -579,7 +579,9 @@ RSpec.describe Api::Internal::SearchController, :internal do
         allow(VectorRetrievalService).to receive(:call).and_return([])
       end
 
-      it 'uses the overridden retrieval method' do
+      it 'uses the requested vector leg when hybrid retrieval is enabled' do
+        allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('hybrid')
+
         post api_search_path(format: :json),
              params: { q: 'horses', retrieval_method: 'vector', as_of: Time.zone.today.iso8601 }
 

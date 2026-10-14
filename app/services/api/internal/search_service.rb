@@ -254,9 +254,12 @@ module Api
       end
 
       def retrieval_method
-        return @retrieval_method_override if allowed_retrieval_method?(@retrieval_method_override)
+        configured = AdminConfiguration.option_value('retrieval_method')
+        # A request can narrow enabled hybrid retrieval, not enable a leg that
+        # the operator disabled, including paid vector embeddings.
+        return configured unless configured == 'hybrid' && allowed_retrieval_method?(@retrieval_method_override)
 
-        AdminConfiguration.option_value('retrieval_method')
+        @retrieval_method_override
       end
 
       def allowed_retrieval_method?(method)

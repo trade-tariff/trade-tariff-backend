@@ -20,7 +20,7 @@ parameter rules as the existing internal search endpoint:
 - `request_id` (the search journey's correlation ID, not the queued payload ID)
 - `expanded_query`
 - `skip_question`
-- `retrieval_method`: `hybrid`, `opensearch` or `vector`
+- `retrieval_method`: `hybrid`, `opensearch` or `vector`, subject to the admin-enabled retrieval methods; requests cannot enable a disabled leg
 - `resource_id`: the goods nomenclature SID returned by internal autocomplete
 - `include`: `heading,chapter` for ancestor context
 - `answers`, containing `question`, `answer` and `options`

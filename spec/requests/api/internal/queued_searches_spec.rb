@@ -53,6 +53,36 @@ RSpec.describe 'Queued internal searches', :internal do
       expect(Api::Internal::SearchService).to have_received(:new).with(hash_including(options.stringify_keys)).twice
     end
 
+    %w[vector hybrid].each do |requested|
+      it "does not enable paid retrieval from either endpoint when OpenSearch-only is configured and #{requested} is requested", :aggregate_failures do
+        allow(AdminConfiguration).to receive(:option_value).and_call_original
+        allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('opensearch')
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('expand_search_enabled').and_return(false)
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return('hits' => { 'hits' => [] })
+        allow(VectorRetrievalService).to receive(:call).and_call_original
+        allow(HybridRetrievalService).to receive(:call).and_call_original
+        allow(EmbeddingService).to receive(:new).and_call_original
+        submitted = { q: 'horse', retrieval_method: requested, skip_question: true }
+
+        post '/uk/internal/search', params: submitted, as: :json
+        expect(response).to have_http_status(:ok)
+        synchronous_result = response.parsed_body
+
+        post path, params: submitted, as: :json
+        expect(response).to have_http_status(:accepted)
+        id = response.parsed_body.fetch('id')
+        QueuedSearchWorker.new.perform(id)
+        get "#{path}/#{id}"
+
+        expect(response.parsed_body.fetch('result')).to eq(synchronous_result)
+        expect(TradeTariffBackend.search_client).to have_received(:search).twice
+        expect(VectorRetrievalService).not_to have_received(:call)
+        expect(HybridRetrievalService).not_to have_received(:call)
+        expect(EmbeddingService).not_to have_received(:new)
+      end
+    end
+
     it 'preserves an explicitly empty expansion list' do
       post path, params: inputs.merge(query_expansion: { ai_terms: [] }), as: :json
 

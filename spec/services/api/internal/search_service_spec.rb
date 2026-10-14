@@ -1969,7 +1969,8 @@ RSpec.describe Api::Internal::SearchService do
         allow(VectorRetrievalService).to receive(:call).and_return(vector_results)
       end
 
-      it 'honours an allowed override ahead of the configured method' do
+      it 'narrows enabled hybrid retrieval to the requested vector leg' do
+        allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('hybrid')
         allow(TradeTariffBackend.search_client).to receive(:search)
 
         result = described_class.new({ 'q' => 'horses', 'retrieval_method' => 'vector' }.with_indifferent_access).call
@@ -1988,6 +1989,35 @@ RSpec.describe Api::Internal::SearchService do
         expect(result[:data]).to eq([])
         expect(TradeTariffBackend.search_client).to have_received(:search)
         expect(VectorRetrievalService).not_to have_received(:call)
+      end
+
+      %w[vector hybrid].each do |requested|
+        it "keeps OpenSearch-only retrieval when #{requested} is requested" do
+          allow(TradeTariffBackend.search_client).to receive(:search).and_return('hits' => { 'hits' => [] })
+          allow(HybridRetrievalService).to receive(:call)
+
+          result = described_class.new(q: 'horses', retrieval_method: requested).call
+
+          expect(result[:data]).to eq([])
+          expect(TradeTariffBackend.search_client).to have_received(:search)
+          expect(VectorRetrievalService).not_to have_received(:call)
+          expect(HybridRetrievalService).not_to have_received(:call)
+        end
+      end
+
+      %w[opensearch hybrid].each do |requested|
+        it "keeps vector-only retrieval when #{requested} is requested" do
+          allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('vector')
+          allow(TradeTariffBackend.search_client).to receive(:search)
+          allow(HybridRetrievalService).to receive(:call)
+
+          result = described_class.new(q: 'horses', retrieval_method: requested).call
+
+          expect(result[:data].first[:attributes][:goods_nomenclature_item_id]).to eq('0101210000')
+          expect(VectorRetrievalService).to have_received(:call)
+          expect(TradeTariffBackend.search_client).not_to have_received(:search)
+          expect(HybridRetrievalService).not_to have_received(:call)
+        end
       end
     end
 
