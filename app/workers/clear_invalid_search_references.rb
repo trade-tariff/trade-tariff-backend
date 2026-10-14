@@ -17,7 +17,7 @@ class ClearInvalidSearchReferences
 
     return if removed.empty?
 
-    logger.info("Removed search references: #{removed.map { |r| format_line(r) }.join('; ')}")
+    logger.info("Removed search references: #{removed.map { |r| SearchReferences::ChangeLineFormatter.format_line(r) }.join('; ')}")
 
     notify(removed)
   end
@@ -64,15 +64,7 @@ private
   end
 
   def format_list(results)
-    results.map { |result| "* #{format_line(result)}" }.join("\n")
-  end
-
-  def format_line(result)
-    line = "#{result[:goods_nomenclature_item_id]} — #{result[:title]}"
-    line += ' [FPO only]' if result[:usage] == SearchReference::FPO_USAGE
-    line += " (#{result[:goods_nomenclature_url]})" if result[:goods_nomenclature_url].present?
-    line += " (successors: #{result[:successor_ids].join(', ')})" if result[:successor_ids].present?
-    line
+    SearchReferences::ChangeLineFormatter.format_list(results)
   end
 
   def client
