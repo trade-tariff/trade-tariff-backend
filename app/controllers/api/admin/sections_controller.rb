@@ -9,7 +9,7 @@ module Api
 
       def show
         # id is a position
-        @section = Section.where(position: params[:id]).take
+        @section = Section.take(position: params[:id])
 
         options = { is_collection: false }
         options[:include] = %i[chapters section_note]

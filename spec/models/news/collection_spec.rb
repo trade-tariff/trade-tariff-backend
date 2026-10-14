@@ -42,7 +42,7 @@ RSpec.describe News::Collection do
 
   describe 'associations' do
     describe '#items' do
-      subject { described_class.where(id: collection.id).take.items.pluck(:id) }
+      subject { described_class.take(id: collection.id).items.pluck(:id) }
 
       before { items.reverse.each(&collection.method(:add_item)) }
 

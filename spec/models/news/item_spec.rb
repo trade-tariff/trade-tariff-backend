@@ -98,7 +98,7 @@ RSpec.describe News::Item do
 
   describe 'associations' do
     describe '#collections' do
-      subject { described_class.where(id: item.id).take.collections.pluck(:id) }
+      subject { described_class.take(id: item.id).collections.pluck(:id) }
 
       before { item.add_collection additional_collection }
 
