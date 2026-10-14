@@ -10,8 +10,12 @@ class GenerateSelfTextReindexWorker
     SelfTextGenerator::Instrumentation.reindex_started
 
     index = Search::GoodsNomenclatureIndex.new
-    TradeTariffBackend.search_client.update(index)
+    update_search_index(index)
 
     SelfTextGenerator::Instrumentation.reindex_completed
   end
+
+private
+
+  def update_search_index(index) = TradeTariffBackend.search_client.update(index)
 end

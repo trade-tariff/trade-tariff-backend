@@ -4,7 +4,7 @@ module Api
       include QueryProcessing
 
       def create
-        search = QueuedSearch.create(params: search_params.to_h, context: search_context)
+        search = create_queued_search
         unless QueuedSearchWorker.perform_async(search.id)
           search.delete
           return unavailable
@@ -25,6 +25,10 @@ module Api
       end
 
     private
+
+      def create_queued_search
+        QueuedSearch.create(params: search_params.to_h, context: search_context)
+      end
 
       def search_params
         params.permit(
