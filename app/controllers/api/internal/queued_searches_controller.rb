@@ -27,7 +27,18 @@ module Api
     private
 
       def search_params
-        params.permit(:q, :as_of, :request_id, :expanded_query, :skip_question, answers: %i[question answer options], query_expansion: { ai_terms: [] })
+        params.permit(
+          :q,
+          :as_of,
+          :request_id,
+          :expanded_query,
+          :skip_question,
+          :retrieval_method,
+          :resource_id,
+          :include,
+          answers: %i[question answer options],
+          query_expansion: { ai_terms: [] },
+        )
       end
 
       def search_context

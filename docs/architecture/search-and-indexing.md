@@ -16,6 +16,19 @@ Public search routes are defined in `app/engines/v2_api.rb`:
 
 `app/services/search_service.rb` is the main entrypoint for public search. It normalises the query, tries an exact search for numeric identifiers, falls back to fuzzy search, and returns a null search result for empty or blocked queries.
 
+## Classic interface with internal retrieval
+
+`POST /uk/internal/search` (or `/xi/internal/search`) accepts these optional fields:
+
+- `retrieval_method`: `hybrid`, `opensearch` or `vector`, when the admin setting enables `hybrid`. A request can select an enabled leg, but cannot enable vector retrieval when OpenSearch-only is configured, or OpenSearch when vector-only is configured. An absent, unsupported or disallowed value uses the admin setting.
+- `skip_question: true`: returns retrieval results without guided questions.
+- `resource_id`: the goods nomenclature SID returned as the resource ID by internal autocomplete. It disambiguates matching labels and permits an explicitly selected non-declarable destination. Public V2 autocomplete uses suggestion-row IDs instead; consumers must not pass those IDs to this endpoint. Hidden-code and description-intercept filters still apply.
+- `include: "heading,chapter"`: attaches parent heading and chapter context after ranking. Either ancestor name enables the paired context. Other names are ignored.
+
+Ancestor descriptions use the requested date. Unique ancestor codes and descriptions are loaded in a batch. The response does not change result order or scores. Relationships can target primary `data` or `included`; each resource identity appears only once. Consumers must resolve linkage from both collections. Ancestors contain display fields, not declarability or scores.
+
+Blank, excluded and empty-result searches do not load ancestors. Exact matches still bypass retrieval. Requests without ancestor inclusion keep their existing response shape. No reindex or database migration is required.
+
 ## Search Components
 
 - Exact/fuzzy search classes live under `app/services/search_service/`.
