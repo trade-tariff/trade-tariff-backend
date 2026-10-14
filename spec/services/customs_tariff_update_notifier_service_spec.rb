@@ -1,10 +1,10 @@
 RSpec.describe CustomsTariffUpdateNotifierService do
-  subject(:service) { described_class.new(update.version) }
+  subject(:service) { described_class.new(tariff_update.version) }
 
-  let(:update) { create(:customs_tariff_update, validity_start_date: Date.new(2026, 2, 1)) }
+  let(:tariff_update) { create(:customs_tariff_update, validity_start_date: Date.new(2026, 2, 1)) }
 
   before do
-    create(:customs_tariff_chapter_note, customs_tariff_update: update, chapter_id: '01', content: 'note')
+    create(:customs_tariff_chapter_note, customs_tariff_update: tariff_update, chapter_id: '01', content: 'note')
   end
 
   describe '#call' do
@@ -18,7 +18,7 @@ RSpec.describe CustomsTariffUpdateNotifierService do
         service.call
 
         expect(Notifications::Instrumentation).to have_received(:send_skipped).with(
-          pipeline: 'customs_tariff_update', identifier: update.version, reason: 'recipient_not_configured',
+          pipeline: 'customs_tariff_update', identifier: tariff_update.version, reason: 'recipient_not_configured',
         )
         expect(Notifications::EnqueueService).not_to have_received(:new)
       end
@@ -56,7 +56,7 @@ RSpec.describe CustomsTariffUpdateNotifierService do
       it 'raises so the importer records the notification failure instead of completing silently' do
         expect { service.call }.to raise_error(
           Notifications::EnqueueService::EnqueueFailedError,
-          "customs_tariff_update: failed to enqueue notification for #{update.version} after 3 attempts",
+          "customs_tariff_update: failed to enqueue notification for #{tariff_update.version} after 3 attempts",
         )
       end
     end
@@ -73,16 +73,16 @@ RSpec.describe CustomsTariffUpdateNotifierService do
           'recipient@example.com',
           described_class::TEMPLATE_ID,
           hash_including(
-            'version' => update.version,
-            'document_created_on' => update.document_created_on.iso8601,
-            'document_url' => update.source_url,
-            'imported_on' => update.created_at.iso8601,
-            'entry_into_force_on' => update.validity_start_date.iso8601,
+            'version' => tariff_update.version,
+            'document_created_on' => tariff_update.document_created_on.iso8601,
+            'document_url' => tariff_update.source_url,
+            'imported_on' => tariff_update.created_at.iso8601,
+            'entry_into_force_on' => tariff_update.validity_start_date.iso8601,
             'chapter_ids' => '01',
             'section_ids' => '',
           ),
           'CustomsTariffUpdateNotificationStatusCheckWorker',
-          [update.version],
+          [tariff_update.version],
         )
       end
 
@@ -98,14 +98,14 @@ RSpec.describe CustomsTariffUpdateNotifierService do
 
           expect(personalisation.keys).to all(be_a(String))
           expect(personalisation).to include(
-            'version' => update.version,
+            'version' => tariff_update.version,
             'chapter_ids' => '01',
           )
         end
       end
 
       it 'falls back to a placeholder string when document_created_on is nil, rather than sending a null personalisation value' do
-        update.update(document_created_on: nil)
+        tariff_update.update(document_created_on: nil)
         allow(Notifications::EmailWorker).to receive(:perform_async)
 
         service.call
@@ -116,7 +116,7 @@ RSpec.describe CustomsTariffUpdateNotifierService do
       end
 
       it 'falls back to a placeholder string when source_url is blank, rather than sending an empty personalisation value' do
-        update.update(source_url: nil)
+        tariff_update.update(source_url: nil)
         allow(Notifications::EmailWorker).to receive(:perform_async)
 
         service.call

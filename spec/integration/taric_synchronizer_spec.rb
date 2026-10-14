@@ -35,7 +35,7 @@ RSpec.describe TaricSynchronizer do
     end
 
     describe '.rollback' do
-      let!(:update) { create :taric_update, :applied, issue_date: Time.zone.today }
+      let!(:tariff_update) { create :taric_update, :applied, issue_date: Time.zone.today }
 
       let :data_migrations do
         DataMigration.unrestrict_primary_key
@@ -66,7 +66,7 @@ RSpec.describe TaricSynchronizer do
         end
 
         it 'marks Taric updates as pending' do
-          expect(update.reload).to be_pending
+          expect(tariff_update.reload).to be_pending
         end
 
         it 'removes only todays data migration record' do
@@ -83,7 +83,7 @@ RSpec.describe TaricSynchronizer do
 
         it 'leaves Taric updates in applied state' do
           expect { described_class.rollback(Time.zone.yesterday, keep: true) }.to raise_error(StandardError)
-          expect(update.reload).to be_applied
+          expect(tariff_update.reload).to be_applied
         end
 
         it "leaves both today's and the earlier data migration record" do
@@ -102,7 +102,7 @@ RSpec.describe TaricSynchronizer do
         end
 
         it 'deletes Taric updates' do
-          expect { update.reload }.to raise_error Sequel::Error
+          expect { tariff_update.reload }.to raise_error Sequel::Error
         end
       end
 
@@ -120,7 +120,7 @@ RSpec.describe TaricSynchronizer do
         end
 
         it 'deletes Taric updates' do
-          expect { update.reload }.to raise_error Sequel::Error
+          expect { tariff_update.reload }.to raise_error Sequel::Error
         end
 
         it 'does not remove earlier updates (casts date as string to date)' do

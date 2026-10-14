@@ -31,21 +31,21 @@ RSpec.describe CustomsTariffUpdate do
   end
 
   describe 'associations' do
-    let(:update) { create(:customs_tariff_update) }
+    let(:tariff_update) { create(:customs_tariff_update) }
 
     it 'has many customs_tariff_chapter_notes' do
-      create(:customs_tariff_chapter_note, customs_tariff_update: update, chapter_id: '01')
-      expect(update.customs_tariff_chapter_notes.count).to eq(1)
+      create(:customs_tariff_chapter_note, customs_tariff_update: tariff_update, chapter_id: '01')
+      expect(tariff_update.customs_tariff_chapter_notes.count).to eq(1)
     end
 
     it 'has many customs_tariff_section_notes' do
-      create(:customs_tariff_section_note, customs_tariff_update: update, section_id: '1')
-      expect(update.customs_tariff_section_notes.count).to eq(1)
+      create(:customs_tariff_section_note, customs_tariff_update: tariff_update, section_id: '1')
+      expect(tariff_update.customs_tariff_section_notes.count).to eq(1)
     end
 
     it 'has many customs_tariff_general_rules' do
-      create(:customs_tariff_general_rule, customs_tariff_update: update, rule_label: '1')
-      expect(update.customs_tariff_general_rules.count).to eq(1)
+      create(:customs_tariff_general_rule, customs_tariff_update: tariff_update, rule_label: '1')
+      expect(tariff_update.customs_tariff_general_rules.count).to eq(1)
     end
   end
 end

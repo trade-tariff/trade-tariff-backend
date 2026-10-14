@@ -94,11 +94,11 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
   end
 
   describe 'GET #show' do
-    let!(:update) { create(:customs_tariff_update) }
-    let!(:note)   { create(:customs_tariff_section_note, customs_tariff_update: update) }
+    let!(:tariff_update) { create(:customs_tariff_update) }
+    let!(:note) { create(:customs_tariff_section_note, customs_tariff_update: tariff_update) }
 
     it 'returns the note with a versions array' do
-      get "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.section_id}.json",
+      get "/uk/admin/customs_tariff_updates/#{tariff_update.version}/section_notes/#{note.section_id}.json",
           headers: request_headers(format: :json)
 
       expect(response.status).to eq(200)
@@ -120,7 +120,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
         end
 
         it 'returns file_diff instead of versions' do
-          get "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.section_id}.json",
+          get "/uk/admin/customs_tariff_updates/#{tariff_update.version}/section_notes/#{note.section_id}.json",
               params: { compare_version: compare_update.version },
               headers: request_headers(format: :json)
 
@@ -151,22 +151,22 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
   end
 
   describe 'PATCH #update' do
-    let!(:update) { create(:customs_tariff_update) }
-    let!(:note)   { create(:customs_tariff_section_note, customs_tariff_update: update) }
+    let!(:tariff_update) { create(:customs_tariff_update) }
+    let!(:note) { create(:customs_tariff_section_note, customs_tariff_update: tariff_update) }
 
     before do
       allow(CustomsTariffImporter::Instrumentation).to receive(:section_note_updated)
     end
 
     it 'updates the content' do
-      patch "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.section_id}.json",
+      patch "/uk/admin/customs_tariff_updates/#{tariff_update.version}/section_notes/#{note.section_id}.json",
             params: { data: { type: 'customs_tariff_section_note', attributes: { content: 'Updated content' } } },
             headers: request_headers({ 'X-Whodunnit' => 'operator-1' }, format: :json), as: :json
 
       expect(response.status).to eq(200)
       expect(note.reload.content).to eq('Updated content')
       expect(CustomsTariffImporter::Instrumentation).to have_received(:section_note_updated).with(
-        version: update.version,
+        version: tariff_update.version,
         section_id: note.section_id,
         note_id: note.id,
         whodunnit: 'operator-1',
@@ -174,12 +174,12 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
     end
 
     it 'updates when following the JSON:API id from the index response' do
-      get "/uk/admin/customs_tariff_updates/#{update.version}/section_notes.json",
+      get "/uk/admin/customs_tariff_updates/#{tariff_update.version}/section_notes.json",
           headers: request_headers(format: :json)
 
       response_id = JSON.parse(response.body).dig('data', 0, 'id')
 
-      patch "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{response_id}.json",
+      patch "/uk/admin/customs_tariff_updates/#{tariff_update.version}/section_notes/#{response_id}.json",
             params: { data: { type: 'customs_tariff_section_note', attributes: { content: 'Updated via response id' } } },
             headers: request_headers(format: :json), as: :json
 
@@ -188,9 +188,9 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
     end
 
     it 'updates when the parent update has an import error' do
-      update.update(import_error: 'Import failed')
+      tariff_update.update(import_error: 'Import failed')
 
-      patch "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.section_id}.json",
+      patch "/uk/admin/customs_tariff_updates/#{tariff_update.version}/section_notes/#{note.section_id}.json",
             params: { data: { type: 'customs_tariff_section_note', attributes: { content: 'Updated' } } },
             headers: request_headers(format: :json), as: :json
 
@@ -201,7 +201,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
 
     it 'creates a Version record on successful save' do
       expect {
-        patch "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.section_id}.json",
+        patch "/uk/admin/customs_tariff_updates/#{tariff_update.version}/section_notes/#{note.section_id}.json",
               params: { data: { type: 'customs_tariff_section_note', attributes: { content: 'Versioned content' } } },
               headers: request_headers(format: :json), as: :json
       }.to change { Version.where(item_type: 'CustomsTariffSectionNote', item_id: note.id.to_s).count }.by(1)
@@ -209,11 +209,11 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
   end
 
   describe 'DELETE #destroy' do
-    let!(:update) { create(:customs_tariff_update) }
-    let!(:note)   { create(:customs_tariff_section_note, customs_tariff_update: update) }
+    let!(:tariff_update) { create(:customs_tariff_update) }
+    let!(:note) { create(:customs_tariff_section_note, customs_tariff_update: tariff_update) }
 
     it 'destroys the note and returns 204' do
-      delete "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.section_id}.json",
+      delete "/uk/admin/customs_tariff_updates/#{tariff_update.version}/section_notes/#{note.section_id}.json",
              headers: request_headers(format: :json)
 
       expect(response.status).to eq(204)
@@ -221,9 +221,9 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
     end
 
     it 'destroys when the parent update has an import error' do
-      update.update(import_error: 'Import failed')
+      tariff_update.update(import_error: 'Import failed')
 
-      delete "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.section_id}.json",
+      delete "/uk/admin/customs_tariff_updates/#{tariff_update.version}/section_notes/#{note.section_id}.json",
              headers: request_headers(format: :json)
 
       expect(response.status).to eq(204)
@@ -241,10 +241,10 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
   end
 
   describe 'POST #create' do
-    let!(:update) { create(:customs_tariff_update, validity_start_date: Date.new(2026, 3, 1)) }
+    let!(:tariff_update) { create(:customs_tariff_update, validity_start_date: Date.new(2026, 3, 1)) }
 
     it 'creates a section note and returns 201' do
-      post "/uk/admin/customs_tariff_updates/#{update.version}/section_notes.json",
+      post "/uk/admin/customs_tariff_updates/#{tariff_update.version}/section_notes.json",
            params: { data: { type: 'customs_tariff_section_note',
                              attributes: { section_id: 7, content: 'Manually added note content here' } } },
            headers: request_headers(format: :json), as: :json
@@ -256,21 +256,21 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
     end
 
     it 'copies validity_start_date from the update' do
-      post "/uk/admin/customs_tariff_updates/#{update.version}/section_notes.json",
+      post "/uk/admin/customs_tariff_updates/#{tariff_update.version}/section_notes.json",
            params: { data: { type: 'customs_tariff_section_note',
                              attributes: { section_id: 8, content: 'Some note content here' } } },
            headers: request_headers(format: :json), as: :json
 
       note = CustomsTariffSectionNote.where(
-        customs_tariff_update_version: update.version, section_id: 8,
+        customs_tariff_update_version: tariff_update.version, section_id: 8,
       ).first
       expect(note.validity_start_date).to eq(Date.new(2026, 3, 1))
     end
 
     it 'creates when the parent update has an import error' do
-      update.update(import_error: 'Import failed')
+      tariff_update.update(import_error: 'Import failed')
 
-      post "/uk/admin/customs_tariff_updates/#{update.version}/section_notes.json",
+      post "/uk/admin/customs_tariff_updates/#{tariff_update.version}/section_notes.json",
            params: { data: { type: 'customs_tariff_section_note',
                              attributes: { section_id: 7, content: 'Some content' } } },
            headers: request_headers(format: :json), as: :json

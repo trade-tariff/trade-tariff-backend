@@ -1,6 +1,6 @@
 RSpec.describe Api::Admin::CustomsTariffUpdates::ReimportController do
   describe 'POST #create' do
-    let!(:update) { create(:customs_tariff_update) }
+    let!(:tariff_update) { create(:customs_tariff_update) }
 
     before do
       allow(CustomsTariffReimportWorker).to receive(:perform_async)
@@ -11,11 +11,11 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::ReimportController do
       before { allow(TradeTariffBackend).to receive(:xi?).and_return(false) }
 
       it 'returns 202 and enqueues CustomsTariffReimportWorker' do
-        post "/uk/admin/customs_tariff_updates/#{update.version}/reimport.json",
+        post "/uk/admin/customs_tariff_updates/#{tariff_update.version}/reimport.json",
              headers: request_headers(format: :json)
 
         expect(response.status).to eq(202)
-        expect(CustomsTariffReimportWorker).to have_received(:perform_async).with(update.version)
+        expect(CustomsTariffReimportWorker).to have_received(:perform_async).with(tariff_update.version)
         expect(XiCnReimportWorker).not_to have_received(:perform_async)
       end
     end
@@ -24,11 +24,11 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::ReimportController do
       before { allow(TradeTariffBackend).to receive(:xi?).and_return(true) }
 
       it 'returns 202 and enqueues XiCnReimportWorker' do
-        post "/uk/admin/customs_tariff_updates/#{update.version}/reimport.json",
+        post "/uk/admin/customs_tariff_updates/#{tariff_update.version}/reimport.json",
              headers: request_headers(format: :json)
 
         expect(response.status).to eq(202)
-        expect(XiCnReimportWorker).to have_received(:perform_async).with(update.version)
+        expect(XiCnReimportWorker).to have_received(:perform_async).with(tariff_update.version)
         expect(CustomsTariffReimportWorker).not_to have_received(:perform_async)
       end
     end
