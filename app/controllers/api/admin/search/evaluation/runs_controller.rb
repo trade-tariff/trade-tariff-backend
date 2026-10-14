@@ -59,7 +59,96 @@ module Api
             end
           end
 
+          # Deliberately scoped to runs only (AI-1441) -- not extracted into a shared
+          # bulk-destroy concern other admin resources could adopt. Written cleanly enough
+          # that lifting it into something reusable later would be a small refactor, but
+          # building that general mechanism now, before any second resource actually needs
+          # it, is out of scope.
+          #
+          # All-or-nothing, matching the single-run #destroy pattern on experiments: if any
+          # selected run is still queued or running, the whole request is rejected and nothing
+          # is deleted -- not even the other, eligible runs in the same selection. Silently
+          # deleting everything except the in-progress run would leave the operator unsure
+          # which of their selection actually went, and does nothing to surface that one run
+          # still needs cancelling first.
+          #
+          # The status check and the deletes happen inside one transaction, against rows
+          # locked with for_update, so both see the same, current data (AI-1441 review). The
+          # earlier version read the rows with a plain `.all` outside any transaction, checked
+          # their status, and only locked them later inside `each(&:destroy)` -- a PATCH
+          # landing in the gap between that check and the delete could flip a selected run to
+          # "running" and still have it deleted along with its results. Locking the rows before
+          # checking closes that gap: any concurrent PATCH on a selected row now waits for this
+          # transaction to finish first.
+          def bulk_destroy
+            ids = parsed_run_ids!
+            in_use = false
+
+            EvaluationRun.db.transaction do
+              selected = EvaluationRun.where(id: ids).for_update.all
+              if selected.any? { |run| %w[queued running].include?(run.status) }
+                in_use = true
+                raise Sequel::Rollback
+              end
+
+              selected.each(&:destroy)
+            end
+
+            return render_in_use if in_use
+
+            head :no_content
+          end
+
         private
+
+          IN_USE_DETAIL = 'One or more selected runs are queued or running. Wait for them to finish, or cancel them, ' \
+                          'then try again.'.freeze
+
+          # Postgres's `integer` column is 4 bytes, signed (AI-1441 review). A value outside this
+          # range never matches a real row -- confirmed directly against Postgres, a query like
+          # `WHERE id = 99999999999999999999` just returns zero rows, not an error, so this isn't
+          # guarding against a 500 the way an invalid-looking string id is. It's rejected anyway,
+          # with a clear 400, because an id that can never exist at all is a different kind of
+          # invalid input than one that simply doesn't match anything right now, and the caller
+          # is better served knowing that than seeing it silently treated as a no-op.
+          MIN_RUN_ID = -2_147_483_648
+          MAX_RUN_ID = 2_147_483_647
+
+          # Malformed input is rejected here, before it ever reaches a query:
+          # - run_ids missing, or not a genuine array (e.g. a bare scalar) -- Array(params[...])
+          #   would otherwise silently wrap a single stray value into a one-id selection.
+          # - an element that isn't a whole number -- Integer(1.9) does not raise, it truncates
+          #   to 1, so a float id would otherwise silently delete a different, real run.
+          # - an element that doesn't look like an id at all -- reaches Postgres as a raw
+          #   integer-column comparison and raises an unhandled 500 otherwise.
+          # - an element outside Postgres's integer range -- see MIN_RUN_ID/MAX_RUN_ID above.
+          def parsed_run_ids!
+            raw = params[:run_ids]
+            raise ActionController::BadRequest, 'run_ids must be a non-empty array' unless raw.is_a?(Array) && raw.any?
+
+            raw.map { |id| valid_run_id!(id) }
+          end
+
+          RUN_ID_PATTERN = /\A-?\d+\z/
+
+          def valid_run_id!(id)
+            unless id.is_a?(Integer) || (id.is_a?(String) && RUN_ID_PATTERN.match?(id))
+              raise ActionController::BadRequest, "run_ids must contain only integers (got #{id.inspect})"
+            end
+
+            integer = Integer(id)
+            unless (MIN_RUN_ID..MAX_RUN_ID).cover?(integer)
+              raise ActionController::BadRequest, "run_ids must be within the valid range (got #{id.inspect})"
+            end
+
+            integer
+          end
+
+          def render_in_use
+            render json: {
+              errors: [{ status: '409', title: 'Run is in use', detail: IN_USE_DETAIL }],
+            }, status: :conflict
+          end
 
           def serializer_class = Api::Admin::Search::Evaluation::RunSerializer
 

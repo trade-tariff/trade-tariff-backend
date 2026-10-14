@@ -183,7 +183,11 @@ AdminApi.routes.draw do
               end
             end
           end
-          resources :runs, only: %i[index show create update]
+          resources :runs, only: %i[index show create update] do
+            collection do
+              delete :bulk_destroy
+            end
+          end
           resources :results, only: %i[index show create]
           resource :configuration, only: [:show]
           resources :searches, only: %i[create show]
