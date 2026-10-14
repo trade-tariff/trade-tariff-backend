@@ -75,16 +75,16 @@ module SearchReferences
         version.event == 'destroy' && ChangeSource.automatic_removal?(version.whodunnit)
       end
 
-      # The removal reason is not stored on the version, so derive it again the same way
-      # ClearInvalidSearchReferences did, outside TimeMachine as that worker runs.
+      # Uses the reason that ClearInvalidSearchReferences stored on the destroy version at
+      # removal time. It does not run InvalidationReasonService again, because the tariff data
+      # can change after the removal. Versions without a stored reason (removals before the
+      # reason was stored, and backfilled versions) are shown as unknown.
       def removal_details(version)
-        result = TimeMachine.no_time_machine { InvalidationReasonService.call(version.reify) }
-        section = self::REMOVAL_SECTIONS.include?(result[:reason]) ? result[:reason] : :unknown
+        metadata = version.metadata.to_h
+        reason = metadata['removal_reason'].to_s.presence&.to_sym
+        section = self::REMOVAL_SECTIONS.include?(reason) ? reason : :unknown
 
-        { section:, successor_ids: section == :superseded ? result[:successor_ids] : [] }
-      rescue StandardError => e
-        Rails.logger.warn("SearchReferences::ChangeEntry: cannot derive removal reason for version #{version.id}: #{e.class.name}: #{e.message}")
-        { section: :unknown, successor_ids: [] }
+        { section:, successor_ids: section == :superseded ? Array(metadata['successor_ids']).map(&:to_s) : [] }
       end
     end
 

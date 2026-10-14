@@ -29,7 +29,13 @@ private
 
     return unless result[:removal_alert_required]
 
-    # destroy (not delete) so a version records the reference's last known state
+    # destroy (not delete) so a version records the reference's last known state. The version
+    # also keeps the removal reason, because later tariff data changes can change the result
+    # of InvalidationReasonService.
+    search_reference.version_metadata = {
+      removal_reason: result[:reason].to_s,
+      successor_ids: Array(result[:successor_ids]),
+    }
     search_reference.destroy
     removed << result
   rescue StandardError => e

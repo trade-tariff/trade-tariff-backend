@@ -46,7 +46,11 @@ A CSV of every search reference change (create, update and delete) in the previo
 
 **This report is emailed automatically** to `SEARCH_REFERENCES_REPORT_TO_EMAILS` (a comma-separated list or a Secrets Manager JSON hash). The support email is BCC'd. No email is sent if the variable is not set.
 
-The email and CSV use the same layout as the search reference invalidation alert that `ClearInvalidSearchReferences` sends. Automatic removals are grouped as Missing, Expired, Superseded and Unknown. These are followed by Added, Updated and Manually deleted. Each line uses `SearchReferences::ChangeLineFormatter`. The CSV has a readable "Source" column (for example "Automatic clean-up", "FPO CSV import" or "Admin user") and the raw "Changed by" value (the admin user UID or the job name). The email groups all admin users as "Admin users", with a count for each UID. The labels are in `SearchReferences::ChangeSource`.
+The email and CSV use the same layout as the search reference invalidation alert that `ClearInvalidSearchReferences` sends. Automatic removals are grouped as Missing, Expired, Superseded and Unknown. These are followed by Added, Updated and Manually deleted.
+
+When `ClearInvalidSearchReferences` removes a search reference, it stores the removal reason and successor IDs in the `metadata` column of the destroy version. The report uses this stored snapshot. It does not work out the reason again from the current tariff data, so later tariff corrections do not change the section, and the report agrees with the original alert. Removals that have no stored reason are shown as Unknown. These are removals made before the column existed, and backfilled destroy versions.
+
+Each line uses `SearchReferences::ChangeLineFormatter`. The CSV has a readable "Source" column (for example "Automatic clean-up", "FPO CSV import" or "Admin user") and the raw "Changed by" value (the admin user UID or the job name). The email groups all admin users as "Admin users", with a count for each UID. The labels are in `SearchReferences::ChangeSource`.
 
 Titles and whodunnit values come from users, so the CSV serializer uses `escape_formulas!`. Any text cell that starts with `=`, `+`, `-`, `@`, a tab or a carriage return (after optional spaces) gets a leading `'`, so spreadsheet tools show it as text and do not run it.
 

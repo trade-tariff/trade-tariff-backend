@@ -78,70 +78,70 @@ RSpec.describe SearchReferences::ChangeEntry do
       it { is_expected.to have_attributes(section: :deleted, section_label: 'Manually deleted', changed_by: 'admin-uid') }
     end
 
-    context 'when ClearInvalidSearchReferences removed an expired search reference' do
-      let(:event) { 'destroy' }
-      let(:commodity) { create(:commodity, goods_nomenclature_item_id: '0101210000', validity_end_date: Time.zone.yesterday) }
-
-      before do
-        TimeMachine.now { search_reference }
-        TradeTariffRequest.set(whodunnit: ClearInvalidSearchReferences::WHODUNNIT) { search_reference.destroy }
-      end
-
-      it { is_expected.to have_attributes(section: :expired, section_label: 'Expired', changed_by: 'ClearInvalidSearchReferences') }
-    end
-
-    context 'when the backfill wrote the removal of an expired search reference' do
-      let(:event) { 'destroy' }
-      let(:commodity) { create(:commodity, goods_nomenclature_item_id: '0101210000', validity_end_date: Time.zone.yesterday) }
-
-      before do
-        TimeMachine.now { search_reference }
-        TradeTariffRequest.set(whodunnit: 'ClearInvalidSearchReferences (backfill)') { search_reference.destroy }
-      end
-
-      it { is_expected.to have_attributes(section: :expired, source: 'Automatic clean-up (backfill)') }
-    end
-
-    context 'when ClearInvalidSearchReferences removed a superseded search reference' do
-      let(:event) { 'destroy' }
-      let(:commodity) { create(:commodity, goods_nomenclature_item_id: '0101210000', validity_end_date: Time.zone.yesterday) }
-
-      before do
-        TimeMachine.now { search_reference }
-        create(
-          :goods_nomenclature_successor,
-          absorbed_goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-          absorbed_productline_suffix: commodity.producline_suffix,
-          goods_nomenclature_item_id: '0101999000',
-        )
-        TradeTariffRequest.set(whodunnit: ClearInvalidSearchReferences::WHODUNNIT) { search_reference.destroy }
-      end
-
-      it { is_expected.to have_attributes(section: :superseded, successor_ids: %w[0101999000]) }
-      it { expect(entry.summary).to include('(successors: 0101999000)') }
-    end
-
-    context 'when the removal reason is no longer a removal reason' do
+    context 'when ClearInvalidSearchReferences stored the removal reason' do
       let(:event) { 'destroy' }
 
       before do
         search_reference
+        search_reference.version_metadata = { removal_reason: 'expired', successor_ids: [] }
         TradeTariffRequest.set(whodunnit: ClearInvalidSearchReferences::WHODUNNIT) { search_reference.destroy }
       end
 
-      it { is_expected.to have_attributes(section: :unknown) }
+      it { is_expected.to have_attributes(section: :expired, section_label: 'Expired', successor_ids: [], changed_by: 'ClearInvalidSearchReferences') }
+
+      it 'does not derive the reason again from the current tariff data' do
+        allow(SearchReferences::InvalidationReasonService).to receive(:call)
+        entry
+        expect(SearchReferences::InvalidationReasonService).not_to have_received(:call)
+      end
     end
 
-    context 'when the removal reason cannot be derived' do
+    context 'when ClearInvalidSearchReferences stored a superseded reason' do
       let(:event) { 'destroy' }
 
       before do
         search_reference
+        search_reference.version_metadata = { removal_reason: 'superseded', successor_ids: %w[0101999000 0101888000] }
         TradeTariffRequest.set(whodunnit: ClearInvalidSearchReferences::WHODUNNIT) { search_reference.destroy }
-        allow(SearchReferences::InvalidationReasonService).to receive(:call).and_raise(StandardError, 'boom')
+      end
+
+      it { is_expected.to have_attributes(section: :superseded, successor_ids: %w[0101999000 0101888000]) }
+      it { expect(entry.summary).to include('(successors: 0101999000, 0101888000)') }
+    end
+
+    context 'when the stored reason is not a removal reason' do
+      let(:event) { 'destroy' }
+
+      before do
+        search_reference
+        search_reference.version_metadata = { removal_reason: 'current', successor_ids: %w[0101999000] }
+        TradeTariffRequest.set(whodunnit: ClearInvalidSearchReferences::WHODUNNIT) { search_reference.destroy }
       end
 
       it { is_expected.to have_attributes(section: :unknown, successor_ids: []) }
+    end
+
+    context 'when an automatic removal has no stored reason' do
+      let(:event) { 'destroy' }
+      let(:commodity) { create(:commodity, goods_nomenclature_item_id: '0101210000', validity_end_date: Time.zone.yesterday) }
+
+      before do
+        TimeMachine.now { search_reference }
+        TradeTariffRequest.set(whodunnit: ClearInvalidSearchReferences::WHODUNNIT) { search_reference.destroy }
+      end
+
+      it { is_expected.to have_attributes(section: :unknown, successor_ids: []) }
+    end
+
+    context 'when the backfill wrote the removal' do
+      let(:event) { 'destroy' }
+
+      before do
+        search_reference
+        TradeTariffRequest.set(whodunnit: 'ClearInvalidSearchReferences (backfill)') { search_reference.destroy }
+      end
+
+      it { is_expected.to have_attributes(section: :unknown, source: 'Automatic clean-up (backfill)') }
     end
 
     context 'when the version has no whodunnit' do

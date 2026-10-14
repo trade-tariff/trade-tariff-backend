@@ -45,6 +45,22 @@ RSpec.describe Sequel::Plugins::HasPaperTrail do
     end
   end
 
+  describe 'version metadata' do
+    it 'stores the metadata set on the record and then clears it', :aggregate_failures do
+      model_with_plugin.version_metadata = { removal_reason: 'expired', successor_ids: %w[0101999000] }
+      model_with_plugin.destroy
+
+      expect(Version.last.metadata.to_h).to eq('removal_reason' => 'expired', 'successor_ids' => %w[0101999000])
+      expect(model_with_plugin.version_metadata).to be_nil
+    end
+
+    it 'stores no metadata by default' do
+      model_with_plugin.update(content: 'no metadata')
+
+      expect(Version.last.metadata).to be_nil
+    end
+  end
+
   describe '#versions' do
     it 'returns versions for the record' do
       model_with_plugin.update(content: 'v2')

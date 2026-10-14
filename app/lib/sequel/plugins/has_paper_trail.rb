@@ -69,6 +69,10 @@ module Sequel
       end
 
       module InstanceMethods
+        # Set before save or destroy to store deletion-time or change-time facts on the version.
+        # It is cleared after the version is written.
+        attr_accessor :version_metadata
+
         def versions
           Version.where(item_type: model.name, item_id: item_id_for_version)
                  .order(:created_at)
@@ -101,7 +105,9 @@ module Sequel
             object: Sequel.pg_jsonb_wrap(values_for_version),
             whodunnit: TradeTariffRequest.whodunnit,
             created_at: Time.current,
+            metadata: version_metadata && Sequel.pg_jsonb_wrap(version_metadata.deep_stringify_keys),
           )
+          self.version_metadata = nil
         end
 
         def item_id_for_version
