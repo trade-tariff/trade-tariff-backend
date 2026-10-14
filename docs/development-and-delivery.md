@@ -72,11 +72,18 @@ from tools `main`. Add an external contributor's GitHub login under
 `trade-tariff-backend` through a reviewed tools PR. Approval for another
 repository does not grant backend approval.
 
-A repository writer adds `needs-deployment` for the backend alone or
-`needs-full-deployment` for the full stack. An approved contributor can then
-deploy later updates from their own fork. Both the original triggering account
-and the account that reruns a job must be approved for this repository or have
-repository write access. Unlisted forks cannot deploy through these workflows.
+After review, a repository writer adds `needs-fork-deployment` for the backend
+alone or `needs-fork-full-deployment` for the full stack. These labels are manual
+only. The labeler and Dependabot do not add them. The existing `needs-deployment`
+and `needs-full-deployment` labels authorize upstream PRs only; they cannot
+authorize a fork deployment.
+
+An approved contributor can then deploy later updates from their own fork while
+the manual label remains on the PR. Removing the label blocks deployments from
+later PR events. It does not cancel runs already created.
+Both the original triggering account and the account that reruns a job
+must be approved for this repository or have repository write access. Unlisted
+forks cannot deploy through these workflows.
 
 Authorization runs trusted code with read-only GitHub access and no deployment
 secrets or OIDC permission. Deployment jobs use the exact authorized commit SHA.

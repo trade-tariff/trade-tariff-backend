@@ -22,8 +22,12 @@ jobs:
   authorize:
     if: >
       github.event_name == 'workflow_dispatch' ||
-      (contains(github.event.pull_request.labels.*.name, 'needs-deployment') &&
-       (github.event.action != 'labeled' || github.event.label.name == 'needs-deployment'))
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       contains(github.event.pull_request.labels.*.name, 'needs-deployment') &&
+       (github.event.action != 'labeled' || github.event.label.name == 'needs-deployment')) ||
+      (github.event.pull_request.head.repo.full_name != github.repository &&
+       contains(github.event.pull_request.labels.*.name, 'needs-fork-deployment') &&
+       (github.event.action != 'labeled' || github.event.label.name == 'needs-fork-deployment'))
     runs-on: ubuntu-latest
     outputs:
       sha: ${{ steps.authorize.outputs.sha }}
