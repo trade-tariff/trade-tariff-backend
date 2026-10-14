@@ -59,6 +59,14 @@ RSpec/ContextWording:
 RSpec/MultipleMemoizedHelpers:
   Enabled: true
 
+# Sequel datasets and arrays do not implement ActiveRecord's find_each.
+Rails/FindEach:
+  Enabled: false
+
+# Sequel does not implement find_by, and our take plugin raises when no row matches.
+Rails/FindBy:
+  Enabled: false
+
 # Sequel persistence methods do not have the same semantics as ActiveRecord's
 # bang/non-bang persistence methods.
 Rails/SaveBang:
