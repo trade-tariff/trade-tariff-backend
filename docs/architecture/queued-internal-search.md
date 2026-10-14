@@ -210,9 +210,11 @@ check: trusted internal clients possessing an ID can retrieve its result. Before
 connecting a public browser journey, the frontend must enforce the appropriate
 session ownership and must not expose internal API access directly.
 
-The worker uses the existing `default` queue. No queue topology, concurrency,
-frontend, infrastructure, public V2 API or synchronous search behaviour changes
-are included. Use controlled test traffic: this interface does **not** establish
+The worker uses the existing `default` queue. Synchronous and queued search
+share the optional retrieval, selection and ancestor controls described above.
+Requests without those options retain their existing behaviour. These controls
+do not change queue topology, concurrency, the frontend, infrastructure or the
+public V2 API. Use controlled test traffic: this interface does **not** establish
 worker isolation, admission control, a payload-size limit, or protection against
 Redis/worker saturation. One-hour retention is not a bound on total memory at
 arbitrary submission rates.
