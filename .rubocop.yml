@@ -44,7 +44,6 @@ Metrics/BlockLength:
   Enabled: true
   Exclude:
     - 'app/engines/admin_api.rb'
-    - 'app/engines/v1_api.rb'
     - 'app/engines/v2_api.rb'
 
 Metrics/ModuleLength:
@@ -59,20 +58,6 @@ RSpec/ContextWording:
 
 RSpec/MultipleMemoizedHelpers:
   Enabled: true
-
-# swagger:generate intentionally omits :environment — rswag:specs:swaggerize
-# runs rspec in a subprocess and does not need Rails loaded in this process.
-Rails/RakeEnvironment:
-  Exclude:
-    - 'lib/tasks/swagger.rake'
-
-# This application uses Sequel datasets rather than ActiveRecord relations.
-Rails/FindEach:
-  Enabled: false
-
-# This application uses Sequel rather than ActiveRecord.
-Rails/FindBy:
-  Enabled: false
 
 # Sequel persistence methods do not have the same semantics as ActiveRecord's
 # bang/non-bang persistence methods.
