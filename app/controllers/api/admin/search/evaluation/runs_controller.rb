@@ -59,7 +59,36 @@ module Api
             end
           end
 
+          # Deliberately scoped to runs only (AI-1441) -- not extracted into a shared
+          # bulk-destroy concern other admin resources could adopt. Written cleanly enough
+          # that lifting it into something reusable later would be a small refactor, but
+          # building that general mechanism now, before any second resource actually needs
+          # it, is out of scope.
+          #
+          # All-or-nothing, matching the single-run #destroy pattern on experiments: if any
+          # selected run is still queued or running, the whole request is rejected and nothing
+          # is deleted -- not even the other, eligible runs in the same selection. Silently
+          # deleting everything except the in-progress run would leave the operator unsure
+          # which of their selection actually went, and does nothing to surface that one run
+          # still needs cancelling first.
+          def bulk_destroy
+            selected = EvaluationRun.where(id: Array(params[:run_ids])).all
+            return render_in_use if selected.any? { |run| %w[queued running].include?(run.status) }
+
+            EvaluationRun.db.transaction { selected.each(&:destroy) }
+            head :no_content
+          end
+
         private
+
+          IN_USE_DETAIL = 'One or more selected runs are queued or running. Wait for them to finish, or cancel them, ' \
+                          'then try again.'.freeze
+
+          def render_in_use
+            render json: {
+              errors: [{ status: '409', title: 'Run is in use', detail: IN_USE_DETAIL }],
+            }, status: :conflict
+          end
 
           def serializer_class = Api::Admin::Search::Evaluation::RunSerializer
 

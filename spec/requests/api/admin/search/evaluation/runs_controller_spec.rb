@@ -507,4 +507,73 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
       it { is_expected.to have_http_status :not_found }
     end
   end
+
+  describe 'DELETE #bulk_destroy' do
+    let(:make_request) { authenticated_delete bulk_destroy_api_admin_search_evaluation_runs_path(format: :json), params: { run_ids: run_ids } }
+    let!(:run_a) { create(:evaluation_run, evaluation_experiment: experiment, status: 'completed') }
+    let!(:run_b) { create(:evaluation_run, evaluation_experiment: experiment, status: 'failed') }
+
+    # A plain method, not a `let`, to keep this describe block's memoized-helper count under
+    # RuboCop's RSpec/MultipleMemoizedHelpers limit (it counts inherited `let`s too).
+    def run_ids
+      [run_a.id, run_b.id]
+    end
+
+    it { is_expected.to have_http_status :no_content }
+
+    it 'deletes every selected run in one request' do
+      expect { api_response }.to change(EvaluationRun, :count).by(-2)
+    end
+
+    it 'deletes a selected run\'s own results along with it' do
+      result = create(:evaluation_result, evaluation_run: run_a)
+
+      api_response
+
+      expect(EvaluationResult.where(id: result.id)).to be_empty
+    end
+
+    it 'leaves runs outside the selection untouched' do
+      untouched = create(:evaluation_run, evaluation_experiment: experiment, status: 'completed')
+
+      api_response
+
+      expect(EvaluationRun[untouched.id]).to be_present
+    end
+
+    context 'when the selection includes a queued run' do
+      let!(:run_b) { create(:evaluation_run, evaluation_experiment: experiment, status: 'queued') }
+
+      it { is_expected.to have_http_status :conflict }
+      it { expect { api_response }.not_to change(EvaluationRun, :count) }
+
+      it 'says why and what to do next, and does not delete the other, eligible run either' do
+        api_response
+
+        expect(json_response.dig('errors', 0, 'detail')).to eq(
+          'One or more selected runs are queued or running. Wait for them to finish, or cancel them, ' \
+          'then try again.',
+        )
+        expect(EvaluationRun[run_a.id]).to be_present
+      end
+    end
+
+    context 'when the selection includes a running run' do
+      let!(:run_b) { create(:evaluation_run, evaluation_experiment: experiment, status: 'running') }
+
+      it { is_expected.to have_http_status :conflict }
+      it { expect { api_response }.not_to change(EvaluationRun, :count) }
+    end
+
+    context 'when the selection includes an id that no longer exists' do
+      def run_ids
+        [run_a.id, 999_999]
+      end
+
+      it 'deletes the runs that do exist, rather than failing the whole request' do
+        expect { api_response }.to change(EvaluationRun, :count).by(-1)
+        expect(api_response).to have_http_status :no_content
+      end
+    end
+  end
 end
