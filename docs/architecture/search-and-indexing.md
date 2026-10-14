@@ -22,7 +22,7 @@ Public search routes are defined in `app/engines/v2_api.rb`:
 
 - `retrieval_method`: `hybrid`, `opensearch` or `vector`. An absent or unsupported value uses the admin setting.
 - `skip_question: true`: returns retrieval results without guided questions.
-- `resource_id`: the selected autocomplete resource ID. It disambiguates matching labels and permits an explicitly selected non-declarable destination. Hidden-code and description-intercept filters still apply.
+- `resource_id`: the goods nomenclature SID returned as the resource ID by internal autocomplete. It disambiguates matching labels and permits an explicitly selected non-declarable destination. Public V2 autocomplete uses suggestion-row IDs instead; consumers must not pass those IDs to this endpoint. Hidden-code and description-intercept filters still apply.
 - `include: "heading,chapter"`: attaches parent heading and chapter context after ranking. Either ancestor name enables the paired context. Other names are ignored.
 
 Ancestor descriptions use the requested date. Unique ancestor codes and descriptions are loaded in a batch. The response does not change result order or scores. Relationships can target primary `data` or `included`; each resource identity appears only once. Consumers must resolve linkage from both collections. Ancestors contain display fields, not declarability or scores.

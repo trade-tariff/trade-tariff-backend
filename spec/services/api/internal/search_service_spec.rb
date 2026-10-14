@@ -335,10 +335,12 @@ RSpec.describe Api::Internal::SearchService do
 
       before do
         create(:search_suggestion, :search_reference,
+               id: second_heading.goods_nomenclature_sid,
                goods_nomenclature: first_heading,
                value: 'livestock',
                declarable: true)
         create(:search_suggestion, :search_reference,
+               id: first_heading.goods_nomenclature_sid,
                goods_nomenclature: second_heading,
                value: 'livestock',
                declarable: true)
@@ -375,6 +377,15 @@ RSpec.describe Api::Internal::SearchService do
         expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to be_in(%w[0101000000 0102000000])
       end
 
+      it 'falls back to retrieval when resource_id is not a numeric goods nomenclature SID' do
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return('hits' => { 'hits' => [] })
+
+        result = described_class.new(q: 'livestock', resource_id: 'not-a-sid').call
+
+        expect(result[:data]).to eq([])
+        expect(TradeTariffBackend.search_client).to have_received(:search)
+      end
+
       it 'falls back to retrieval when the resource_id matches no suggestion' do
         allow(TradeTariffBackend.search_client).to receive(:search).and_return('hits' => { 'hits' => [] })
 
@@ -394,6 +405,7 @@ RSpec.describe Api::Internal::SearchService do
 
       before do
         create(:search_suggestion, :search_reference,
+               id: "reference-#{heading.goods_nomenclature_sid}",
                goods_nomenclature: heading,
                value: 'livestock',
                declarable: false)

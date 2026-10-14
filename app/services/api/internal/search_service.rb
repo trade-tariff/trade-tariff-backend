@@ -506,13 +506,10 @@ module Api
         ::SearchSuggestion.allowed_types
       end
 
-      # Matches the classic SearchService::ExactSearch contract: the frontend
-      # sends back the search_suggestion resource id it selected from
-      # autocomplete, so two suggestions sharing one label resolve to the
-      # selected goods nomenclature instead of the first label match.
-      # Autocomplete clients can send the literal string 'undefined' when no
-      # selection was made, mirroring SearchService::ExactSearch behaviour.
-      def selected_suggestion_id
+      # Internal autocomplete exposes the goods nomenclature SID as its
+      # resource ID, not the suggestion row ID used by public V2 autocomplete.
+      # Clients can send the literal string 'undefined' when nothing was selected.
+      def selected_resource_id
         return if @resource_id.blank? || @resource_id == 'undefined'
 
         @resource_id
@@ -585,14 +582,19 @@ module Api
 
       def find_by_suggestion(query)
         scope = ::SearchSuggestion
-          .by_value(singular_and_plural(query.downcase), selected_suggestion_id)
+          .by_value(singular_and_plural(query.downcase))
           .where(type: allowed_suggestion_types)
 
-        # An explicit autocomplete selection wins even when the suggestion
-        # targets a non-declarable heading or chapter. Only implicit, no-ID
-        # label matching keeps the declarable-only shortlist. Hidden and
-        # intercept protections still apply after the suggestion resolves.
-        scope = scope.declarable unless selected_suggestion_id
+        # Explicit selections can target non-declarable headings or chapters.
+        # Hidden and intercept protections still apply after resolution.
+        if selected_resource_id
+          sid = Integer(selected_resource_id, exception: false)
+          return unless sid
+
+          scope = scope.where(goods_nomenclature_sid: sid)
+        else
+          scope = scope.declarable
+        end
 
         suggestion = scope.eager(:goods_nomenclature).first
         if suggestion

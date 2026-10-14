@@ -675,10 +675,12 @@ RSpec.describe Api::Internal::SearchController, :internal do
 
       before do
         create(:search_suggestion, :search_reference,
+               id: second_heading.goods_nomenclature_sid,
                goods_nomenclature: first_heading,
                value: 'livestock',
                declarable: true)
         create(:search_suggestion, :search_reference,
+               id: first_heading.goods_nomenclature_sid,
                goods_nomenclature: second_heading,
                value: 'livestock',
                declarable: true)
@@ -693,6 +695,27 @@ RSpec.describe Api::Internal::SearchController, :internal do
         expect(response).to have_http_status(:ok)
         expect(payload['data'].length).to eq(1)
         expect(payload['data'].first.dig('attributes', 'goods_nomenclature_item_id')).to eq('0102000000')
+      end
+
+      it 'resolves the resource ID returned by internal autocomplete', :aggregate_failures do
+        SearchSuggestion.where(value: 'livestock').each { |suggestion| index_model(suggestion) }
+        TradeTariffBackend.search_client.indices.refresh(index: 'tariff-test-*')
+        allow(TradeTariffBackend.search_client).to receive(:search).and_call_original
+
+        get api_search_suggestions_path(format: :json), params: { q: 'livestock' }
+
+        expect(response).to have_http_status(:ok)
+        suggestion = response.parsed_body.fetch('data').fetch(0)
+        expect(suggestion.fetch('id')).to be_in([first_heading.goods_nomenclature_sid.to_s, second_heading.goods_nomenclature_sid.to_s])
+
+        post api_search_path(format: :json),
+             params: { q: 'livestock', resource_id: suggestion.fetch('id'), as_of: Time.zone.today.iso8601 }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body.fetch('data').map { |item| item.fetch('id') })
+          .to eq([suggestion.fetch('id')])
+        expect(TradeTariffBackend.search_client).to have_received(:search).once
+        expect(InteractiveSearchService).not_to have_received(:call)
       end
 
       it 'keeps the implicit label match when no resource_id is supplied' do
