@@ -670,6 +670,26 @@ RSpec.describe ExpandSearchQueryService do
       end
     end
 
+    context 'when v2 cached a rejected grouped code before a quantity' do
+      let(:query) { '8471 30 2 laptops' }
+      let(:ai_response) { { 'added_terms' => ['HS code 8471.30'], 'reason' => 'Repeat the supplied code.' } }
+
+      it 'fetches and caches the preserved code in the new namespace', :aggregate_failures do
+        digest = Digest::MD5.hexdigest(default_context)[0, 8]
+        key_suffix = "gpt-4.1-mini-2025-04-14/#{digest}/#{query.downcase}"
+        memory_store.write("expand_search_query/v2/#{key_suffix}", { expanded_query: query, reason: nil })
+
+        fresh = described_class.call(query)
+        cached = described_class.call(query)
+
+        expect(fresh.expanded_query).to eq('8471 30 2 laptops HS code 8471.30')
+        expect(cached).to eq(fresh)
+        expect(memory_store.read("expand_search_query/v3/#{key_suffix}"))
+          .to include(expanded_query: fresh.expanded_query)
+        expect(OpenaiClient).to have_received(:call).once
+      end
+    end
+
     it 'treats queries case-insensitively' do
       described_class.call('Laptop')
       described_class.call('laptop')
