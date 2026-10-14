@@ -53,6 +53,7 @@ module TradeTariffBackend
 
     config.sequel.after_connect = proc do
       Sequel::Model.plugin :take
+      Sequel::Model.plugin :save_bang
       Sequel::Model.plugin :validation_class_methods
       Sequel::Model.plugin :optimized_many_to_many
 

@@ -83,10 +83,16 @@ module Evaluation
       true
     end
 
+    def update!(attributes)
+      update(attributes) || raise(Sequel::ValidationFailed, errors)
+    end
+
     # Each row's own after-destroy hook writes a 'destroy' history entry.
     def destroy
       EvaluationGoldQuery.db.transaction { rows.each(&:destroy) }
     end
+
+    alias_method :destroy!, :destroy
 
     # The history of all three rows together, newest first.
     def versions
