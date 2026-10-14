@@ -1,14 +1,7 @@
 require 'open3'
 
-desc 'Populate empty materialized views after loading the test structure'
-task 'db:test:populate_empty_materialized_views' => :environment do # rubocop:disable Metrics/BlockLength
-  db = begin
-    Sequel::Model.db
-  rescue Sequel::Error
-    Sequel.connect(Rails.application.config.database_configuration.fetch(Rails.env).symbolize_keys)
-  end
-
-  db.fetch(<<~SQL).each do |row|
+module TestDatabaseTasks
+  MATERIALIZED_VIEW_REFRESH_ORDER_SQL = <<~SQL.freeze
     WITH RECURSIVE relations AS (
       SELECT c.oid, c.relkind, quote_ident(n.nspname) || '.' || quote_ident(c.relname) AS view_name
       FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
@@ -31,28 +24,36 @@ task 'db:test:populate_empty_materialized_views' => :environment do # rubocop:di
     SELECT r.view_name FROM paths p JOIN relations r ON r.oid = p.root
     GROUP BY r.oid, r.view_name ORDER BY max(p.depth), r.view_name
   SQL
-    db.run("REFRESH MATERIALIZED VIEW #{row[:view_name]}")
+  PARALLEL_PREPARE_COMMAND = %w[bundle exec rails db:drop db:create db:structure:load].freeze
+
+module_function
+
+  def populate_empty_materialized_views
+    database = database_connection
+
+    database.fetch(MATERIALIZED_VIEW_REFRESH_ORDER_SQL).each do |row|
+      database.run("REFRESH MATERIALIZED VIEW #{row[:view_name]}")
+    end
   end
-end
 
-desc 'Prepare parallel test databases'
-task 'db:test:prepare_parallel' => :environment do
-  workers = Integer(ENV.fetch('PARALLEL_TEST_PROCESSORS', 5))
+  def prepare_parallel
+    workers = Integer(ENV.fetch('PARALLEL_TEST_PROCESSORS', 5))
+    raise 'PARALLEL_TEST_PROCESSORS must be at least 1' if workers < 1
 
-  raise 'PARALLEL_TEST_PROCESSORS must be at least 1' if workers < 1
+    puts 'Preparing test databases...'
+    1.upto(workers) { |worker| prepare_parallel_database(worker) }
+  end
 
-  puts 'Preparing test databases...'
-
-  1.upto(workers) do |worker|
+  def prepare_parallel_database(worker)
     test_env_number = worker == 1 ? '' : worker.to_s
     database_name = "tariff_test#{test_env_number}"
-    env = {
-      'RAILS_ENV' => 'test',
-      'TEST_ENV_NUMBER' => test_env_number,
-    }
-    command = %w[bundle exec rails db:drop db:create db:structure:load]
-
-    stdout, stderr, status = Open3.capture3(env, *command)
+    stdout, stderr, status = Open3.capture3(
+      {
+        'RAILS_ENV' => 'test',
+        'TEST_ENV_NUMBER' => test_env_number,
+      },
+      *PARALLEL_PREPARE_COMMAND,
+    )
 
     if ENV['PARALLEL_TEST_PREPARE_VERBOSE'] == 'true'
       puts stdout
@@ -67,6 +68,22 @@ task 'db:test:prepare_parallel' => :environment do
 
     puts "Prepared #{database_name}"
   end
+
+  def database_connection
+    Sequel::Model.db
+  rescue Sequel::Error
+    Sequel.connect(Rails.application.config.database_configuration.fetch(Rails.env).symbolize_keys)
+  end
+end
+
+desc 'Populate empty materialized views after loading the test structure'
+task 'db:test:populate_empty_materialized_views' => :environment do
+  TestDatabaseTasks.populate_empty_materialized_views
+end
+
+desc 'Prepare parallel test databases'
+task 'db:test:prepare_parallel' => :environment do
+  TestDatabaseTasks.prepare_parallel
 end
 
 if Rails.env.test?
