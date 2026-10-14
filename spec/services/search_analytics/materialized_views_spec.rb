@@ -1,16 +1,24 @@
 # frozen_string_literal: true
 
-RSpec.describe SearchAnalytics::MaterializedViews, :truncation do # rubocop:disable RSpec/MultipleMemoizedHelpers
-  let(:now) { Time.utc(2026, 9, 15, 10) }
-  let(:first_date) { Date.new(2026, 9, 13) }
-  let(:last_date) { Date.new(2026, 9, 14) }
-  let(:region) { 'eu-west-2' }
-  let(:log_group_name) { 'example-logs' }
+RSpec.describe SearchAnalytics::MaterializedViews, :truncation do
   let(:scope) { { region:, log_group_name:, now: } }
-  let(:shared_key) { Digest::SHA256.hexdigest('shared') }
-  let(:first_key) { Digest::SHA256.hexdigest('first') }
-  let(:last_key) { Digest::SHA256.hexdigest('last') }
   let(:db) { SearchAnalyticsQueryResult.db }
+
+  def now = Time.utc(2026, 9, 15, 10)
+
+  def first_date = Date.new(2026, 9, 13)
+
+  def last_date = Date.new(2026, 9, 14)
+
+  def region = 'eu-west-2'
+
+  def log_group_name = 'example-logs'
+
+  def shared_key = Digest::SHA256.hexdigest('shared')
+
+  def first_key = Digest::SHA256.hexdigest('first')
+
+  def last_key = Digest::SHA256.hexdigest('last')
 
   before do
     allow(TradeTariffBackend).to receive(:service).and_return('uk')
