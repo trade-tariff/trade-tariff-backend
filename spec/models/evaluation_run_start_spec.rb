@@ -23,6 +23,52 @@ RSpec.describe EvaluationRun do
       expect(run.idempotency_key).to eq(key)
     end
 
+    it 'enqueues label generation for the new run, fire-and-forget, with its own launch-time overrides (AI-1437)' do
+      run = described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: SecureRandom.uuid)
+
+      expect(GenerateRunLabelWorker.jobs.map { |job| job['args'] }).to include([run.id, { 'simulator_model' => 'gpt-4o-mini' }])
+    end
+
+    it "enqueues the run's own run_time_overrides winning over the experiment's, on a key set at both levels" do
+      run = described_class.start!(
+        experiment:, triggered_by: 'operator', idempotency_key: SecureRandom.uuid,
+        run_time_overrides: { 'simulator_model' => 'gpt-4o' }
+      )
+
+      expect(GenerateRunLabelWorker.jobs.map { |job| job['args'] }).to include([run.id, { 'simulator_model' => 'gpt-4o' }])
+    end
+
+    it 'does not enqueue label generation again when an idempotency key is reused for a genuine retry' do
+      key = SecureRandom.uuid
+      described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: key)
+      GenerateRunLabelWorker.jobs.clear
+
+      described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: key)
+
+      expect(GenerateRunLabelWorker.jobs).to be_empty
+    end
+
+    context 'when Redis is unavailable for the label enqueue (AI-1437 review)' do
+      before do
+        allow(GenerateRunLabelWorker).to receive(:perform_async).and_raise(RedisClient::ConnectionError, 'unavailable')
+        allow(Rails.logger).to receive(:warn)
+      end
+
+      it 'still returns the successfully created, successfully eval-app-triggered run, not an error' do
+        run = described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: SecureRandom.uuid)
+
+        expect(run.id).to be_present
+        expect(run.status).to eq('queued')
+        expect(EvalAppClient).to have_received(:start_run!)
+      end
+
+      it 'logs a warning instead of silently losing the failure' do
+        described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: SecureRandom.uuid)
+
+        expect(Rails.logger).to have_received(:warn).with(/Could not enqueue label generation/)
+      end
+    end
+
     it 'applies run-time overrides on top of the experiment overrides' do
       run = described_class.start!(
         experiment:, triggered_by: 'operator', idempotency_key: SecureRandom.uuid,
