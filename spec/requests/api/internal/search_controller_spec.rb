@@ -499,6 +499,238 @@ RSpec.describe Api::Internal::SearchController, :internal do
         expect(InteractiveSearchService).to have_received(:call)
       end
     end
+
+    context 'when include requests ancestor resources' do
+      let!(:chapter) do
+        create(:chapter, :with_description,
+               goods_nomenclature_item_id: '0100000000',
+               description: 'live animals')
+      end
+      let!(:heading) do
+        create(:heading, :with_description,
+               goods_nomenclature_item_id: '0101000000',
+               description: 'live horses')
+      end
+
+      before do
+        index = Search::GoodsNomenclatureIndex.new
+
+        TradeTariffBackend.search_client.index_by_name(
+          index.name,
+          3,
+          {
+            goods_nomenclature_sid: 3,
+            goods_nomenclature_item_id: '0101210000',
+            producline_suffix: '80',
+            goods_nomenclature_class: 'Commodity',
+            description: 'pure-bred breeding camels',
+            formatted_description: 'Pure-bred breeding camels',
+            full_description: 'Pure-bred breeding camels',
+            heading_description: 'Live horses, asses, mules and hinnies',
+            declarable: true,
+            validity_start_date: Time.zone.today.iso8601,
+          },
+        )
+        TradeTariffBackend.search_client.indices.refresh(index: 'tariff-test-*')
+      end
+
+      it 'returns ancestor relationships and included resources in the response JSON' do
+        post api_search_path(format: :json),
+             params: { q: 'camels', include: 'heading,chapter', as_of: Time.zone.today.iso8601 }
+
+        payload = JSON.parse(response.body)
+        primary = payload['data'].first
+
+        expect(response).to have_http_status(:ok)
+        expect(primary.dig('attributes', 'goods_nomenclature_item_id')).to eq('0101210000')
+        expect(primary.dig('attributes', 'score')).to be_a(Numeric)
+        expect(primary['relationships']['heading']['data']).to eq(
+          'type' => 'heading', 'id' => heading.goods_nomenclature_sid.to_s,
+        )
+        expect(primary['relationships']['chapter']['data']).to eq(
+          'type' => 'chapter', 'id' => chapter.goods_nomenclature_sid.to_s,
+        )
+
+        included = payload['included']
+        included_keys = included.map { |resource| [resource['type'], resource['id']] }
+        primary_keys = payload['data'].map { |resource| [resource['type'], resource['id']] }
+
+        expect(included_keys).to contain_exactly(
+          ['heading', heading.goods_nomenclature_sid.to_s],
+          ['chapter', chapter.goods_nomenclature_sid.to_s],
+        )
+        expect(included_keys).not_to include(*primary_keys)
+        expect(included.map { |resource| resource.dig('attributes', 'description') })
+          .to contain_exactly('Live horses', 'Live animals')
+      end
+
+      it 'returns ranked primary data without ancestor context by default' do
+        post api_search_path(format: :json), params: { q: 'camels', as_of: Time.zone.today.iso8601 }
+
+        payload = JSON.parse(response.body)
+
+        expect(payload).not_to have_key('included')
+        expect(payload['data'].first).not_to have_key('relationships')
+      end
+    end
+
+    context 'when retrieval_method is overridden per request' do
+      before do
+        allow(VectorRetrievalService).to receive(:call).and_return([])
+      end
+
+      it 'uses the requested vector leg when hybrid retrieval is enabled' do
+        allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('hybrid')
+
+        post api_search_path(format: :json),
+             params: { q: 'horses', retrieval_method: 'vector', as_of: Time.zone.today.iso8601 }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['data']).to eq([])
+        expect(VectorRetrievalService).to have_received(:call).with(
+          hash_including(query: a_string_including('horses')),
+        )
+      end
+
+      it 'falls back to the configured method for disallowed values' do
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return('hits' => { 'hits' => [] })
+
+        post api_search_path(format: :json),
+             params: { q: 'horses', retrieval_method: 'crossencoder', as_of: Time.zone.today.iso8601 }
+
+        expect(response).to have_http_status(:ok)
+        expect(TradeTariffBackend.search_client).to have_received(:search)
+        expect(VectorRetrievalService).not_to have_received(:call)
+      end
+    end
+
+    context 'when skip_question is supplied' do
+      let(:interactive_result) do
+        InteractiveSearchService::Result.new(
+          type: :questions,
+          data: [{ question: 'What is the material?', options: %w[Leather Synthetic] }],
+          attempt: 1,
+          model: 'gpt-5.2',
+          result_limit: 5,
+        )
+      end
+
+      before do
+        index = Search::GoodsNomenclatureIndex.new
+
+        TradeTariffBackend.search_client.index_by_name(
+          index.name,
+          1,
+          {
+            goods_nomenclature_sid: 1,
+            goods_nomenclature_item_id: '4202210000',
+            producline_suffix: '80',
+            goods_nomenclature_class: 'Commodity',
+            description: 'leather satchel',
+            formatted_description: 'Leather satchel',
+            full_description: 'Leather satchel',
+            heading_description: 'Trunks and cases',
+            declarable: true,
+            validity_start_date: Time.zone.today.iso8601,
+          },
+        )
+        TradeTariffBackend.search_client.indices.refresh(index: 'tariff-test-*')
+
+        allow(InteractiveSearchService).to receive(:call).and_return(interactive_result)
+      end
+
+      it 'returns results without a question when skip_question is true' do
+        post api_search_path(format: :json),
+             params: { q: 'satchel', skip_question: 'true', as_of: Time.zone.today.iso8601 }
+
+        payload = response.parsed_body
+
+        expect(response).to have_http_status(:ok)
+        expect(InteractiveSearchService).not_to have_received(:call)
+        expect(payload['data'].length).to eq(1)
+        expect(payload['meta']).not_to have_key('interactive_search')
+      end
+
+      it 'returns the question when skip_question is not supplied' do
+        post api_search_path(format: :json),
+             params: { q: 'satchel', as_of: Time.zone.today.iso8601 }
+
+        payload = response.parsed_body
+
+        expect(response).to have_http_status(:ok)
+        expect(InteractiveSearchService).to have_received(:call)
+        expect(payload['meta']).to have_key('interactive_search')
+      end
+    end
+
+    context 'when the query matches two same-label suggestions' do
+      let!(:first_heading) do
+        create(:heading, :with_description,
+               goods_nomenclature_item_id: '0101000000',
+               description: 'live horses')
+      end
+      let!(:second_heading) do
+        create(:heading, :with_description,
+               goods_nomenclature_item_id: '0102000000',
+               description: 'bovine animals')
+      end
+
+      before do
+        create(:search_suggestion, :search_reference,
+               id: second_heading.goods_nomenclature_sid,
+               goods_nomenclature: first_heading,
+               value: 'livestock',
+               declarable: true)
+        create(:search_suggestion, :search_reference,
+               id: first_heading.goods_nomenclature_sid,
+               goods_nomenclature: second_heading,
+               value: 'livestock',
+               declarable: true)
+      end
+
+      it 'resolves the selected suggestion from the resource_id parameter' do
+        post api_search_path(format: :json),
+             params: { q: 'livestock', resource_id: second_heading.goods_nomenclature_sid, as_of: Time.zone.today.iso8601 }
+
+        payload = response.parsed_body
+
+        expect(response).to have_http_status(:ok)
+        expect(payload['data'].length).to eq(1)
+        expect(payload['data'].first.dig('attributes', 'goods_nomenclature_item_id')).to eq('0102000000')
+      end
+
+      it 'resolves the resource ID returned by internal autocomplete', :aggregate_failures do
+        SearchSuggestion.where(value: 'livestock').each { |suggestion| index_model(suggestion) }
+        TradeTariffBackend.search_client.indices.refresh(index: 'tariff-test-*')
+        allow(TradeTariffBackend.search_client).to receive(:search).and_call_original
+
+        get api_search_suggestions_path(format: :json), params: { q: 'livestock' }
+
+        expect(response).to have_http_status(:ok)
+        suggestion = response.parsed_body.fetch('data').fetch(0)
+        expect(suggestion.fetch('id')).to be_in([first_heading.goods_nomenclature_sid.to_s, second_heading.goods_nomenclature_sid.to_s])
+
+        post api_search_path(format: :json),
+             params: { q: 'livestock', resource_id: suggestion.fetch('id'), as_of: Time.zone.today.iso8601 }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body.fetch('data').map { |item| item.fetch('id') })
+          .to eq([suggestion.fetch('id')])
+        expect(TradeTariffBackend.search_client).to have_received(:search).once
+        expect(InteractiveSearchService).not_to have_received(:call)
+      end
+
+      it 'keeps the implicit label match when no resource_id is supplied' do
+        post api_search_path(format: :json),
+             params: { q: 'livestock', as_of: Time.zone.today.iso8601 }
+
+        payload = response.parsed_body
+
+        expect(response).to have_http_status(:ok)
+        expect(payload['data'].length).to eq(1)
+        expect(payload['data'].first.dig('attributes', 'goods_nomenclature_item_id')).to be_in(%w[0101000000 0102000000])
+      end
+    end
   end
 
   describe 'GET /search_suggestions' do

@@ -242,6 +242,22 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
       end
     end
 
+    context 'when a run has a generated label' do
+      before { create(:evaluation_run, evaluation_experiment: experiment, label: 'vector based retrieval') }
+
+      it 'includes it (AI-1437)' do
+        expect(json_response['data'].map { |run| run['attributes']['label'] }).to eq(['vector based retrieval'])
+      end
+    end
+
+    context "when a run's label hasn't been generated yet" do
+      before { create(:evaluation_run, evaluation_experiment: experiment) }
+
+      it 'includes it as nil, not an error or a missing key' do
+        expect(json_response['data'].first['attributes']).to include('label' => nil)
+      end
+    end
+
     context 'when listing runs' do
       let(:experiment) { create(:evaluation_experiment, name: 'Baseline search') }
 
@@ -505,6 +521,167 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
       let(:make_request) { authenticated_patch api_admin_search_evaluation_run_path(999_999, format: :json), params: { data: { type: :run, attributes: { status: 'completed' } } } }
 
       it { is_expected.to have_http_status :not_found }
+    end
+  end
+
+  describe 'DELETE #bulk_destroy' do
+    let(:make_request) { authenticated_delete bulk_destroy_api_admin_search_evaluation_runs_path(format: :json), params: { run_ids: run_ids } }
+    let!(:run_a) { create(:evaluation_run, evaluation_experiment: experiment, status: 'completed') }
+    let!(:run_b) { create(:evaluation_run, evaluation_experiment: experiment, status: 'failed') }
+
+    # A plain method, not a `let`, to keep this describe block's memoized-helper count under
+    # RuboCop's RSpec/MultipleMemoizedHelpers limit (it counts inherited `let`s too).
+    def run_ids
+      [run_a.id, run_b.id]
+    end
+
+    it { is_expected.to have_http_status :no_content }
+
+    it 'deletes every selected run in one request' do
+      expect { api_response }.to change(EvaluationRun, :count).by(-2)
+    end
+
+    it 'deletes a selected run\'s own results along with it' do
+      result = create(:evaluation_result, evaluation_run: run_a)
+
+      api_response
+
+      expect(EvaluationResult.where(id: result.id)).to be_empty
+    end
+
+    it 'leaves runs outside the selection untouched' do
+      untouched = create(:evaluation_run, evaluation_experiment: experiment, status: 'completed')
+
+      api_response
+
+      expect(EvaluationRun[untouched.id]).to be_present
+    end
+
+    context 'when the selection includes a queued run' do
+      let!(:run_b) { create(:evaluation_run, evaluation_experiment: experiment, status: 'queued') }
+
+      it { is_expected.to have_http_status :conflict }
+      it { expect { api_response }.not_to change(EvaluationRun, :count) }
+
+      it 'says why and what to do next, and does not delete the other, eligible run either' do
+        api_response
+
+        expect(json_response.dig('errors', 0, 'detail')).to eq(
+          'One or more selected runs are queued or running. Wait for them to finish, or cancel them, ' \
+          'then try again.',
+        )
+        expect(EvaluationRun[run_a.id]).to be_present
+      end
+    end
+
+    context 'when the selection includes a running run' do
+      let!(:run_b) { create(:evaluation_run, evaluation_experiment: experiment, status: 'running') }
+
+      it { is_expected.to have_http_status :conflict }
+      it { expect { api_response }.not_to change(EvaluationRun, :count) }
+    end
+
+    context 'when the selection includes an id that no longer exists' do
+      def run_ids
+        [run_a.id, 999_999]
+      end
+
+      it 'deletes the runs that do exist, rather than failing the whole request' do
+        expect { api_response }.to change(EvaluationRun, :count).by(-1)
+        expect(api_response).to have_http_status :no_content
+      end
+    end
+
+    context 'when run_ids is missing from the request' do
+      let(:make_request) { authenticated_delete bulk_destroy_api_admin_search_evaluation_runs_path(format: :json) }
+
+      it { is_expected.to have_http_status :bad_request }
+      it { expect { api_response }.not_to change(EvaluationRun, :count) }
+    end
+
+    context 'when run_ids is an empty array' do
+      def run_ids
+        []
+      end
+
+      it { is_expected.to have_http_status :bad_request }
+      it { expect { api_response }.not_to change(EvaluationRun, :count) }
+    end
+
+    context 'when run_ids contains something that is not an integer (AI-1441 review)' do
+      def run_ids
+        [run_a.id, 'not-an-id']
+      end
+
+      it 'rejects the request with 400, rather than letting a malformed id reach Postgres as a 500' do
+        expect(api_response).to have_http_status :bad_request
+      end
+
+      it 'does not delete anything from the valid part of the selection either' do
+        expect { api_response }.not_to change(EvaluationRun, :count)
+      end
+    end
+
+    # A single-process spec can mutate a row before a query runs, but it cannot make a second,
+    # genuinely concurrent transaction race this one on the same connection -- FOR UPDATE's
+    # whole purpose is to block a *different* transaction, which a single-threaded stub can't
+    # exercise. What a spec here can honestly prove is that the mechanism is actually wired up:
+    # that the SELECT this action runs is a locking one, not a plain read (AI-1441 review --
+    # Copilot correctly flagged an earlier version of this spec that stubbed the mutation before
+    # the very first read in *either* the old or new implementation, so it passed against both
+    # and proved nothing about the fix specifically).
+    context 'with the row-locking mechanism' do
+      def run_ids
+        [run_a.id, run_b.id]
+      end
+
+      it 'selects the rows with FOR UPDATE, so a concurrent PATCH on one of them has to wait for this transaction to finish' do
+        # Sequel datasets are frozen, so stubbing a method on one directly (e.g. via
+        # allow(dataset).to receive(:for_update)) silently never fires. Reading the real SQL
+        # Sequel sends to Postgres, through its own query logger, sidesteps that entirely.
+        log = StringIO.new
+        EvaluationRun.db.loggers << Logger.new(log)
+
+        begin
+          api_response
+        ensure
+          EvaluationRun.db.loggers.pop
+        end
+
+        expect(log.string).to match(/FOR UPDATE/i)
+      end
+    end
+
+    context 'when run_ids is not an array at all' do
+      let(:make_request) { authenticated_delete bulk_destroy_api_admin_search_evaluation_runs_path(format: :json), params: { run_ids: run_a.id } }
+
+      it 'rejects it rather than silently treating the single value as a one-id selection' do
+        expect(api_response).to have_http_status :bad_request
+      end
+
+      it 'does not delete the run that the bare id happened to name' do
+        expect { api_response }.not_to change(EvaluationRun, :count)
+      end
+    end
+
+    context 'when run_ids contains a float (AI-1441 review)' do
+      let(:make_request) { authenticated_delete bulk_destroy_api_admin_search_evaluation_runs_path(format: :json), params: { run_ids: [run_a.id, 1.9] } }
+
+      it 'rejects it, rather than truncating 1.9 into a real id via Integer() coercion' do
+        expect(api_response).to have_http_status :bad_request
+      end
+
+      it 'does not delete anything from the valid part of the selection either' do
+        expect { api_response }.not_to change(EvaluationRun, :count)
+      end
+    end
+
+    context "when run_ids contains an id too large for Postgres's integer column (AI-1441 review)" do
+      let(:make_request) { authenticated_delete bulk_destroy_api_admin_search_evaluation_runs_path(format: :json), params: { run_ids: [run_a.id, 2_147_483_648] } }
+
+      it 'rejects it with 400 because it cannot be a valid run id' do
+        expect(api_response).to have_http_status :bad_request
+      end
     end
   end
 end

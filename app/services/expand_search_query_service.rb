@@ -153,15 +153,17 @@ private
 
   def supplied_numeric_references
     # Keep quantities separate. Only tariff-shaped groups gain an additional
-    # combined form: an initial 2/4/6/8 digits, followed by two-digit groups,
-    # with at most ten digits overall.
+    # combined form: keep consecutive two-digit groups after the initial
+    # 2/4/6/8 digits, stopping at a quantity or ten digits overall.
     grouped = query.scan(FORMATTED_NUMBER_PATTERN).filter_map do |span|
       parts = span.split(/[.\s]+/)
       next if parts.one? || ![2, 4, 6, 8].include?(parts.first.length)
-      next unless parts.drop(1).all? { |part| part.length == 2 }
 
-      code = parts.join
-      code if code.length <= 10
+      maximum_groups = (10 - parts.first.length) / 2
+      suffix = parts.drop(1).take(maximum_groups).take_while { |part| part.length == 2 }
+      next if suffix.empty?
+
+      parts.first + suffix.join
     end
     (query.scan(/\d+/) + grouped).uniq
   end
@@ -182,7 +184,7 @@ private
   end
 
   def cache_key
-    @cache_key ||= "expand_search_query/v2/#{configured_model}/#{context_digest}/#{query.downcase}"
+    @cache_key ||= "expand_search_query/v3/#{configured_model}/#{context_digest}/#{query.downcase}"
   end
 
   def context_digest

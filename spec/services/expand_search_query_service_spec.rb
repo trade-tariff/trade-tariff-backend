@@ -321,6 +321,39 @@ RSpec.describe ExpandSearchQueryService do
       end
     end
 
+    [
+      ['8471 30 2 laptops', '8471.30'],
+      ['8471.30 2 laptops', '847130'],
+      ['8471 30 10 00 2 laptops', '8471301000'],
+    ].each do |original_query, supplied_code|
+      context "when #{original_query.inspect} includes a grouped code before a quantity" do
+        let(:query) { original_query }
+        let(:ai_response) { { 'added_terms' => ["HS code #{supplied_code}"], 'reason' => 'Repeat the supplied code.' } }
+
+        it 'keeps the longest valid code prefix' do
+          expect(result.expanded_query).to eq("#{query} HS code #{supplied_code}")
+        end
+      end
+    end
+
+    context 'when a quantity interrupts code groups' do
+      let(:query) { '8471 30 2 10 laptops' }
+      let(:ai_response) { { 'added_terms' => ['HS code 84713010'], 'reason' => 'Tariff terminology.' } }
+
+      it 'does not skip the quantity to build a code' do
+        expect(result.expanded_query).to eq(query)
+      end
+    end
+
+    context 'when a code-like addition is not labelled as a tariff reference' do
+      let(:query) { 'laptops' }
+      let(:ai_response) { { 'added_terms' => ['8471 30 10 00 laptops'], 'reason' => 'Search terminology.' } }
+
+      it 'keeps the deliberate numeric recall trade-off' do
+        expect(result.expanded_query).to eq('laptops 8471 30 10 00 laptops')
+      end
+    end
+
     context 'when a supplied heading is next to a quantity' do
       let(:query) { '8471 2 laptops' }
       let(:ai_response) { { 'added_terms' => ['heading 8471'], 'reason' => 'Repeat the supplied heading.' } }
@@ -633,6 +666,26 @@ RSpec.describe ExpandSearchQueryService do
 
         expect(fresh.expanded_query).to eq('2kW heater 2000 watt heater')
         expect(cached).to eq(fresh)
+        expect(OpenaiClient).to have_received(:call).once
+      end
+    end
+
+    context 'when v2 cached a rejected grouped code before a quantity' do
+      let(:query) { '8471 30 2 laptops' }
+      let(:ai_response) { { 'added_terms' => ['HS code 8471.30'], 'reason' => 'Repeat the supplied code.' } }
+
+      it 'fetches and caches the preserved code in the new namespace', :aggregate_failures do
+        digest = Digest::MD5.hexdigest(default_context)[0, 8]
+        key_suffix = "gpt-4.1-mini-2025-04-14/#{digest}/#{query.downcase}"
+        memory_store.write("expand_search_query/v2/#{key_suffix}", { expanded_query: query, reason: nil })
+
+        fresh = described_class.call(query)
+        cached = described_class.call(query)
+
+        expect(fresh.expanded_query).to eq('8471 30 2 laptops HS code 8471.30')
+        expect(cached).to eq(fresh)
+        expect(memory_store.read("expand_search_query/v3/#{key_suffix}"))
+          .to include(expanded_query: fresh.expanded_query)
         expect(OpenaiClient).to have_received(:call).once
       end
     end

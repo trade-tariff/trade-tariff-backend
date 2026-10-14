@@ -20,7 +20,7 @@ module SearchReferences
     ADMIN_UID = /\A\h{8}-\h{4}-\h{4}-\h{4}-\h{12}\z/
     ADMIN_BASIC_AUTH_UID = 'basic_auth_user'
 
-    module_function
+  module_function
 
     def admin_user?(whodunnit)
       whodunnit == ADMIN_BASIC_AUTH_UID || ADMIN_UID.match?(whodunnit.to_s)

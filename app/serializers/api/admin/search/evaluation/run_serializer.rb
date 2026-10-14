@@ -10,6 +10,7 @@ module Api
 
           attributes :experiment_id,
                      :status,
+                     :label,
                      :triggered_by,
                      :configuration_digest,
                      :effective_configuration,
