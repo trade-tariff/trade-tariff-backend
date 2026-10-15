@@ -64,14 +64,14 @@ module Api
 
           def experiment_params
             params.require(:data).require(:attributes).permit(
-              :name, :description, :enabled, :gold_query_set_id,
+              :name, :description, :enabled, :gold_query_set_id, :synthetic_input_set_id,
               configuration_overrides: {}, default_scope: {}
             ).to_h
           end
 
           def update_params
             params.require(:data).require(:attributes).permit(
-              :description, :enabled, :gold_query_set_id,
+              :description, :enabled, :gold_query_set_id, :synthetic_input_set_id,
               configuration_overrides: {}, default_scope: {}
             ).to_h
           end

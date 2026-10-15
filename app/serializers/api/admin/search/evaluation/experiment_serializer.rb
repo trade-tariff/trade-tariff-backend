@@ -14,6 +14,7 @@ module Api
                      :configuration_overrides,
                      :default_scope,
                      :gold_query_set_id,
+                     :synthetic_input_set_id,
                      :created_at,
                      :created_by
         end

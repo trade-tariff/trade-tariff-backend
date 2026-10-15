@@ -160,12 +160,34 @@ RSpec.describe Api::Admin::Search::Evaluation::ExperimentsController, :admin do
       it { expect { api_response }.not_to(change { experiment.reload.gold_query_set_id }) }
     end
 
-    context 'when clearing the gold query set' do
+    context 'when trying to clear an already-chosen gold query set' do
       let(:id) { experiment.id }
       let(:experiment) { create(:evaluation_experiment, gold_query_set_id: create(:evaluation_gold_query_set).id) }
       let(:params) { { data: { type: :experiment, attributes: { gold_query_set_id: nil } } } }
 
-      it { expect { api_response }.to change { experiment.reload.gold_query_set_id }.to(nil) }
+      it { is_expected.to have_http_status :unprocessable_content }
+      it { expect { api_response }.not_to(change { experiment.reload.gold_query_set_id }) }
+    end
+
+    context 'when choosing a synthetic input set' do
+      let(:id) { experiment.id }
+      let(:params) { { data: { type: :experiment, attributes: { synthetic_input_set_id: synthetic_input_set.id } } } }
+
+      def synthetic_input_set
+        @synthetic_input_set ||= create(:evaluation_synthetic_input_set)
+      end
+
+      it { is_expected.to have_http_status :success }
+      it { expect { api_response }.to change { experiment.reload.synthetic_input_set_id }.from(nil).to(synthetic_input_set.id) }
+    end
+
+    context 'when trying to change an already-chosen synthetic input set' do
+      let(:id) { experiment.id }
+      let(:experiment) { create(:evaluation_experiment, synthetic_input_set_id: create(:evaluation_synthetic_input_set).id) }
+      let(:params) { { data: { type: :experiment, attributes: { synthetic_input_set_id: create(:evaluation_synthetic_input_set).id } } } }
+
+      it { is_expected.to have_http_status :unprocessable_content }
+      it { expect { api_response }.not_to(change { experiment.reload.synthetic_input_set_id }) }
     end
 
     context 'with an unknown experiment' do
