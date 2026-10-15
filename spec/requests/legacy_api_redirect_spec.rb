@@ -6,13 +6,25 @@ RSpec.describe 'Legacy API path redirects', type: :request do
       get '/api/v2/sections?foo=1'
 
       expect(response).to have_http_status(:permanent_redirect)
-      expect(response.headers['Location']).to eq('/uk/api/v2/sections?foo=1')
+      expect(response.headers['location']).to eq('/uk/api/v2/sections?foo=1')
+    end
+
+    it 'keeps dotted query parameter names as the client sent them' do
+      get '/api/v2/sections?filter.type=monthly'
+
+      expect(response.headers['location']).to eq('/uk/api/v2/sections?filter.type=monthly')
+    end
+
+    it 'returns only lowercase header names' do
+      get '/api/v2/sections'
+
+      expect(response.headers.keys).to all(satisfy { |key| key == key.downcase })
     end
 
     it 'keeps the format extension' do
       get '/api/v2/changes.atom'
 
-      expect(response.headers['Location']).to eq('/uk/api/v2/changes.atom')
+      expect(response.headers['location']).to eq('/uk/api/v2/changes.atom')
     end
 
     it 'redirects to the XI service path when the backend is the XI service' do
@@ -20,16 +32,16 @@ RSpec.describe 'Legacy API path redirects', type: :request do
 
       get '/api/v2/sections'
 
-      expect(response.headers['Location']).to eq('/xi/api/v2/sections')
+      expect(response.headers['location']).to eq('/xi/api/v2/sections')
     end
 
     it 'sends the deprecation headers' do
       get '/api/v2/sections'
 
       expect(response.headers).to include(
-        'Deprecation' => 'true',
-        'Sunset' => LegacyApiRedirect::SUNSET_DATE.httpdate,
-        'Link' => docs_link,
+        'deprecation' => "@#{LegacyApiRedirect::DEPRECATION_DATE.to_i}",
+        'sunset' => LegacyApiRedirect::SUNSET_DATE.httpdate,
+        'link' => docs_link,
       )
     end
   end
@@ -39,7 +51,7 @@ RSpec.describe 'Legacy API path redirects', type: :request do
       post '/api/v2/search', params: { q: 'horse' }
 
       expect(response).to have_http_status(:permanent_redirect)
-      expect(response.headers['Location']).to eq('/uk/api/v2/search')
+      expect(response.headers['location']).to eq('/uk/api/v2/search')
     end
   end
 
@@ -54,7 +66,7 @@ RSpec.describe 'Legacy API path redirects', type: :request do
       get '/uk/api/v2/sections'
 
       expect(response).not_to have_http_status(:permanent_redirect)
-      expect(response.headers).not_to include('Deprecation')
+      expect(response.headers).not_to include('deprecation')
     end
   end
 end
