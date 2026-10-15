@@ -30,7 +30,14 @@ Sequel.migration do # rubocop:disable Metrics/BlockLength
         next unless latest.operation_date == Date.parse(source_date) && latest.validity_end_date.nil?
         next if GoodsNomenclatureIndent.where(goods_nomenclature_sid: sid).any?
         next if GoodsNomenclatureDescription.where(goods_nomenclature_sid: sid).any?
-        next if Measure.where(goods_nomenclature_sid: sid).any?
+
+        # Imports can run before the measures view refresh. Find each candidate
+        # measure's latest operation before checking its current nomenclature.
+        measure_sids = Measure::Operation.where(goods_nomenclature_sid: sid).select(:measure_sid)
+        latest_measure_oids = Measure::Operation.where(measure_sid: measure_sids)
+                                               .group(:measure_sid).select { max(oid) }
+        next if Measure::Operation.where(oid: latest_measure_oids, goods_nomenclature_sid: sid)
+                                  .exclude(operation: Sequel::Plugins::Oplog::DESTROY_OPERATION).any?
 
         values = latest.values.except(:oid)
         values[:filename] = filename

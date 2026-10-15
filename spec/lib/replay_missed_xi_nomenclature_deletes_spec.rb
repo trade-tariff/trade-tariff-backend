@@ -119,6 +119,79 @@ RSpec.describe 'Replay missed XI nomenclature deletes' do
     expect(repairs.select_map(:goods_nomenclature_sid)).not_to include(110_252)
   end
 
+  context 'with unrefreshed measure operations' do
+    it 'preserves a newly imported measure' do
+      measure_values = build(:measure, goods_nomenclature: ghosts.first).values
+      Measure::Operation.insert(measure_values.merge(operation: 'C'))
+      expect(Measure.where(goods_nomenclature_sid: 110_252)).to be_empty
+
+      migrate
+      MaterializeViewHelper.refresh_materialized_view
+
+      expect(repairs.select_map(:goods_nomenclature_sid)).not_to include(110_252)
+      expect(GoodsNomenclature.where(goods_nomenclature_sid: 110_252)).not_to be_empty
+      expect(Measure.where(goods_nomenclature_sid: 110_252)).not_to be_empty
+    end
+
+    it 'preserves a measure moved onto a target' do
+      measure_values = build(:measure, goods_nomenclature: ghosts.first).values
+      other = create(:goods_nomenclature)
+      Measure::Operation.insert(
+        measure_values.merge(operation: 'C',
+                             goods_nomenclature_sid: other.goods_nomenclature_sid,
+                             goods_nomenclature_item_id: other.goods_nomenclature_item_id),
+      )
+      Measure.refresh!(concurrently: false)
+      Measure::Operation.insert(measure_values.merge(operation: 'U'))
+      expect(Measure.where(goods_nomenclature_sid: 110_252)).to be_empty
+
+      migrate
+
+      expect(repairs.select_map(:goods_nomenclature_sid)).not_to include(110_252)
+    end
+
+    it 'ignores a deleted measure' do
+      measure_values = build(:measure, goods_nomenclature: ghosts.first).values
+      Measure::Operation.insert(measure_values.merge(operation: 'C'))
+      Measure.refresh!(concurrently: false)
+      Measure::Operation.insert(measure_values.merge(operation: 'D'))
+      expect(Measure.where(goods_nomenclature_sid: 110_252)).not_to be_empty
+
+      migrate
+
+      expect(repairs.select_map(:goods_nomenclature_sid)).to include(110_252)
+    end
+
+    it 'ignores a measure moved off a target' do
+      measure_values = build(:measure, goods_nomenclature: ghosts.first).values
+      other = create(:goods_nomenclature)
+      Measure::Operation.insert(measure_values.merge(operation: 'C'))
+      Measure.refresh!(concurrently: false)
+      Measure::Operation.insert(
+        measure_values.merge(operation: 'U',
+                             goods_nomenclature_sid: other.goods_nomenclature_sid,
+                             goods_nomenclature_item_id: other.goods_nomenclature_item_id),
+      )
+      expect(Measure.where(goods_nomenclature_sid: 110_252)).not_to be_empty
+
+      migrate
+
+      expect(repairs.select_map(:goods_nomenclature_sid)).to include(110_252)
+    end
+
+    it 'checks the latest operation per measure' do
+      measure_values = build(:measure, goods_nomenclature: ghosts.first).values
+      Measure::Operation.insert(measure_values.merge(operation: 'C'))
+      other_measure = measure_values.merge(measure_sid: measure_values[:measure_sid] + 1)
+      Measure::Operation.insert(other_measure.merge(operation: 'C'))
+      Measure::Operation.insert(other_measure.merge(operation: 'D'))
+
+      migrate
+
+      expect(repairs.select_map(:goods_nomenclature_sid)).not_to include(110_252)
+    end
+  end
+
   describe 'rollback' do
     it 'removes only the migration operations' do
       originals = operations.order(:oid).map(&:values)
