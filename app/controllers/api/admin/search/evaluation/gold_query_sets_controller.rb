@@ -82,9 +82,9 @@ module Api
           # created_by is deliberately not accepted from the body. It comes from the
           # X-Whodunnit header, the same as for experiments.
           def set_params
-            attributes = params.require(:data).require(:attributes).permit(:name, :requested_size, :atar_percentage)
+            attributes = params.require(:data).require(:attributes).permit(:name, :requested_size)
 
-            { name: attributes[:name], requested_size: attributes[:requested_size], atar_percentage: attributes[:atar_percentage] }
+            { name: attributes[:name], requested_size: attributes[:requested_size] }
           end
         end
       end
