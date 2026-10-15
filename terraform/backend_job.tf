@@ -1,5 +1,5 @@
 module "backend-job" {
-  source = "git::https://github.com/trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.3.1"
+  source = "git::https://github.com/trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.6.0"
 
   region = var.region
 
@@ -36,6 +36,8 @@ module "backend-job" {
 
   sns_topic_arns               = [data.aws_sns_topic.slack_topic.arn]
   observability_sns_topic_arns = var.enable_observability_alerts ? [data.aws_sns_topic.slack_observability_topic[0].arn] : null
+
+  tags = local.cost_allocation_tags
 }
 
 resource "aws_cloudwatch_event_rule" "database_backup" {
@@ -62,9 +64,11 @@ resource "aws_cloudwatch_event_target" "database_backup" {
   })
 
   ecs_target {
-    task_count          = 1
-    task_definition_arn = data.aws_ecs_task_definition.backend_job.arn
-    launch_type         = "FARGATE"
+    task_count              = 1
+    task_definition_arn     = data.aws_ecs_task_definition.backend_job.arn
+    launch_type             = "FARGATE"
+    enable_ecs_managed_tags = true
+    propagate_tags          = "TASK_DEFINITION"
     network_configuration {
       subnets          = data.aws_subnets.private.ids
       security_groups  = [data.aws_security_group.this.id]
@@ -100,9 +104,11 @@ resource "aws_cloudwatch_event_target" "database_backup_freshness_check" {
   })
 
   ecs_target {
-    task_count          = 1
-    task_definition_arn = data.aws_ecs_task_definition.backend_job.arn
-    launch_type         = "FARGATE"
+    task_count              = 1
+    task_definition_arn     = data.aws_ecs_task_definition.backend_job.arn
+    launch_type             = "FARGATE"
+    enable_ecs_managed_tags = true
+    propagate_tags          = "TASK_DEFINITION"
     network_configuration {
       subnets          = data.aws_subnets.private.ids
       security_groups  = [data.aws_security_group.this.id]
@@ -151,6 +157,29 @@ data "aws_iam_policy_document" "eventbridge_assume_role" {
 resource "aws_iam_role" "eventbridge_ecs" {
   name               = "backend-eventbridge-ecs-${var.environment}"
   assume_role_policy = data.aws_iam_policy_document.eventbridge_assume_role.json
+}
+
+# RunTask needs ecs:TagResource to apply the tags copied from the task definition.
+data "aws_iam_policy_document" "eventbridge_tag_task" {
+  statement {
+    actions   = ["ecs:TagResource"]
+    resources = ["arn:aws:ecs:${var.region}:${local.account_id}:task/trade-tariff-cluster-${var.environment}/*"]
+    condition {
+      test     = "StringEquals"
+      variable = "ecs:CreateAction"
+      values   = ["RunTask"]
+    }
+  }
+}
+
+resource "aws_iam_policy" "eventbridge_tag_task" {
+  name   = "backend-eventbridge-tag-task-${var.environment}"
+  policy = data.aws_iam_policy_document.eventbridge_tag_task.json
+}
+
+resource "aws_iam_role_policy_attachment" "eventbridge_tag_task" {
+  role       = aws_iam_role.eventbridge_ecs.name
+  policy_arn = aws_iam_policy.eventbridge_tag_task.arn
 }
 
 resource "aws_iam_role_policy_attachment" "eventbridge_run_task" {

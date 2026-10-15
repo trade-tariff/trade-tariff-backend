@@ -1,4 +1,10 @@
 locals {
+  # Cost allocation tags. Activate them in the Billing console so Cost Explorer
+  # can group costs by component. The module copies them to each Fargate task.
+  cost_allocation_tags = {
+    Component = "backend"
+  }
+
   has_autoscaler = var.environment == "development" ? false : true
   account_id     = data.aws_caller_identity.current.account_id
   worker_command = ["/bin/sh", "-c", "export DB_POOL=$${DB_POOL:-$${SIDEKIQ_CONCURRENCY:-10}} && bundle exec sidekiq -C ./config/sidekiq.yml"]
