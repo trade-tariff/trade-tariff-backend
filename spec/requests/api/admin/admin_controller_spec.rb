@@ -27,6 +27,12 @@ RSpec.describe Api::Admin::AdminController do
       it { is_expected.to have_attributes(whodunnit_name: 'Zoë') }
     end
 
+    context 'with an encoded NUL byte in the name' do
+      let(:headers) { { 'X-Whodunnit' => 'user-123', 'X-Whodunnit-Name' => 'Jane%00Smith' } }
+
+      it { is_expected.to have_attributes(whodunnit: 'user-123', whodunnit_name: 'JaneSmith') }
+    end
+
     context 'with a name that is too long' do
       let(:headers) { { 'X-Whodunnit' => 'user-123', 'X-Whodunnit-Name' => 'a' * 300 } }
 
