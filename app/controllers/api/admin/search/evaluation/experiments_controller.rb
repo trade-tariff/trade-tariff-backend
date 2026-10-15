@@ -21,13 +21,20 @@ module Api
             end
           end
 
+          # Locks the row before validating, the same way RunsController#update does: the
+          # source-locked check compares against whatever was loaded, so without the lock, a
+          # different source chosen by another request after this one loaded the experiment
+          # would be silently overwritten instead of rejected.
           def update
-            experiment.set(update_params)
+            EvaluationExperiment.db.transaction do
+              experiment.lock!
+              experiment.set(update_params)
 
-            if experiment.valid? && experiment.save
-              render json: serialize(experiment), status: :ok
-            else
-              render json: serialize_errors(experiment), status: :unprocessable_content
+              if experiment.valid? && experiment.save
+                render json: serialize(experiment), status: :ok
+              else
+                render json: serialize_errors(experiment), status: :unprocessable_content
+              end
             end
           end
 
