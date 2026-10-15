@@ -240,5 +240,18 @@ RSpec.describe Api::Admin::TariffKnowledgeSyntheticAtarsController do
 
       expect(response).to have_http_status(:not_found)
     end
+
+    context 'when a synthetic input set item still references it' do
+      before { create(:evaluation_synthetic_input_set_item, synthetic_atar_id: synthetic_atar.id) }
+
+      it 'returns 409 instead of raising, and leaves the record in place' do
+        expect {
+          delete "/uk/admin/tariff_knowledge_synthetic_atars/#{synthetic_atar.id}.json", headers: headers
+        }.not_to change(TariffKnowledge::SyntheticAtar, :count)
+
+        expect(response).to have_http_status(:conflict)
+        expect(JSON.parse(response.body)['errors'].first['title']).to eq('Synthetic ATaR is in use')
+      end
+    end
   end
 end

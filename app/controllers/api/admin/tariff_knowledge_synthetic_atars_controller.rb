@@ -42,10 +42,20 @@ module Api
         end
       end
 
+      # A synthetic ATaR sampled into a synthetic input set (AI-1448) is now protected by a real
+      # foreign key, with on_delete: :restrict -- the first real DB-level protection this table
+      # has had, since the older gold-query pipeline only ever referenced it loosely by id, never
+      # with a constraint the database would enforce. Rescued here the same way other admin
+      # resources already report "in use" (see ExperimentsController#destroy,
+      # GoldQuerySetsController#destroy), rather than letting it surface as an unhandled 500.
       def destroy
         synthetic_atar.destroy
 
         head :no_content
+      rescue Sequel::DatabaseError => e
+        raise unless e.message.include?('evaluation_synthetic_input_set_items')
+
+        render_in_use
       end
 
       def bulk_import
@@ -65,6 +75,12 @@ module Api
       end
 
     private
+
+      def render_in_use
+        render json: {
+          errors: [{ status: '409', title: 'Synthetic ATaR is in use', detail: 'This synthetic ATaR is still used by a synthetic input set. Remove it from the set first.' }],
+        }, status: :conflict
+      end
 
       def serializer_class
         Api::Admin::TariffKnowledgeSyntheticAtarSerializer
