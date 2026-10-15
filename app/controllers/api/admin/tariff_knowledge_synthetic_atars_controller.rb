@@ -76,9 +76,12 @@ module Api
 
     private
 
+      # Not "remove it from the set first": a synthetic input set is a frozen snapshot, and the
+      # admin API only ever exposes creating one, not editing its items -- there is no way to
+      # follow that instruction (AI-1448 review). Just states the fact.
       def render_in_use
         render json: {
-          errors: [{ status: '409', title: 'Synthetic ATaR is in use', detail: 'This synthetic ATaR is still used by a synthetic input set. Remove it from the set first.' }],
+          errors: [{ status: '409', title: 'Synthetic ATaR is in use', detail: 'This synthetic ATaR is used by a synthetic input set and cannot be deleted while that reference exists.' }],
         }, status: :conflict
       end
 
