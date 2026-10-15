@@ -13,14 +13,15 @@ class LegacyApiRedirect
     # QUERY_STRING, so dotted names such as filter.type survive the redirect.
     request = ActionDispatch::Request.new(env)
 
-    # Rack 3 requires lowercase response header names.
+    # Rack 3 requires lowercase response header names. Rack::Headers lowercases
+    # every key on assignment, including keys that later middleware adds (for
+    # example X-Path-Transformed in HandleGoodsNomenclature). A plain Hash would not.
+    headers = Rack::Headers.new
+    headers['location'] = "/#{TradeTariffBackend.service}#{request.original_fullpath}"
     # Deprecation is an RFC 9745 Structured Field Date: "@" plus Unix seconds.
-    headers = {
-      'location' => "/#{TradeTariffBackend.service}#{request.original_fullpath}",
-      'deprecation' => "@#{DEPRECATION_DATE.to_i}",
-      'sunset' => SUNSET_DATE.httpdate,
-      'link' => %(<#{DOCS_URL}>; rel="deprecation"),
-    }
+    headers['deprecation'] = "@#{DEPRECATION_DATE.to_i}"
+    headers['sunset'] = SUNSET_DATE.httpdate
+    headers['link'] = %(<#{DOCS_URL}>; rel="deprecation")
 
     [308, headers, []]
   end
