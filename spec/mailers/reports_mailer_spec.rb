@@ -76,8 +76,13 @@ RSpec.describe ReportsMailer, type: :mailer do
       expect(attachment.body.decoded).to eq(result.csv_data)
     end
 
-    it 'lists the changes by section in the alert line format' do
-      expect(body).to include('Expired (1)', '0101210000 — old horses', 'Added (2)', '0101210000 — live horses', '0101210000 — ponies')
+    it 'lists the number of changes for each operation' do
+      expect(body).to include('Changes by operation', 'Expired: 1', 'Added: 2')
+    end
+
+    it 'does not list the individual changes', :aggregate_failures do
+      expect(body).not_to include('old horses', 'live horses', 'ponies')
+      expect(body).to include('The full list of changes is in the attached CSV file.')
     end
 
     it 'lists the number of changes by readable source, with a breakdown per admin user', :aggregate_failures do
@@ -103,22 +108,6 @@ RSpec.describe ReportsMailer, type: :mailer do
       before { allow(TradeTariffBackend).to receive(:service).and_return('xi') }
 
       it { expect(mail.subject).to eq('[HMRC Online Trade Tariff Support] Northern Ireland tariff - search reference changes October 2026') }
-    end
-
-    context 'when a section has more lines than the email shows' do
-      let(:entries) do
-        Array.new(ReportsMailer::SEARCH_REFERENCE_CHANGES_MAX_LINES_PER_SECTION + 2) do |index|
-          build_entry(section: :added, title: "reference #{index}", changed_by: 'fpo_csv_import')
-        end
-      end
-
-      it 'refers to the CSV for the remaining lines' do
-        expect(body).to include('And 2 more. See the attached CSV file.')
-      end
-
-      it 'does not list the remaining lines' do
-        expect(body).not_to include("reference #{ReportsMailer::SEARCH_REFERENCE_CHANGES_MAX_LINES_PER_SECTION}<")
-      end
     end
 
     context 'when there are no changes' do

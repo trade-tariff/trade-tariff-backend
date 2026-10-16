@@ -3,7 +3,7 @@
 <p style='<%= text_style %>'>Hello,</p>
 <p style='<%= text_style %>'>This is the <%= @service_name %> search reference changes report for <%= @result.period_label %>
     (<%= @result.period.begin.to_fs(:govuk) %> to <%= @result.period.end.to_fs(:govuk) %>).
-    The details are in the attached CSV file.</p>
+    The full list of changes is in the attached CSV file.</p>
 
 <% if @result.no_changes? %>
   <p style='<%= text_style %>'>There were no search reference changes in this period.</p>
@@ -11,17 +11,12 @@
   <p style='<%= text_style %>'><%= pluralize(@result.total, 'search reference change') %> in total.
     <%= pluralize(@result.removed_count, 'search reference') %> removed automatically because the commodity is no longer current.</p>
 
-  <% @result.sections.each do |section, entries| %>
-    <h3 style='<%= text_style %>'><%= SearchReferences::ChangeEntry::SECTIONS.fetch(section) %> (<%= entries.size %>)</h3>
-    <ul style='font-size:14px;color:#000;margin:0px;padding:0px'>
-      <% entries.first(@max_lines).each do |entry| %>
-        <li style='<%= item_style %>'><%= entry.summary %></li>
-      <% end %>
-    </ul>
-    <% if entries.size > @max_lines %>
-      <p style='<%= text_style %>'>And <%= entries.size - @max_lines %> more. See the attached CSV file.</p>
+  <h3 style='<%= text_style %>'>Changes by operation</h3>
+  <ul style='font-size:14px;color:#000;margin:0px;padding:0px'>
+    <% @result.sections.each do |section, entries| %>
+      <li style='<%= item_style %>'><%= SearchReferences::ChangeEntry::SECTIONS.fetch(section) %>: <%= entries.size %></li>
     <% end %>
-  <% end %>
+  </ul>
 
   <h3 style='<%= text_style %>'>Changes by source</h3>
   <ul style='font-size:14px;color:#000;margin:0px;padding:0px'>

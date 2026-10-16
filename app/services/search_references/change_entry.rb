@@ -111,9 +111,5 @@ module SearchReferences
     def changed_by_label
       admin_user? ? changed_by_name.presence || ChangeSource::ADMIN_USER_LABEL : source
     end
-
-    def summary
-      ChangeLineFormatter.format_line(to_h)
-    end
   end
 end

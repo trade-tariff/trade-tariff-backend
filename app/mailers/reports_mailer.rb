@@ -1,7 +1,5 @@
 class ReportsMailer < ApplicationMailer
   XLSX_CONTENT_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'.freeze
-  SEARCH_REFERENCE_CHANGES_MAX_LINES_PER_SECTION = 50
-
   default to: -> { Array(TradeTariffBackend.differences_report_to_emails) },
           bcc: -> { Array(TradeTariffBackend.support_email) }
 
@@ -25,7 +23,6 @@ class ReportsMailer < ApplicationMailer
 
     @result = result
     @service_name = TradeTariffBackend.uk? ? 'UK' : 'Northern Ireland'
-    @max_lines = SEARCH_REFERENCE_CHANGES_MAX_LINES_PER_SECTION
 
     attachments[result.filename] = {
       mime_type: 'text/csv',

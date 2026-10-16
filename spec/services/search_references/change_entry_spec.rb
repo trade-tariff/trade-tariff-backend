@@ -58,13 +58,6 @@ RSpec.describe SearchReferences::ChangeEntry do
           changed_by: 'other-uid',
         )
       end
-
-      it 'summarises the change in the alert line format' do
-        expect(entry.summary).to eq(
-          "0101210000 — horses, live [FPO only] (#{TradeTariffBackend.frontend_host}/commodities/0101210000) " \
-          '(previously: title "live horses", usage search)',
-        )
-      end
     end
 
     context 'when the version stores the admin user name' do
@@ -127,7 +120,6 @@ RSpec.describe SearchReferences::ChangeEntry do
       end
 
       it { is_expected.to have_attributes(section: :superseded, successor_ids: %w[0101999000 0101888000]) }
-      it { expect(entry.summary).to include('(successors: 0101999000, 0101888000)') }
     end
 
     context 'when the stored reason is not a removal reason' do
