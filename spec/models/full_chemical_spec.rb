@@ -49,7 +49,7 @@ RSpec.describe FullChemical do
           create(:full_chemical, goods_nomenclature_sid: 999_999_999) # varying sids
         end
 
-        let(:expected_chemical) { described_class.where(goods_nomenclature_sid: 999_999_999).take }
+        let(:expected_chemical) { described_class.take(goods_nomenclature_sid: 999_999_999) }
 
         it { is_expected.to eq([expected_chemical]) }
       end
@@ -62,7 +62,7 @@ RSpec.describe FullChemical do
           create(:full_chemical, goods_nomenclature_item_id: '0409000001') # varying codes
         end
 
-        let(:expected_chemical) { described_class.where(goods_nomenclature_item_id: '0409000000').take }
+        let(:expected_chemical) { described_class.take(goods_nomenclature_item_id: '0409000000') }
 
         it { is_expected.to eq([expected_chemical]) }
       end
@@ -75,7 +75,7 @@ RSpec.describe FullChemical do
           create(:full_chemical, producline_suffix: '81') # varying suffixes
         end
 
-        let(:expected_chemical) { described_class.where(producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX).take }
+        let(:expected_chemical) { described_class.take(producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX) }
 
         it { is_expected.to eq([expected_chemical]) }
       end
@@ -88,7 +88,7 @@ RSpec.describe FullChemical do
           create(:full_chemical, cus: '1234567891') # varying cus
         end
 
-        let(:expected_chemical) { described_class.where(cus: '1234567890').take }
+        let(:expected_chemical) { described_class.take(cus: '1234567890') }
 
         it { is_expected.to eq([expected_chemical]) }
       end
@@ -101,7 +101,7 @@ RSpec.describe FullChemical do
           create(:full_chemical, cas_rn: '1234567891') # varying cas_rns
         end
 
-        let(:expected_chemical) { described_class.where(cas_rn: '1234567890').take }
+        let(:expected_chemical) { described_class.take(cas_rn: '1234567890') }
 
         it { is_expected.to eq([expected_chemical]) }
       end

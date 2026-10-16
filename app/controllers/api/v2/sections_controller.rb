@@ -20,9 +20,7 @@ module Api
       def show
         return head :bad_request unless params[:id].to_s.match?(/\A\d+\z/)
 
-        @section = sections_dataset
-          .where(position: params[:id].to_i)
-          .take
+        @section = sections_dataset.take(position: params[:id].to_i)
 
         options = { is_collection: false }
         options[:include] = [:chapters, 'chapters.guides']
@@ -30,9 +28,7 @@ module Api
       end
 
       def chapters
-        chapters = Section.where(position: params[:id])
-          .take
-          .chapters
+        chapters = Section.take(position: params[:id]).chapters
 
         respond_to do |format|
           format.csv do

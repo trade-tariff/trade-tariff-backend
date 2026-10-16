@@ -3,7 +3,9 @@ class FaqFeedbackReportWorker
 
   sidekiq_options retry: 1, retry_in: 1.hour
 
-  def perform(deliver_email = true)
+  DEFAULT_DELIVER_EMAIL = true
+
+  def perform(deliver_email = DEFAULT_DELIVER_EMAIL)
     return if TradeTariffBackend.uk?
 
     if deliver_email

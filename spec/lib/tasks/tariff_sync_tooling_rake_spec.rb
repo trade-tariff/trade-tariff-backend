@@ -141,7 +141,7 @@ RSpec.describe 'tariff sync tooling tasks' do
     end
 
     context 'with a failed CDS update' do
-      let!(:update) do
+      let!(:tariff_update) do
         create(:cds_update, :failed,
                filesize: 12_345,
                exception_class: 'Sequel::DatabaseError: bad column',
@@ -159,12 +159,12 @@ RSpec.describe 'tariff sync tooling tasks' do
         $stdout = original_stdout
       end
 
-      before { ENV['FILENAME'] = update.filename }
+      before { ENV['FILENAME'] = tariff_update.filename }
 
       it 'shows the service, state and issue date', :aggregate_failures do
         expect(output).to match(/UK \(CDS\)/)
         expect(output).to match(/State\s+: F/)
-        expect(output).to match(/Issue date\s+: #{update.issue_date}/)
+        expect(output).to match(/Issue date\s+: #{tariff_update.issue_date}/)
       end
 
       it 'shows the file size' do
@@ -195,7 +195,7 @@ RSpec.describe 'tariff sync tooling tasks' do
       context 'with malformed stored counts' do
         let(:malformed_inserts) { '{"operations":' }
 
-        before { update.update(inserts: malformed_inserts) }
+        before { tariff_update.update(inserts: malformed_inserts) }
 
         it 'shows the raw stored value' do
           expect(output).to include(<<~OUTPUT)
@@ -208,9 +208,9 @@ RSpec.describe 'tariff sync tooling tasks' do
     end
 
     context 'with a failed TARIC update' do
-      let!(:update) { create(:taric_update, :failed) }
+      let!(:tariff_update) { create(:taric_update, :failed) }
 
-      before { ENV['FILENAME'] = update.filename }
+      before { ENV['FILENAME'] = tariff_update.filename }
 
       it 'shows XI (TARIC) as the service' do
         expect { Rake::Task['tariff:sync:failure_detail'].invoke }
@@ -242,10 +242,10 @@ RSpec.describe 'tariff sync tooling tasks' do
     end
 
     context 'with a CDS update whose file is not found' do
-      let!(:update) { create(:cds_update, :pending) }
+      let!(:tariff_update) { create(:cds_update, :pending) }
 
       before do
-        ENV['FILENAME'] = update.filename
+        ENV['FILENAME'] = tariff_update.filename
         allow(TariffSynchronizer::FileService).to receive(:file_exists?).and_return(false)
       end
 
@@ -256,7 +256,7 @@ RSpec.describe 'tariff sync tooling tasks' do
     end
 
     context 'with a pending CDS update' do
-      let!(:update) { create(:cds_update, :pending) }
+      let!(:tariff_update) { create(:cds_update, :pending) }
 
       let(:empty_zip) do
         Zip::OutputStream.write_buffer { |zip|
@@ -275,9 +275,9 @@ RSpec.describe 'tariff sync tooling tasks' do
       end
 
       before do
-        ENV['FILENAME'] = update.filename
+        ENV['FILENAME'] = tariff_update.filename
         allow(TariffSynchronizer::FileService).to receive_messages(file_exists?: true, file_size: 4096)
-        allow(TariffSynchronizer::FileService).to receive(:file_as_stringio).with(update).and_return(empty_zip)
+        allow(TariffSynchronizer::FileService).to receive(:file_as_stringio).with(tariff_update).and_return(empty_zip)
       end
 
       it 'shows the file header with state and size', :aggregate_failures do
@@ -291,7 +291,7 @@ RSpec.describe 'tariff sync tooling tasks' do
     end
 
     context 'with a pending TARIC update' do
-      let!(:update) { create(:taric_update, :pending) }
+      let!(:tariff_update) { create(:taric_update, :pending) }
 
       let(:taric_xml) do
         StringIO.new(<<~XML)
@@ -313,9 +313,9 @@ RSpec.describe 'tariff sync tooling tasks' do
       end
 
       before do
-        ENV['FILENAME'] = update.filename
+        ENV['FILENAME'] = tariff_update.filename
         allow(TariffSynchronizer::FileService).to receive_messages(file_exists?: true, file_size: 2048)
-        allow(TariffSynchronizer::FileService).to receive(:get).with(update.file_path).and_return(taric_xml)
+        allow(TariffSynchronizer::FileService).to receive(:get).with(tariff_update.file_path).and_return(taric_xml)
       end
 
       it 'shows the file header', :aggregate_failures do
@@ -334,10 +334,10 @@ RSpec.describe 'tariff sync tooling tasks' do
 
         it 'shows the exact empty-file summary' do
           expect(output).to eq(<<~OUTPUT)
-            === File Inspection: #{update.filename} ===
+            === File Inspection: #{tariff_update.filename} ===
 
             State      : P
-            Issue date : #{update.issue_date}
+            Issue date : #{tariff_update.issue_date}
             File size  : 2048 bytes
 
             Total transaction records: 0
@@ -411,9 +411,9 @@ RSpec.describe 'tariff sync tooling tasks' do
     end
 
     context 'with FILENAME but without CONFIRM=yes' do
-      let!(:update) { create(:cds_update, :failed) }
+      let!(:tariff_update) { create(:cds_update, :failed) }
 
-      before { ENV['FILENAME'] = update.filename }
+      before { ENV['FILENAME'] = tariff_update.filename }
 
       it 'exits without applying' do
         expect { suppress_output { Rake::Task['tariff:sync:force_apply'].invoke } }
@@ -430,15 +430,15 @@ RSpec.describe 'tariff sync tooling tasks' do
       it 'does not change the update state' do
         suppress_output { Rake::Task['tariff:sync:force_apply'].invoke }
       rescue SystemExit
-        expect(update.reload.state).to eq('F')
+        expect(tariff_update.reload.state).to eq('F')
       end
     end
 
     context 'with CONFIRM=yes against a non-failed update' do
-      let!(:update) { create(:cds_update, :pending) }
+      let!(:tariff_update) { create(:cds_update, :pending) }
 
       before do
-        ENV['FILENAME'] = update.filename
+        ENV['FILENAME'] = tariff_update.filename
         ENV['CONFIRM']  = 'yes'
       end
 
@@ -449,23 +449,23 @@ RSpec.describe 'tariff sync tooling tasks' do
     end
 
     context 'with CONFIRM=yes against a failed update' do
-      let!(:update) { create(:cds_update, :failed) }
+      let!(:tariff_update) { create(:cds_update, :failed) }
 
       before do
-        ENV['FILENAME'] = update.filename
+        ENV['FILENAME'] = tariff_update.filename
         ENV['CONFIRM']  = 'yes'
       end
 
       it 'marks the update as applied' do
         suppress_output { Rake::Task['tariff:sync:force_apply'].invoke }
 
-        expect(update.reload.state).to eq('A')
+        expect(tariff_update.reload.state).to eq('A')
       end
 
       it 'sets applied_at' do
         suppress_output { Rake::Task['tariff:sync:force_apply'].invoke }
 
-        expect(update.reload.applied_at).to be_present
+        expect(tariff_update.reload.applied_at).to be_present
       end
 
       it 'confirms the action in output' do

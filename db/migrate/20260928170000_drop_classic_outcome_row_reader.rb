@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-Sequel.migration do # rubocop:disable Metrics/BlockLength
+Sequel.migration do
   up do
     run <<~SQL
       DROP MATERIALIZED VIEW IF EXISTS search_analytics_classic_outcome_counts;
@@ -9,7 +9,7 @@ Sequel.migration do # rubocop:disable Metrics/BlockLength
     run File.read(File.expand_path('../views/search_analytics_classic_outcome_counts_v01.sql', __dir__))
   end
 
-  down do # rubocop:disable Metrics/BlockLength
+  down do
     run 'DROP MATERIALIZED VIEW IF EXISTS search_analytics_classic_outcome_counts'
     run <<~SQL
       CREATE VIEW search_analytics_classic_outcome_rows AS
@@ -59,4 +59,4 @@ Sequel.migration do # rubocop:disable Metrics/BlockLength
         ON search_analytics_classic_outcome_counts (service, reporting_date, outcome);
     SQL
   end
-end # rubocop:enable Metrics/BlockLength
+end

@@ -13,7 +13,9 @@ class DifferencesReportWorker
 
   sidekiq_retry_in { 1.hour.to_i }
 
-  def perform(deliver_email = true)
+  DEFAULT_DELIVER_EMAIL = true
+
+  def perform(deliver_email = DEFAULT_DELIVER_EMAIL)
     differences = generate_differences
 
     record_completion

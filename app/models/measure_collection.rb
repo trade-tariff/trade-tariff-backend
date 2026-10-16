@@ -40,6 +40,6 @@ class MeasureCollection < SimpleDelegator
 private
 
   def filtering_country
-    @filtering_country ||= GeographicalArea.where(geographical_area_id: @filters[:geographical_area_id]).take
+    @filtering_country ||= GeographicalArea.take(geographical_area_id: @filters[:geographical_area_id])
   end
 end

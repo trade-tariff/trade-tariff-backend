@@ -8,7 +8,7 @@ module Api
       end
 
       def show
-        measure_type = MeasureType.where(measure_type_id: params[:id]).take
+        measure_type = MeasureType.take(measure_type_id: params[:id])
 
         serializer = Api::V2::Measures::MeasureTypeSerializer.new(measure_type)
 

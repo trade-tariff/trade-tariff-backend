@@ -20,7 +20,7 @@ RSpec.describe CustomsTariffImporter::Reimporter do
     StringIO.new(buffer.string)
   end
 
-  let(:update) do
+  let(:tariff_update) do
     create(:customs_tariff_update,
            version: '1.31',
            validity_start_date: Date.new(2026, 4, 1),
@@ -35,28 +35,28 @@ RSpec.describe CustomsTariffImporter::Reimporter do
   end
 
   before do
-    update
+    tariff_update
     allow(TariffSynchronizer::FileService).to receive(:get)
-      .with(update.s3_path)
+      .with(tariff_update.s3_path)
       .and_return(docx_io)
   end
 
   describe '#call' do
     context 'when note records already exist for the update' do
       before do
-        create(:customs_tariff_section_note, customs_tariff_update: update, section_id: 1, content: 'Old section note.')
-        create(:customs_tariff_chapter_note, customs_tariff_update: update, chapter_id: '01', content: 'Old chapter note.')
+        create(:customs_tariff_section_note, customs_tariff_update: tariff_update, section_id: 1, content: 'Old section note.')
+        create(:customs_tariff_chapter_note, customs_tariff_update: tariff_update, chapter_id: '01', content: 'Old chapter note.')
       end
 
       it 'replaces existing notes with freshly extracted content' do
         reimporter.call
 
         section_note = CustomsTariffSectionNote.where(
-          customs_tariff_update_version: update.version, section_id: 1,
+          customs_tariff_update_version: tariff_update.version, section_id: 1,
         ).first
 
         chapter_note = CustomsTariffChapterNote.where(
-          customs_tariff_update_version: update.version, chapter_id: '01',
+          customs_tariff_update_version: tariff_update.version, chapter_id: '01',
         ).first
 
         expect(section_note.content).to eq('Live animals note.')
@@ -65,7 +65,7 @@ RSpec.describe CustomsTariffImporter::Reimporter do
 
       it 'creates notes without a status column' do
         reimporter.call
-        note = CustomsTariffSectionNote.where(customs_tariff_update_version: update.version).first
+        note = CustomsTariffSectionNote.where(customs_tariff_update_version: tariff_update.version).first
         expect(note.content).to eq('Live animals note.')
       end
     end
@@ -82,32 +82,32 @@ RSpec.describe CustomsTariffImporter::Reimporter do
       end
 
       before do
-        create(:customs_tariff_section_note, customs_tariff_update: update, section_id: 1, content: 'Old section note.')
-        create(:customs_tariff_chapter_note, customs_tariff_update: update, chapter_id: '01', content: 'Old chapter note.')
+        create(:customs_tariff_section_note, customs_tariff_update: tariff_update, section_id: 1, content: 'Old section note.')
+        create(:customs_tariff_chapter_note, customs_tariff_update: tariff_update, chapter_id: '01', content: 'Old chapter note.')
       end
 
       it 'raises rather than wiping notes' do
-        expect { reimporter.call(version: update.version) }.to raise_error(/Empty extract/)
+        expect { reimporter.call(version: tariff_update.version) }.to raise_error(/Empty extract/)
       end
 
       it 'leaves existing notes intact' do
-        expect { reimporter.call(version: update.version) }.to raise_error(/Empty extract/)
+        expect { reimporter.call(version: tariff_update.version) }.to raise_error(/Empty extract/)
 
-        expect(CustomsTariffSectionNote.where(customs_tariff_update_version: update.version).count).to eq(1)
-        expect(CustomsTariffChapterNote.where(customs_tariff_update_version: update.version).count).to eq(1)
+        expect(CustomsTariffSectionNote.where(customs_tariff_update_version: tariff_update.version).count).to eq(1)
+        expect(CustomsTariffChapterNote.where(customs_tariff_update_version: tariff_update.version).count).to eq(1)
       end
     end
 
     context 'when no note records exist yet' do
       it 'inserts extracted notes' do
         expect { reimporter.call }
-          .to change { CustomsTariffSectionNote.where(customs_tariff_update_version: update.version).count }.by(1)
-          .and change { CustomsTariffChapterNote.where(customs_tariff_update_version: update.version).count }.by(1)
+          .to change { CustomsTariffSectionNote.where(customs_tariff_update_version: tariff_update.version).count }.by(1)
+          .and change { CustomsTariffChapterNote.where(customs_tariff_update_version: tariff_update.version).count }.by(1)
       end
     end
 
     context 'when there are no updates' do
-      before { update.destroy }
+      before { tariff_update.destroy }
 
       it 'does nothing' do
         allow(TariffSynchronizer::FileService).to receive(:get)
@@ -141,7 +141,7 @@ RSpec.describe CustomsTariffImporter::Reimporter do
     end
 
     context 'when an update has import_error set' do
-      before { update.update(import_error: 'previous failure') }
+      before { tariff_update.update(import_error: 'previous failure') }
 
       it 'skips failed updates' do
         allow(TariffSynchronizer::FileService).to receive(:get)
@@ -167,18 +167,18 @@ RSpec.describe CustomsTariffImporter::Reimporter do
       end
 
       it 'reimports only that update' do
-        reimporter.call(version: update.version)
+        reimporter.call(version: tariff_update.version)
 
-        expect(CustomsTariffSectionNote.where(customs_tariff_update_version: update.version).count).to eq(1)
+        expect(CustomsTariffSectionNote.where(customs_tariff_update_version: tariff_update.version).count).to eq(1)
         expect(CustomsTariffSectionNote.where(customs_tariff_update_version: other_update.version).count).to eq(0)
       end
 
       it 'reimports an update with import_error set (no filtering in single-version mode)' do
-        update.update(import_error: 'previous failure')
+        tariff_update.update(import_error: 'previous failure')
 
-        reimporter.call(version: update.version)
+        reimporter.call(version: tariff_update.version)
 
-        expect(CustomsTariffSectionNote.where(customs_tariff_update_version: update.version).count).to eq(1)
+        expect(CustomsTariffSectionNote.where(customs_tariff_update_version: tariff_update.version).count).to eq(1)
       end
 
       it 'does nothing when the version does not exist' do

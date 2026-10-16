@@ -1,8 +1,6 @@
 module ConsoleTimeMachine
   def start(...)
-    # rubocop:disable Rails/Output
-    puts 'Setting TimeMachine to Today'
-    # rubocop:enable Rails/Output
+    $stdout.puts 'Setting TimeMachine to Today'
 
     TimeMachine.now { super }
   end

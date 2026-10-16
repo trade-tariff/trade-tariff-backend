@@ -4,7 +4,9 @@ module_function
   def jobs
     require 'sidekiq/api'
 
-    Sidekiq::Queue.all.each do |queue|
+    queues = Sidekiq::Queue.all
+
+    queues.each do |queue|
       puts "\nQueue '#{queue.name}': #{queue.size}"
 
       queue

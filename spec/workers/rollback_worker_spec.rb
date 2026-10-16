@@ -69,5 +69,19 @@ RSpec.describe RollbackWorker, type: :worker do
         expect(GoodsNomenclatures::TreeNode).to have_received(:refresh!)
       end
     end
+
+    context 'when redownload is true' do
+      before do
+        allow(TradeTariffBackend).to receive_messages(service: 'uk')
+        allow(TaricSynchronizer).to receive(:rollback)
+        allow(CdsSynchronizer).to receive(:rollback)
+      end
+
+      it 'passes keep true to cds rollback' do
+        described_class.new.perform(date, true)
+
+        expect(CdsSynchronizer).to have_received(:rollback).with(date, keep: true)
+      end
+    end
   end
 end

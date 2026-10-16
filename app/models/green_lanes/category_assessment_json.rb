@@ -95,7 +95,7 @@ module GreenLanes
     end
 
     def geographical_area
-      GeographicalArea.where(geographical_area_id:).take
+      GeographicalArea.take(geographical_area_id:)
     end
 
     class InvalidFile < RuntimeError; end

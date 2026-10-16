@@ -1,5 +1,5 @@
 RSpec.describe TariffSynchronizer::BaseUpdateImporter do
-  let(:base_update_importer) { described_class.new(update) }
+  let(:base_update_importer) { described_class.new(tariff_update) }
 
   shared_examples 'a base update importer' do
     describe '#apply', :truncation do
@@ -11,22 +11,22 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
       it 'calls the import! method to the object' do
         base_update_importer.apply
 
-        expect(TariffSynchronizer::TaricUpdateImporter).to have_received(:perform).with(update)
+        expect(TariffSynchronizer::TaricUpdateImporter).to have_received(:perform).with(tariff_update)
       end
 
       it 'do not call the import! method to the object if is not pending' do
-        update.mark_as_failed
+        tariff_update.mark_as_failed
 
         base_update_importer.apply
 
-        expect(TariffSynchronizer::TaricUpdateImporter).not_to have_received(:perform).with(update)
+        expect(TariffSynchronizer::TaricUpdateImporter).not_to have_received(:perform).with(tariff_update)
       end
 
       it 'marks the record as failed if an error occurs' do
         allow(TariffSynchronizer::TaricUpdateImporter).to receive(:perform).and_raise(Sequel::Rollback)
         base_update_importer.apply
 
-        expect(update.reload).to be_failed
+        expect(tariff_update.reload).to be_failed
       end
 
       it 'updates the record with the exception if an error occurs', :aggregate_failures do
@@ -43,9 +43,9 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
 
         base_update_importer.apply
 
-        expect(update.reload).to be_failed
-        expect(update.exception_backtrace).to include(backtrace_fragment)
-        expect(update.exception_queries).to include('UPDATE "tariff_updates" SET "state" = \'F\'')
+        expect(tariff_update.reload).to be_failed
+        expect(tariff_update.exception_backtrace).to include(backtrace_fragment)
+        expect(tariff_update.exception_queries).to include('UPDATE "tariff_updates" SET "state" = \'F\'')
       end
 
       it 'subscribes to all events' do
@@ -84,7 +84,7 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
   end
 
   context 'with a TARIC update' do
-    let(:update) { create :taric_update, :pending }
+    let(:tariff_update) { create :taric_update, :pending }
     let(:service) { 'xi' }
     let(:backtrace_fragment) { 'lib/taric_importer.rb:' }
 
@@ -107,12 +107,12 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
   end
 
   context 'with a TARIC update that fails with a nested import error', :truncation do
-    let(:update) { create :taric_update, :pending }
+    let(:tariff_update) { create :taric_update, :pending }
 
     before do
       allow(TradeTariffBackend).to receive(:service).and_return('xi')
       ExplicitAbrogationRegulation.unrestrict_primary_key
-      allow(update).to receive(:file_path)
+      allow(tariff_update).to receive(:file_path)
         .and_return('spec/fixtures/taric_samples/unknown_record.xml')
     end
 
@@ -121,10 +121,10 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
     it 'persists the specific inner error, not the generic outer wrapper', :aggregate_failures do
       base_update_importer.apply
 
-      expect(update.reload).to be_failed
-      expect(update.exception_class).to include('TaricImporter::UnknownOperationError')
-      expect(update.exception_class).to include('Unknown TARIC operation:')
-      expect(update.exception_class).not_to include('TARIC record import failed')
+      expect(tariff_update.reload).to be_failed
+      expect(tariff_update.exception_class).to include('TaricImporter::UnknownOperationError')
+      expect(tariff_update.exception_class).to include('Unknown TARIC operation:')
+      expect(tariff_update.exception_class).not_to include('TARIC record import failed')
     end
   end
 end

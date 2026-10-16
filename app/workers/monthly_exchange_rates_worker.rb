@@ -3,7 +3,9 @@ class MonthlyExchangeRatesWorker
 
   sidekiq_options retry: 1, retry_in: 1.hour
 
-  def perform(sample_date = Time.zone.today.iso8601, force = false)
+  DEFAULT_FORCE = false
+
+  def perform(sample_date = Time.zone.today.iso8601, force = DEFAULT_FORCE)
     sample_date = Date.parse(sample_date)
     date = sample_date.next_month
 

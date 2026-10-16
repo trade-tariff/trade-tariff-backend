@@ -112,7 +112,8 @@ RSpec.describe SearchAnalyticsQueryResult do
     end
 
     it 'does not store a missing or invalid query result' do
-      expect { described_class.fetch(**identity) { nil } }.to raise_error(ArgumentError, /array/) # rubocop:disable Style/RedundantFetchBlock
+      invalid_rows = nil
+      expect { described_class.fetch(**identity) { invalid_rows } }.to raise_error(ArgumentError, /array/)
       expect(described_class.count).to eq(0)
     end
   end

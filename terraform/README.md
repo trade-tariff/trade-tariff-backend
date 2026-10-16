@@ -21,9 +21,9 @@ Terraform to deploy the service into AWS.
 | Name | Source | Version |
 | ---- | ------ | ------- |
 | <a name="module_ai_costs_dashboard"></a> [ai\_costs\_dashboard](#module\_ai\_costs\_dashboard) | ./modules/ai_costs_dashboard | n/a |
-| <a name="module_backend-job"></a> [backend-job](#module\_backend-job) | git::https://github.com/trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.3.1 |
-| <a name="module_backend_uk"></a> [backend\_uk](#module\_backend\_uk) | git::https://github.com/trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.3.1 |
-| <a name="module_backend_xi"></a> [backend\_xi](#module\_backend\_xi) | git::https://github.com/trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.3.1 |
+| <a name="module_backend-job"></a> [backend-job](#module\_backend-job) | git::https://github.com/trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.6.0 |
+| <a name="module_backend_uk"></a> [backend\_uk](#module\_backend\_uk) | git::https://github.com/trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.6.0 |
+| <a name="module_backend_xi"></a> [backend\_xi](#module\_backend\_xi) | git::https://github.com/trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.6.0 |
 | <a name="module_label_generator_dashboard"></a> [label\_generator\_dashboard](#module\_label\_generator\_dashboard) | ./modules/label_generator_dashboard | n/a |
 | <a name="module_puma_capacity_dashboard"></a> [puma\_capacity\_dashboard](#module\_puma\_capacity\_dashboard) | ./modules/puma_capacity_dashboard | n/a |
 | <a name="module_search_dashboard"></a> [search\_dashboard](#module\_search\_dashboard) | ./modules/search_dashboard | n/a |
@@ -33,8 +33,8 @@ Terraform to deploy the service into AWS.
 | <a name="module_self_text_generator_dashboard"></a> [self\_text\_generator\_dashboard](#module\_self\_text\_generator\_dashboard) | ./modules/self_text_generator_dashboard | n/a |
 | <a name="module_tariff_note_pipeline_dashboard"></a> [tariff\_note\_pipeline\_dashboard](#module\_tariff\_note\_pipeline\_dashboard) | ./modules/tariff_note_pipeline_dashboard | n/a |
 | <a name="module_tariff_sync_dashboard"></a> [tariff\_sync\_dashboard](#module\_tariff\_sync\_dashboard) | ./modules/tariff_sync_dashboard | n/a |
-| <a name="module_worker_uk"></a> [worker\_uk](#module\_worker\_uk) | git::https://github.com/trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.3.1 |
-| <a name="module_worker_xi"></a> [worker\_xi](#module\_worker\_xi) | git::https://github.com/trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.3.1 |
+| <a name="module_worker_uk"></a> [worker\_uk](#module\_worker\_uk) | git::https://github.com/trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.6.0 |
+| <a name="module_worker_xi"></a> [worker\_xi](#module\_worker\_xi) | git::https://github.com/trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.6.0 |
 
 ## Resources
 
@@ -48,15 +48,18 @@ Terraform to deploy the service into AWS.
 | [aws_cloudwatch_metric_alarm.database_backup_freshness](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_cloudwatch_metric_alarm.search_degradation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_iam_policy.eventbridge_pass_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_policy.eventbridge_tag_task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_role.eventbridge_ecs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role_policy_attachment.eventbridge_pass_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.eventbridge_run_task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.eventbridge_tag_task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_ecs_cluster.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ecs_cluster) | data source |
 | [aws_ecs_task_definition.backend_job](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ecs_task_definition) | data source |
 | [aws_iam_policy_document.eventbridge_assume_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.eventbridge_pass_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.eventbridge_tag_task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_lb_target_group.backend_uk_https](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/lb_target_group) | data source |
 | [aws_lb_target_group.backend_xi_https](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/lb_target_group) | data source |

@@ -228,19 +228,20 @@ module Reporting
       end
 
       def each_chapter
-        Chapter
+        chapters = Chapter
           .actual
           .non_hidden
           .non_classifieds
           .all
-          .each do |chapter|
-            eager_chapter = Chapter.actual
-              .where(goods_nomenclature_sid: chapter.goods_nomenclature_sid)
-              .eager(GOODS_NOMENCLATURE_EAGER)
-              .take
 
-            yield eager_chapter
-          end
+        chapters.each do |chapter|
+          eager_chapter = Chapter.actual
+            .where(goods_nomenclature_sid: chapter.goods_nomenclature_sid)
+            .eager(GOODS_NOMENCLATURE_EAGER)
+            .take
+
+          yield eager_chapter
+        end
       end
 
       def object_key

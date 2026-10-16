@@ -53,7 +53,7 @@ module TradeTariffBackend
     end
 
     def create_index(index)
-      indices.create(index: index.name, body: index.definition) unless indices.exists(index: index.name)
+      create_raw_index(index) unless indices.exists(index: index.name)
     end
 
     def drop_index(index)
@@ -99,6 +99,8 @@ module TradeTariffBackend
     end
 
   private
+
+    def create_raw_index(index) = indices.create(index: index.name, body: index.definition)
 
     def index_instance(index)
       index.is_a?(Class) ? index.new : index

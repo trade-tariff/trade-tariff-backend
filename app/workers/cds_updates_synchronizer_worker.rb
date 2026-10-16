@@ -3,7 +3,10 @@ class CdsUpdatesSynchronizerWorker
 
   sidekiq_options queue: :sync, retry: false
 
-  def perform(check_for_todays_file = true, reapply_data_migrations = false, download_retry_count = 0)
+  DEFAULT_CHECK_FOR_TODAYS_FILE = true
+  DEFAULT_REAPPLY_DATA_MIGRATIONS = false
+
+  def perform(check_for_todays_file = DEFAULT_CHECK_FOR_TODAYS_FILE, reapply_data_migrations = DEFAULT_REAPPLY_DATA_MIGRATIONS, download_retry_count = 0)
     return unless TradeTariffBackend.uk?
 
     Thread.current[:tariff_sync_run_id] = SecureRandom.uuid

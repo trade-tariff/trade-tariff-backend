@@ -3,8 +3,8 @@ require 'rails_helper'
 RSpec.describe XiCnImporter::Reimporter do
   subject(:reimporter) { described_class.new }
 
-  let(:celex)  { '32025R1926' }
-  let(:update) do
+  let(:celex) { '32025R1926' }
+  let(:tariff_update) do
     create(:customs_tariff_update,
            version: celex,
            s3_path: "data/customs_tariff_documents/xi/CN_#{celex}.pdf")
@@ -20,7 +20,7 @@ RSpec.describe XiCnImporter::Reimporter do
   end
 
   before do
-    update
+    tariff_update
     allow(TariffSynchronizer::FileService).to receive(:get)
       .with("data/customs_tariff_documents/xi/CN_#{celex}.xhtml")
       .and_return(StringIO.new(html))
@@ -34,7 +34,7 @@ RSpec.describe XiCnImporter::Reimporter do
     context 'with a specific version' do
       it 'deletes existing notes and recreates them' do
         create(:customs_tariff_section_note,
-               customs_tariff_update: update,
+               customs_tariff_update: tariff_update,
                section_id: 1,
                content: 'old content')
 
@@ -64,7 +64,7 @@ RSpec.describe XiCnImporter::Reimporter do
                               sections: {}, chapters: {}, general_rules: {},
                             )),
           )
-          create(:customs_tariff_section_note, customs_tariff_update: update, section_id: 1, content: 'existing')
+          create(:customs_tariff_section_note, customs_tariff_update: tariff_update, section_id: 1, content: 'existing')
         end
 
         it 'raises rather than wiping notes' do

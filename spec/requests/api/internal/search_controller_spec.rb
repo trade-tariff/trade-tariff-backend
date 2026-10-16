@@ -700,7 +700,8 @@ RSpec.describe Api::Internal::SearchController, :internal do
       end
 
       it 'resolves the resource ID returned by internal autocomplete', :aggregate_failures do
-        SearchSuggestion.where(value: 'livestock').each { |suggestion| index_model(suggestion) }
+        livestock_suggestions = SearchSuggestion.where(value: 'livestock')
+        livestock_suggestions.each { |suggestion| index_model(suggestion) }
         TradeTariffBackend.search_client.indices.refresh(index: 'tariff-test-*')
         allow(TradeTariffBackend.search_client).to receive(:search).and_call_original
 

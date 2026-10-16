@@ -29,7 +29,7 @@ module Api
       end
 
       def show_by_section
-        section  = Section.where(position: params[:position]).take
+        section  = Section.take(position: params[:position])
         chapters = section.chapters_dataset
                           .non_hidden
                           .eager(:goods_nomenclature_descriptions,

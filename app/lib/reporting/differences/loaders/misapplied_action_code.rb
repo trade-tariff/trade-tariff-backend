@@ -22,7 +22,7 @@ module Reporting
 
         def each_missapplied_measure(&block)
           TimeMachine.now do
-            Measure
+            misapplied_measures = Measure
               .dedupe_similar
               .with_regulation_dates_query
               .without_excluded_types
@@ -40,7 +40,8 @@ module Reporting
                 ),
               )
               .all
-              .each(&block)
+
+            misapplied_measures.each(&block)
           end
         end
 
