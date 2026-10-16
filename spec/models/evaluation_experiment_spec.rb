@@ -41,6 +41,75 @@ RSpec.describe EvaluationExperiment do
     expect(experiment.valid?).to be false
   end
 
+  it 'has no synthetic input set unless one is chosen' do
+    expect(create(:evaluation_experiment).evaluation_synthetic_input_set).to be_nil
+  end
+
+  it 'can point at a synthetic input set' do
+    synthetic_input_set = create(:evaluation_synthetic_input_set)
+    experiment = create(:evaluation_experiment, synthetic_input_set_id: synthetic_input_set.id)
+
+    expect(experiment.evaluation_synthetic_input_set).to eq(synthetic_input_set)
+  end
+
+  it 'refuses a synthetic input set that does not exist' do
+    experiment = build(:evaluation_experiment, synthetic_input_set_id: 999_999)
+
+    expect(experiment.valid?).to be false
+    expect(experiment.errors[:synthetic_input_set_id]).to eq(['does not exist'])
+  end
+
+  it 'refuses a gold query set and a synthetic input set at the same time' do
+    experiment = build(
+      :evaluation_experiment,
+      gold_query_set_id: create(:evaluation_gold_query_set).id,
+      synthetic_input_set_id: create(:evaluation_synthetic_input_set).id,
+    )
+
+    expect(experiment.valid?).to be false
+    expect(experiment.errors[:synthetic_input_set_id]).to include('cannot be set at the same time as a gold query set')
+  end
+
+  describe 'locking the source once chosen' do
+    it 'allows choosing a gold query set for the first time, from blank' do
+      experiment = create(:evaluation_experiment)
+      experiment.gold_query_set_id = create(:evaluation_gold_query_set).id
+
+      expect(experiment.valid?).to be true
+    end
+
+    it 'allows choosing a synthetic input set for the first time, from blank' do
+      experiment = create(:evaluation_experiment)
+      experiment.synthetic_input_set_id = create(:evaluation_synthetic_input_set).id
+
+      expect(experiment.valid?).to be true
+    end
+
+    it 'refuses to change an already-chosen gold query set to a different one' do
+      experiment = create(:evaluation_experiment, gold_query_set_id: create(:evaluation_gold_query_set).id)
+      experiment.gold_query_set_id = create(:evaluation_gold_query_set).id
+
+      expect(experiment.valid?).to be false
+      expect(experiment.errors[:base]).to include('cannot change its gold query set or synthetic input set once one has been chosen')
+    end
+
+    it 'refuses to clear an already-chosen gold query set back to blank' do
+      experiment = create(:evaluation_experiment, gold_query_set_id: create(:evaluation_gold_query_set).id)
+      experiment.gold_query_set_id = nil
+
+      expect(experiment.valid?).to be false
+      expect(experiment.errors[:base]).to include('cannot change its gold query set or synthetic input set once one has been chosen')
+    end
+
+    it 'refuses to choose a synthetic input set once a gold query set is already chosen, even though the synthetic column itself never had a value before' do
+      experiment = create(:evaluation_experiment, gold_query_set_id: create(:evaluation_gold_query_set).id)
+      experiment.synthetic_input_set_id = create(:evaluation_synthetic_input_set).id
+
+      expect(experiment.valid?).to be false
+      expect(experiment.errors[:base]).to include('cannot change its gold query set or synthetic input set once one has been chosen')
+    end
+  end
+
   it 'defaults enabled to true' do
     experiment = create(:evaluation_experiment, name: 'defaults-test')
     expect(experiment.enabled).to be true

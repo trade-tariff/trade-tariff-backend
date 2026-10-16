@@ -432,11 +432,11 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
         expect(json_response['data']['attributes']['gold_query_set_id']).to eq(gold_query_set.id)
       end
 
-      it 'follows the experiment if it is pointed at a different set later' do
+      it 'cannot drift to a different set later, because the experiment source is locked once chosen (AI-1448)' do
         other_set = create(:evaluation_gold_query_set)
-        experiment.update(gold_query_set_id: other_set.id)
 
-        expect(json_response['data']['attributes']['gold_query_set_id']).to eq(other_set.id)
+        expect { experiment.update(gold_query_set_id: other_set.id) }.to raise_error(Sequel::ValidationFailed)
+        expect(json_response['data']['attributes']['gold_query_set_id']).to eq(gold_query_set.id)
       end
     end
 
