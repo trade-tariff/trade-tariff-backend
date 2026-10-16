@@ -17,6 +17,9 @@ permissions:
 
 jobs:
   deploy:
+    concurrency:
+      group: deploy-staging-tariff-backend
+      cancel-in-progress: false
     uses: trade-tariff/trade-tariff-tools/.github/workflows/deploy-ecs.yml@main
     with:
       app-name: tariff-backend
