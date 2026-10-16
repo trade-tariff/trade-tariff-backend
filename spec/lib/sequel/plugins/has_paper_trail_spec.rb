@@ -73,6 +73,50 @@ RSpec.describe Sequel::Plugins::HasPaperTrail do
       version = Version.last
       expect(version.whodunnit).to be_nil
     end
+
+    it 'stores whodunnit_name from TradeTariffRequest' do
+      model_with_plugin
+
+      TradeTariffRequest.set(whodunnit: 'user-123', whodunnit_name: 'Zoë') do
+        model_with_plugin.update(content: 'named change')
+      end
+
+      expect(Version.last).to have_attributes(whodunnit: 'user-123', whodunnit_name: 'Zoë')
+    end
+
+    it 'stores nil whodunnit_name when not set' do
+      model_with_plugin
+
+      TradeTariffRequest.set(whodunnit: 'user-123', whodunnit_name: nil) do
+        model_with_plugin.update(content: 'unnamed change')
+      end
+
+      expect(Version.last.whodunnit_name).to be_nil
+    end
+  end
+
+  describe '.record_version!' do
+    it 'stores whodunnit_name from TradeTariffRequest' do
+      TradeTariffRequest.set(whodunnit: 'user-123', whodunnit_name: 'Jane Smith') do
+        described_class.record_version!(model_with_plugin, event: 'update')
+      end
+
+      expect(Version.last).to have_attributes(whodunnit: 'user-123', whodunnit_name: 'Jane Smith')
+    end
+
+    it 'does not use the request name when another whodunnit is given' do
+      TradeTariffRequest.set(whodunnit: 'user-123', whodunnit_name: 'Jane Smith') do
+        described_class.record_version!(model_with_plugin, event: 'update', whodunnit: 'other-user')
+      end
+
+      expect(Version.last).to have_attributes(whodunnit: 'other-user', whodunnit_name: nil)
+    end
+
+    it 'stores an explicit whodunnit_name' do
+      described_class.record_current_version!(model_with_plugin, whodunnit: 'other-user', whodunnit_name: 'Other User')
+
+      expect(Version.last).to have_attributes(whodunnit: 'other-user', whodunnit_name: 'Other User')
+    end
   end
 
   describe '.tracked_models' do
