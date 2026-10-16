@@ -11,6 +11,7 @@ module Api
         column :goods_nomenclature_item_id, column_name: 'Commodity code'
         column :productline_suffix, column_name: 'Product line suffix'
         column :title, column_name: 'Title'
+        column :usage, column_name: 'Usage'
         column :goods_nomenclature_url, column_name: 'Commodity URL'
         column :successor_ids, column_name: 'Successors' do |change|
           change.successor_ids.join(' ')
