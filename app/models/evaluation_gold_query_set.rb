@@ -14,10 +14,11 @@ class EvaluationGoldQuerySet < Sequel::Model(Sequel[:evaluation_gold_query_sets]
 
   def validate
     super
-    validates_presence %i[name requested_size planned_count status]
+    validates_presence %i[name requested_size atar_percentage planned_count status]
     validates_unique :name
     validates_includes STATUSES, :status, allow_nil: true
     validates_includes 1..MAX_SIZE, :requested_size, allow_nil: true, message: "must be between 1 and #{MAX_SIZE}"
+    validates_includes 0..100, :atar_percentage, allow_nil: true, message: 'must be between 0 and 100'
   end
 
   # The database deletes a set's gold queries itself (ON DELETE CASCADE), which skips the

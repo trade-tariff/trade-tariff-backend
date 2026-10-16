@@ -10,7 +10,7 @@ RSpec.describe EvaluationGoldQuerySet do
       expect(gold_query_set).to be_valid
     end
 
-    %i[name requested_size planned_count status].each do |column|
+    %i[name requested_size atar_percentage planned_count status].each do |column|
       context "when #{column} is missing" do
         let(:attrs) { { column => nil } }
 
@@ -43,6 +43,23 @@ RSpec.describe EvaluationGoldQuerySet do
         it 'is invalid, with a message that names the limits' do
           expect(gold_query_set).not_to be_valid
           expect(gold_query_set.errors[:requested_size]).to eq(['must be between 1 and 500'])
+        end
+      end
+    end
+
+    [0, 100].each do |percentage|
+      it "accepts an ATaR percentage of #{percentage}" do
+        expect(build(:evaluation_gold_query_set, atar_percentage: percentage)).to be_valid
+      end
+    end
+
+    [-1, 101].each do |percentage|
+      context "when the ATaR percentage is #{percentage}" do
+        let(:attrs) { { atar_percentage: percentage } }
+
+        it 'is invalid' do
+          expect(gold_query_set).not_to be_valid
+          expect(gold_query_set.errors[:atar_percentage]).to eq(['must be between 0 and 100'])
         end
       end
     end

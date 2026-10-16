@@ -128,12 +128,13 @@ RSpec.describe Api::Admin::Search::Evaluation::GoldQuerySetsController, :admin d
   describe 'POST #create' do
     let(:make_request) { authenticated_post api_admin_search_evaluation_gold_query_sets_path(format: :json), params:, headers: }
     let(:headers) { { 'X-Whodunnit' => 'operator-1' } }
-    let(:attributes) { { name: 'Set A', requested_size: 4 } }
+    let(:attributes) { { name: 'Set A', requested_size: 4, atar_percentage: 50 } }
     let(:params) { { data: { type: :gold_query_set, attributes: } } }
 
     before do
       allow(GenerateGoldQuerySetWorker).to receive(:perform_async)
-      create_list(:tariff_knowledge_public_atar_ruling, 4)
+      create_list(:tariff_knowledge_public_atar_ruling, 3)
+      create_list(:tariff_knowledge_synthetic_atar, 3)
     end
 
     context 'with valid params' do
@@ -143,7 +144,7 @@ RSpec.describe Api::Admin::Search::Evaluation::GoldQuerySetsController, :admin d
       it 'returns the set, still generating, with its planned item count' do
         expect(json_response['data']['type']).to eq('gold_query_set')
         expect(json_response['data']['attributes']).to include(
-          'name' => 'Set A', 'requested_size' => 4,
+          'name' => 'Set A', 'requested_size' => 4, 'atar_percentage' => 50,
           'planned_count' => 4, 'generated_count' => 0, 'failed_count' => 0,
           'status' => 'generating', 'failures' => []
         )
@@ -161,7 +162,7 @@ RSpec.describe Api::Admin::Search::Evaluation::GoldQuerySetsController, :admin d
     end
 
     context 'when the body tries to set created_by or the counters directly' do
-      let(:attributes) { { name: 'Set A', requested_size: 4, created_by: 'spoofed-user', status: 'ready', generated_count: 99 } }
+      let(:attributes) { { name: 'Set A', requested_size: 4, atar_percentage: 50, created_by: 'spoofed-user', status: 'ready', generated_count: 99 } }
 
       it 'ignores them' do
         expect(json_response['data']['attributes']).to include('created_by' => 'operator-1', 'status' => 'generating', 'generated_count' => 0)
@@ -169,7 +170,7 @@ RSpec.describe Api::Admin::Search::Evaluation::GoldQuerySetsController, :admin d
     end
 
     context 'with a missing name' do
-      let(:attributes) { { requested_size: 4 } }
+      let(:attributes) { { requested_size: 4, atar_percentage: 50 } }
 
       it { is_expected.to have_http_status :unprocessable_content }
       it { expect { api_response }.not_to change(EvaluationGoldQuerySet, :count) }
@@ -177,7 +178,7 @@ RSpec.describe Api::Admin::Search::Evaluation::GoldQuerySetsController, :admin d
     end
 
     context 'with a size above the limit' do
-      let(:attributes) { { name: 'Set A', requested_size: 501 } }
+      let(:attributes) { { name: 'Set A', requested_size: 501, atar_percentage: 50 } }
 
       it { is_expected.to have_http_status :unprocessable_content }
       it { expect(json_response['errors'].first['title']).to eq('must be between 1 and 500') }
@@ -203,7 +204,7 @@ RSpec.describe Api::Admin::Search::Evaluation::GoldQuerySetsController, :admin d
       end
 
       it { is_expected.to have_http_status :unprocessable_content }
-      it { expect(json_response['errors'].first['detail']).to include('no ATaR rulings') }
+      it { expect(json_response['errors'].first['detail']).to include('no ATaR rulings or synthetic ATaRs') }
     end
 
     context 'without the data envelope' do

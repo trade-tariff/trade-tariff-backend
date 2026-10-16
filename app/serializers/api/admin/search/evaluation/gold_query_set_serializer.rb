@@ -10,6 +10,7 @@ module Api
 
           attributes :name,
                      :requested_size,
+                     :atar_percentage,
                      :planned_count,
                      :generated_count,
                      :failed_count,

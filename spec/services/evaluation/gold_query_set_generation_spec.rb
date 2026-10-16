@@ -19,11 +19,13 @@ RSpec.describe 'Generating a gold query set from start to finish', type: :reques
     allow(GenerateGoldQuerySetWorker).to receive(:perform_async) { |*args| coordinator_jobs << args }
     allow(GenerateGoldQueryItemWorker).to receive(:perform_bulk) { |jobs| item_jobs.concat(jobs) }
 
-    create_list(:tariff_knowledge_public_atar_ruling, 4)
+    create_list(:tariff_knowledge_public_atar_ruling, 2)
+    create(:tariff_knowledge_synthetic_atar, description: 'First synthetic description')
+    create(:tariff_knowledge_synthetic_atar, description: 'Second synthetic description')
   end
 
-  def create_set(size: 4)
-    Evaluation::GoldQuerySetCreator.call(name: 'Set A', requested_size: size, created_by: 'user-123')
+  def create_set(size: 4, percentage: 50)
+    Evaluation::GoldQuerySetCreator.call(name: 'Set A', requested_size: size, atar_percentage: percentage, created_by: 'user-123')
   end
 
   it 'ends with a ready set that holds 3 gold queries per item, with history' do
@@ -33,7 +35,7 @@ RSpec.describe 'Generating a gold query set from start to finish', type: :reques
     expect(set.reload).to have_attributes(status: 'ready', planned_count: 4, generated_count: 4, failed_count: 0, failures: [])
     rows = EvaluationGoldQuery.where(set_id: set.id).all
     expect(rows.size).to eq(12)
-    expect(rows.map(&:source_type).tally).to eq('atar' => 12)
+    expect(rows.map(&:source_type).tally).to eq('atar' => 6, 'synthetic_atar' => 6)
     expect(rows.map { |row| row.versions.map(&:event) }.uniq).to eq([%w[create]])
     expect(rows.flat_map { |row| row.versions.map(&:whodunnit) }.uniq).to eq(%w[user-123])
   end
@@ -50,9 +52,11 @@ RSpec.describe 'Generating a gold query set from start to finish', type: :reques
     expect(rows.size).to eq(12)
     expect(rows.pluck('set_id').uniq).to eq([set.id])
     expect(rows.pluck('oracle_text')).to all(be_present)
+    expect(rows.select { |row| row['source_type'] == 'synthetic_atar' }.pluck('oracle_text').uniq)
+      .to contain_exactly('First synthetic description', 'Second synthetic description')
   end
 
-  it 'sends the product description for every item, now that every item is a real ATaR ruling (AI-1448)' do
+  it 'sends the real search only for the synthetic ATaRs' do
     user_messages = []
     allow(ai_client).to receive(:call) do |messages, **|
       user_messages << messages.last[:content]
@@ -63,20 +67,20 @@ RSpec.describe 'Generating a gold query set from start to finish', type: :reques
     run_all_jobs
 
     expect(user_messages.size).to eq(4)
-    expect(user_messages.count { |message| message.start_with?('Description:') }).to eq(4)
-    expect(user_messages.none? { |message| message.start_with?('Real user search:') }).to be(true)
+    expect(user_messages.count { |message| message.start_with?('Real user search:') }).to eq(2)
+    expect(user_messages.count { |message| message.start_with?('Description:') }).to eq(2)
   end
 
   it 'ends partly failed, listing the item that failed, when the model cannot write for one item' do
-    bad = TariffKnowledge::PublicAtarRuling.order(:id).first
-    bad.update(description: 'unwritable description')
-    allow(ai_client).to receive(:call) { |messages, **| messages.last[:content].include?('unwritable description') ? nil : tiers }
+    bad = TariffKnowledge::SyntheticAtar.order(:id).first
+    bad.update(real_user_search: 'unwritable search')
+    allow(ai_client).to receive(:call) { |messages, **| messages.last[:content].include?('unwritable search') ? nil : tiers }
 
     set = create_set
     run_all_jobs
 
     expect(set.reload).to have_attributes(status: 'partly_failed', generated_count: 3, failed_count: 1)
-    expect(set.failures.first.to_h).to include('source_type' => 'atar', 'source_id' => bad.ref)
+    expect(set.failures.first.to_h).to include('source_type' => 'synthetic_atar', 'source_id' => bad.id.to_s)
     expect(EvaluationGoldQuery.where(set_id: set.id).count).to eq(9)
   end
 
@@ -90,9 +94,9 @@ RSpec.describe 'Generating a gold query set from start to finish', type: :reques
     expect(EvaluationGoldQuery.where(set_id: set.id).count).to eq(0)
   end
 
-  it 'generates two sets independently, without their gold queries touching each other' do
-    first = create_set(size: 2)
-    second = Evaluation::GoldQuerySetCreator.call(name: 'Set B', requested_size: 2, created_by: 'user-456')
+  it 'lets two sets contain the same source item without touching each other' do
+    first = create_set(size: 2, percentage: 100)
+    second = Evaluation::GoldQuerySetCreator.call(name: 'Set B', requested_size: 2, atar_percentage: 100, created_by: 'user-456')
     run_all_jobs
 
     expect([first.reload.status, second.reload.status]).to eq(%w[ready ready])
