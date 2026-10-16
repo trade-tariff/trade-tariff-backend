@@ -54,9 +54,12 @@ module Reporting
       def admin_user_counts(group)
         group
           .group_by(&:changed_by)
-          .map { |_changed_by, user_entries| [newest_name(user_entries) || SearchReferences::ChangeSource::ADMIN_USER_LABEL, user_entries.size] }
-          .each_with_object(Hash.new(0)) { |(label, count), counts| counts[label] += count }
-          .map { |label, count| AdminUserCount.new(label:, count:) }
+          .map { |changed_by, user_entries|
+            label = newest_name(user_entries)
+            [[label ? changed_by : nil, label || SearchReferences::ChangeSource::ADMIN_USER_LABEL], user_entries.size]
+          }
+          .each_with_object(Hash.new(0)) { |(key, count), counts| counts[key] += count }
+          .map { |(_changed_by, label), count| AdminUserCount.new(label:, count:) }
           .sort_by { |admin_user| [-admin_user.count, admin_user.label] }
       end
 
@@ -105,7 +108,7 @@ module Reporting
           .order(:created_at, :id)
           .all
 
-        Version.preload_predecessors(versions)
+        Version.preload_predecessors(versions.select { |version| version.event == 'update' })
 
         versions
           .map { |version| SearchReferences::ChangeEntry.from_version(version) }
