@@ -23,11 +23,10 @@ RSpec.describe Api::Admin::Csv::SearchReferenceChangeSerializer do
   it 'writes the header row' do
     expect(rows.first).to eq(
       [
-        'Section',
+        'Operation',
         'Commodity code',
         'Product line suffix',
         'Title',
-        'FPO only',
         'Commodity URL',
         'Successors',
         'Previous commodity code',
@@ -37,7 +36,6 @@ RSpec.describe Api::Admin::Csv::SearchReferenceChangeSerializer do
         'Changed by',
         'Changed at',
         'Search reference ID',
-        'Summary',
       ],
     )
   end
@@ -49,7 +47,6 @@ RSpec.describe Api::Admin::Csv::SearchReferenceChangeSerializer do
         '0101210000',
         '80',
         'live horses',
-        'Yes',
         'https://example.com/commodities/0101210000',
         '0101999000 0101888000',
         nil,
@@ -59,7 +56,6 @@ RSpec.describe Api::Admin::Csv::SearchReferenceChangeSerializer do
         'ClearInvalidSearchReferences',
         '2026-10-03T09:15:00Z',
         '42',
-        '0101210000 — live horses [FPO only] (https://example.com/commodities/0101210000) (successors: 0101999000, 0101888000)',
       ],
     )
   end

@@ -29,8 +29,8 @@
       <li style='<%= item_style %>'><%= source_count.source %>: <%= source_count.count %>
         <% if source_count.breakdown.any? %>
           <ul style='font-size:14px;color:#000;margin:0px;padding:0px'>
-            <% source_count.breakdown.each do |changed_by, count| %>
-              <li style='<%= item_style %>'><%= changed_by %>: <%= count %></li>
+            <% source_count.breakdown.each do |admin_user| %>
+              <li style='<%= item_style %>'><%= admin_user.label %>: <%= admin_user.count %></li>
             <% end %>
           </ul>
         <% end %>

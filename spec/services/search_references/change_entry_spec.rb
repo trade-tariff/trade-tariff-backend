@@ -67,6 +67,27 @@ RSpec.describe SearchReferences::ChangeEntry do
       end
     end
 
+    context 'when the version stores the admin user name' do
+      let(:event) { 'create' }
+      let(:search_reference) do
+        TradeTariffRequest.set(whodunnit: 'admin-uid', whodunnit_name: 'Jane Smith') do
+          create(:search_reference, referenced: commodity, title: 'live horses')
+        end
+      end
+
+      before { search_reference }
+
+      it { is_expected.to have_attributes(changed_by: 'admin-uid', changed_by_name: 'Jane Smith') }
+    end
+
+    context 'when the version has no admin user name' do
+      let(:event) { 'create' }
+
+      before { search_reference }
+
+      it { is_expected.to have_attributes(changed_by_name: nil) }
+    end
+
     context 'when an admin user deleted the search reference' do
       let(:event) { 'destroy' }
 

@@ -6,9 +6,9 @@ RSpec.describe Reporting::SearchReferenceChanges do
 
   before { travel_to today.beginning_of_day + 10.hours }
 
-  def create_reference_at(time, title:, whodunnit: admin_uid)
+  def create_reference_at(time, title:, whodunnit: admin_uid, whodunnit_name: nil)
     travel_to(time) do
-      TradeTariffRequest.set(whodunnit:) { create(:search_reference, referenced: commodity, title:) }
+      TradeTariffRequest.set(whodunnit:, whodunnit_name:) { create(:search_reference, referenced: commodity, title:) }
     end
   end
 
@@ -63,7 +63,14 @@ RSpec.describe Reporting::SearchReferenceChanges do
       it 'counts changes by readable source, with all admin users in one group' do
         expect(result.counts_by_source).to eq(
           [
-            described_class::SourceCount.new(source: 'Admin users', count: 3, breakdown: [[admin_uid, 2], [other_admin_uid, 1]]),
+            described_class::SourceCount.new(
+              source: 'Admin users',
+              count: 3,
+              breakdown: [
+                described_class::AdminUserCount.new(changed_by: admin_uid, name: nil, count: 2),
+                described_class::AdminUserCount.new(changed_by: other_admin_uid, name: nil, count: 1),
+              ],
+            ),
             described_class::SourceCount.new(source: 'FPO CSV import', count: 1, breakdown: []),
           ],
         )
@@ -82,6 +89,30 @@ RSpec.describe Reporting::SearchReferenceChanges do
       it { expect(result.period_label).to eq('October 2026') }
       it { expect(result.total).to eq(4) }
       it { expect(result).not_to be_no_changes }
+    end
+
+    context 'when admin versions store user names' do
+      before do
+        create_reference_at(Time.utc(2026, 10, 2), title: 'no name yet')
+        create_reference_at(Time.utc(2026, 10, 3), title: 'old name', whodunnit_name: 'Jane Smith')
+        create_reference_at(Time.utc(2026, 10, 20), title: 'new name', whodunnit_name: 'Jane Jones')
+        create_reference_at(Time.utc(2026, 10, 4), title: 'other user', whodunnit: other_admin_uid)
+      end
+
+      let(:breakdown) { result.counts_by_source.first.breakdown }
+
+      it 'shows the newest name in the period for each admin user, and the ID when there is no name' do
+        expect(breakdown.map { |admin_user| [admin_user.label, admin_user.count] }).to eq(
+          [['Jane Jones', 3], [other_admin_uid, 1]],
+        )
+      end
+
+      it 'does not add the name to the CSV' do
+        csv = CSV.parse(result.csv_data, headers: true)
+
+        expect(csv.map { |row| row['Changed by'] }).to all(eq(admin_uid).or(eq(other_admin_uid)))
+        expect(result.csv_data).not_to include('Jane')
+      end
     end
 
     context 'when there are no changes in the period' do

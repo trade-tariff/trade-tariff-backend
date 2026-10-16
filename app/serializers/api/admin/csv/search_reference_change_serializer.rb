@@ -7,13 +7,10 @@ module Api
         # Titles and whodunnit values come from users, so make every text cell safe to open.
         escape_formulas!
 
-        column :section_label, column_name: 'Section'
+        column :section_label, column_name: 'Operation'
         column :goods_nomenclature_item_id, column_name: 'Commodity code'
         column :productline_suffix, column_name: 'Product line suffix'
         column :title, column_name: 'Title'
-        column :fpo_only, column_name: 'FPO only' do |change|
-          change.fpo_only? ? 'Yes' : 'No'
-        end
         column :goods_nomenclature_url, column_name: 'Commodity URL'
         column :successor_ids, column_name: 'Successors' do |change|
           change.successor_ids.join(' ')
@@ -27,7 +24,6 @@ module Api
           change.changed_at&.iso8601
         end
         column :search_reference_id, column_name: 'Search reference ID'
-        column :summary, column_name: 'Summary'
       end
     end
   end

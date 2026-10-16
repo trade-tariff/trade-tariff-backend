@@ -9,6 +9,7 @@ module SearchReferences
     :section,
     :changed_at,
     :changed_by,
+    :changed_by_name,
     :goods_nomenclature_item_id,
     :productline_suffix,
     :title,
@@ -32,6 +33,11 @@ module SearchReferences
     self::REMOVAL_SECTIONS = InvalidationReasonService::REMOVAL_REASONS
     self::UNKNOWN_SOURCE = 'Unknown'
 
+    # Versions written before admin sent user names have no name.
+    def initialize(changed_by_name: nil, **)
+      super
+    end
+
     class << self
       # Expects version.previous_version to be preloaded (see Version.preload_predecessors).
       def from_version(version)
@@ -45,6 +51,7 @@ module SearchReferences
           section: removal.fetch(:section) { section_for(version.event) },
           changed_at: version.created_at,
           changed_by: version.whodunnit.presence || self::UNKNOWN_SOURCE,
+          changed_by_name: version.whodunnit_name.presence,
           goods_nomenclature_item_id: object['goods_nomenclature_item_id'],
           productline_suffix: object['productline_suffix'],
           title: object['title'],
@@ -90,10 +97,6 @@ module SearchReferences
 
     def section_label
       self.class::SECTIONS.fetch(section)
-    end
-
-    def fpo_only?
-      usage == SearchReference::FPO_USAGE
     end
 
     def admin_user?

@@ -43,13 +43,14 @@ RSpec.describe ReportsMailer, type: :mailer do
 
     let(:body) { mail.html_part&.body&.decoded || mail.body.decoded }
 
-    def build_entry(section:, title:, changed_by:)
+    def build_entry(section:, title:, changed_by:, changed_by_name: nil)
       SearchReferences::ChangeEntry.new(
         version_id: 1,
         search_reference_id: '1',
         section:,
         changed_at: Time.utc(2026, 10, 3),
         changed_by:,
+        changed_by_name:,
         goods_nomenclature_item_id: '0101210000',
         productline_suffix: '80',
         title:,
@@ -81,6 +82,20 @@ RSpec.describe ReportsMailer, type: :mailer do
 
     it 'lists the number of changes by readable source, with a breakdown per admin user' do
       expect(body).to include('Admin users: 2', '11111111-1111-4111-8111-111111111111: 2', 'Automatic clean-up: 1')
+    end
+
+    context 'when the admin user has a stored name' do
+      let(:entries) do
+        [
+          build_entry(section: :added, title: 'live horses', changed_by: '11111111-1111-4111-8111-111111111111', changed_by_name: 'Zoë <Smith>'),
+          build_entry(section: :added, title: 'ponies', changed_by: '11111111-1111-4111-8111-111111111111'),
+        ]
+      end
+
+      it 'shows the escaped name instead of the user ID' do
+        expect(body).to include('Zoë &lt;Smith&gt;: 2')
+        expect(body).not_to include('11111111-1111-4111-8111-111111111111')
+      end
     end
 
     context 'when on the XI service' do
