@@ -80,8 +80,9 @@ RSpec.describe ReportsMailer, type: :mailer do
       expect(body).to include('Expired (1)', '0101210000 — old horses', 'Added (2)', '0101210000 — live horses', '0101210000 — ponies')
     end
 
-    it 'lists the number of changes by readable source, with a breakdown per admin user' do
-      expect(body).to include('Admin users: 2', '11111111-1111-4111-8111-111111111111: 2', 'Automatic clean-up: 1')
+    it 'lists the number of changes by readable source, with a breakdown per admin user', :aggregate_failures do
+      expect(body).to include('Admin users: 2', 'Admin user: 2', 'Automatic clean-up: 1')
+      expect(body).not_to include('11111111-1111-4111-8111-111111111111')
     end
 
     context 'when the admin user has a stored name' do

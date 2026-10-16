@@ -88,7 +88,7 @@ RSpec.describe Api::Admin::ReportsController do
     end
 
     it { expect(response).to have_http_status(:accepted) }
-    it { expect(SearchReferenceChangesReportWorker).to have_received(:perform_async).with(true) }
+    it { expect(SearchReferenceChangesReportWorker).to have_received(:perform_async).with(no_args) }
   end
 
   describe 'POST #send_email' do

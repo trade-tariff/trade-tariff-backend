@@ -4,7 +4,7 @@ module Api
       class SearchReferenceChangeSerializer
         include Api::Shared::CsvSerializer
 
-        # Titles and whodunnit values come from users, so make every text cell safe to open.
+        # Titles and admin user names come from users, so make every text cell safe to open.
         escape_formulas!
 
         column :section_label, column_name: 'Operation'
@@ -18,8 +18,7 @@ module Api
         column :previous_goods_nomenclature_item_id, column_name: 'Previous commodity code'
         column :previous_title, column_name: 'Previous title'
         column :previous_usage, column_name: 'Previous usage'
-        column :source, column_name: 'Source'
-        column :changed_by, column_name: 'Changed by'
+        column :changed_by_label, column_name: 'Changed by'
         column :changed_at, column_name: 'Changed at' do |change|
           change.changed_at&.iso8601
         end

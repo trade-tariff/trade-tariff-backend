@@ -107,6 +107,11 @@ module SearchReferences
       ChangeSource.label(changed_by)
     end
 
+    # The admin user's name, or "Admin user" when the version has no name. Jobs use their source label.
+    def changed_by_label
+      admin_user? ? changed_by_name.presence || ChangeSource::ADMIN_USER_LABEL : source
+    end
+
     def summary
       ChangeLineFormatter.format_line(to_h)
     end

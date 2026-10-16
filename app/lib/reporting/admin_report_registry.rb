@@ -160,7 +160,7 @@ module Reporting
             generator: -> { Reporting::SearchReferenceChanges },
             services: %w[uk xi],
             dependencies: [],
-            email_generator: -> { SearchReferenceChangesReportWorker.perform_async(true) },
+            email_generator: -> { SearchReferenceChangesReportWorker.perform_async },
             standalone_generation: true,
           ),
         ]

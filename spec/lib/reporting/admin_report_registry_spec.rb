@@ -80,7 +80,7 @@ RSpec.describe Reporting::AdminReportRegistry do
 
       report.send_email!
 
-      expect(SearchReferenceChangesReportWorker).to have_received(:perform_async).with(true)
+      expect(SearchReferenceChangesReportWorker).to have_received(:perform_async).with(no_args)
     end
   end
 

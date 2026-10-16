@@ -174,7 +174,7 @@ RSpec.describe SearchReferences::ChangeEntry do
     end
   end
 
-  describe '#source and #admin_user?' do
+  describe '#source, #admin_user? and #changed_by_label' do
     subject(:entry) do
       described_class.new(
         version_id: 1,
@@ -182,6 +182,7 @@ RSpec.describe SearchReferences::ChangeEntry do
         section: :added,
         changed_at: Time.utc(2026, 10, 3),
         changed_by:,
+        changed_by_name:,
         goods_nomenclature_item_id: '0101210000',
         productline_suffix: '80',
         title: 'live horses',
@@ -195,7 +196,21 @@ RSpec.describe SearchReferences::ChangeEntry do
     end
 
     let(:changed_by) { '11111111-1111-4111-8111-111111111111' }
+    let(:changed_by_name) { nil }
 
-    it { is_expected.to have_attributes(source: 'Admin user', admin_user?: true) }
+    it { is_expected.to have_attributes(source: 'Admin user', admin_user?: true, changed_by_label: 'Admin user') }
+
+    context 'when the admin user has a name' do
+      let(:changed_by_name) { 'Jane Smith' }
+
+      it { is_expected.to have_attributes(changed_by_label: 'Jane Smith') }
+    end
+
+    context 'when a job made the change' do
+      let(:changed_by) { 'ClearInvalidSearchReferences' }
+      let(:changed_by_name) { 'ignored' }
+
+      it { is_expected.to have_attributes(admin_user?: false, changed_by_label: 'Automatic clean-up') }
+    end
   end
 end

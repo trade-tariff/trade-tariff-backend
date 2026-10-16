@@ -8,16 +8,12 @@ module Reporting
 
     ADMIN_USERS_SOURCE = 'Admin users'.freeze
 
-    # breakdown lists one AdminUserCount per admin user for the admin users group, otherwise it is empty.
+    # breakdown lists AdminUserCount rows for the admin users group, otherwise it is empty.
     SourceCount = Data.define(:source, :count, :breakdown)
 
-    # name is the newest name stored for the user in the period. It is nil for versions written
-    # before admin sent user names, so label falls back to the user ID.
-    AdminUserCount = Data.define(:changed_by, :name, :count) do
-      def label
-        name.presence || changed_by
-      end
-    end
+    # label is the newest name stored for the user in the period. Users with no stored name
+    # (versions written before admin sent user names) are counted together as "Admin user".
+    AdminUserCount = Data.define(:label, :count)
 
     Result = Data.define(:period, :entries, :csv_data, :filename) do
       def total
@@ -58,10 +54,10 @@ module Reporting
       def admin_user_counts(group)
         group
           .group_by(&:changed_by)
-          .map { |changed_by, user_entries|
-            AdminUserCount.new(changed_by:, name: newest_name(user_entries), count: user_entries.size)
-          }
-          .sort_by { |admin_user| [-admin_user.count, admin_user.label, admin_user.changed_by] }
+          .map { |_changed_by, user_entries| [newest_name(user_entries) || SearchReferences::ChangeSource::ADMIN_USER_LABEL, user_entries.size] }
+          .each_with_object(Hash.new(0)) { |(label, count), counts| counts[label] += count }
+          .map { |label, count| AdminUserCount.new(label:, count:) }
+          .sort_by { |admin_user| [-admin_user.count, admin_user.label] }
       end
 
       def newest_name(user_entries)

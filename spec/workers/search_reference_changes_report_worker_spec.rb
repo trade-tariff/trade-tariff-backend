@@ -16,7 +16,7 @@ RSpec.describe SearchReferenceChangesReportWorker, type: :worker do
   end
 
   context 'when not delivering the email' do
-    before { described_class.new.perform(false) }
+    before { described_class.new.perform(deliver_email: false) }
 
     it { expect(Reporting::SearchReferenceChanges).to have_received(:generate) }
     it { expect(ReportsMailer).not_to have_received(:search_reference_changes) }

@@ -32,7 +32,6 @@ RSpec.describe Api::Admin::Csv::SearchReferenceChangeSerializer do
         'Previous commodity code',
         'Previous title',
         'Previous usage',
-        'Source',
         'Changed by',
         'Changed at',
         'Search reference ID',
@@ -53,7 +52,6 @@ RSpec.describe Api::Admin::Csv::SearchReferenceChangeSerializer do
         nil,
         nil,
         'Automatic clean-up',
-        'ClearInvalidSearchReferences',
         '2026-10-03T09:15:00Z',
         '42',
       ],
@@ -87,7 +85,6 @@ RSpec.describe Api::Admin::Csv::SearchReferenceChangeSerializer do
       expect(row['Previous title']).to eq("'+SUM(1,2)")
       expect(row['Previous usage']).to eq("'@usage")
       expect(row['Changed by']).to eq(%('=cmd|"/c calc"!A1))
-      expect(row['Source']).to eq(%('=cmd|"/c calc"!A1))
     end
 
     it 'leaves other cells unchanged' do
@@ -96,6 +93,33 @@ RSpec.describe Api::Admin::Csv::SearchReferenceChangeSerializer do
 
     it 'never writes a cell that starts with a formula character' do
       expect(rows.second.compact).to all(satisfy { |cell| !cell.match?(Api::Shared::CsvSerializer::FORMULA_TRIGGER) })
+    end
+  end
+
+  context 'when an admin user made the change' do
+    let(:admin_uid) { '11111111-1111-4111-8111-111111111111' }
+    let(:row) { rows.second.zip(rows.first).to_h { |value, header| [header, value] } }
+
+    def entry_by(changed_by_name)
+      SearchReferences::ChangeEntry.new(**entry.to_h, changed_by: admin_uid, changed_by_name:)
+    end
+
+    it 'shows the admin user name' do
+      rows = CSV.parse(described_class.new([entry_by('Jane Smith')]).serialized_csv, headers: true)
+
+      expect(rows.first['Changed by']).to eq('Jane Smith')
+    end
+
+    it 'shows "Admin user" when there is no name' do
+      rows = CSV.parse(described_class.new([entry_by(nil)]).serialized_csv, headers: true)
+
+      expect(rows.first['Changed by']).to eq('Admin user')
+    end
+
+    it 'escapes a name that starts like a formula' do
+      rows = CSV.parse(described_class.new([entry_by('=1+1')]).serialized_csv, headers: true)
+
+      expect(rows.first['Changed by']).to eq("'=1+1")
     end
   end
 end

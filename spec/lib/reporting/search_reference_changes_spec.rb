@@ -66,10 +66,7 @@ RSpec.describe Reporting::SearchReferenceChanges do
             described_class::SourceCount.new(
               source: 'Admin users',
               count: 3,
-              breakdown: [
-                described_class::AdminUserCount.new(changed_by: admin_uid, name: nil, count: 2),
-                described_class::AdminUserCount.new(changed_by: other_admin_uid, name: nil, count: 1),
-              ],
+              breakdown: [described_class::AdminUserCount.new(label: 'Admin user', count: 3)],
             ),
             described_class::SourceCount.new(source: 'FPO CSV import', count: 1, breakdown: []),
           ],
@@ -101,17 +98,25 @@ RSpec.describe Reporting::SearchReferenceChanges do
 
       let(:breakdown) { result.counts_by_source.first.breakdown }
 
-      it 'shows the newest name in the period for each admin user, and the ID when there is no name' do
+      it 'shows the newest name in the period for each admin user, and "Admin user" when there is no name' do
         expect(breakdown.map { |admin_user| [admin_user.label, admin_user.count] }).to eq(
-          [['Jane Jones', 3], [other_admin_uid, 1]],
+          [['Jane Jones', 3], ['Admin user', 1]],
         )
       end
 
-      it 'does not add the name to the CSV' do
+      it 'shows the name stored on each version in the CSV, and "Admin user" when there is no name' do
         csv = CSV.parse(result.csv_data, headers: true)
 
-        expect(csv.map { |row| row['Changed by'] }).to all(eq(admin_uid).or(eq(other_admin_uid)))
-        expect(result.csv_data).not_to include('Jane')
+        expect(csv.to_h { |row| [row['Title'], row['Changed by']] }).to eq(
+          'no name yet' => 'Admin user',
+          'old name' => 'Jane Smith',
+          'other user' => 'Admin user',
+          'new name' => 'Jane Jones',
+        )
+      end
+
+      it 'does not add the admin user ID to the CSV' do
+        expect(result.csv_data).not_to include(admin_uid, other_admin_uid)
       end
     end
 
