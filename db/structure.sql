@@ -2686,6 +2686,7 @@ CREATE TABLE uk.evaluation_gold_query_sets (
     id integer NOT NULL,
     name text NOT NULL,
     requested_size integer NOT NULL,
+    atar_percentage integer NOT NULL,
     planned_count integer NOT NULL,
     generated_count integer DEFAULT 0 NOT NULL,
     failed_count integer DEFAULT 0 NOT NULL,
@@ -2693,6 +2694,7 @@ CREATE TABLE uk.evaluation_gold_query_sets (
     failures jsonb DEFAULT '[]'::jsonb NOT NULL,
     created_by text,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT evaluation_gold_query_sets_atar_percentage_check CHECK (((atar_percentage >= 0) AND (atar_percentage <= 100))),
     CONSTRAINT evaluation_gold_query_sets_status_check CHECK ((status = ANY (ARRAY['generating'::text, 'ready'::text, 'partly_failed'::text, 'failed'::text])))
 );
 
@@ -15807,4 +15809,3 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20261013090000_add_intende
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261014090000_add_label_to_evaluation_runs.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261015100000_add_whodunnit_name_to_versions.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261015120000_create_evaluation_synthetic_input_sets.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20261015130000_remove_atar_percentage_from_evaluation_gold_query_sets.rb');
