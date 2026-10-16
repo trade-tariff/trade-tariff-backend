@@ -8912,7 +8912,8 @@ CREATE TABLE uk.versions (
     event text NOT NULL,
     object jsonb NOT NULL,
     whodunnit text,
-    created_at timestamp without time zone NOT NULL
+    created_at timestamp without time zone NOT NULL,
+    whodunnit_name text
 );
 
 
@@ -15804,5 +15805,6 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20261007140000_add_pricing
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261008100000_add_persona_breakdown_to_evaluation_runs.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261013090000_add_intended_result_count_to_evaluation_runs.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261014090000_add_label_to_evaluation_runs.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20261015100000_add_whodunnit_name_to_versions.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261015120000_create_evaluation_synthetic_input_sets.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261015130000_remove_atar_percentage_from_evaluation_gold_query_sets.rb');
