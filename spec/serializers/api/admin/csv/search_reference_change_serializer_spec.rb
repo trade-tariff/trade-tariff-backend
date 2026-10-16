@@ -31,7 +31,6 @@ RSpec.describe Api::Admin::Csv::SearchReferenceChangeSerializer do
         'Successors',
         'Previous commodity code',
         'Previous title',
-        'Previous usage',
         'Changed by',
         'Changed at',
         'Search reference ID',
@@ -48,7 +47,6 @@ RSpec.describe Api::Admin::Csv::SearchReferenceChangeSerializer do
         'live horses',
         'https://example.com/commodities/0101210000',
         '0101999000 0101888000',
-        nil,
         nil,
         nil,
         'Automatic clean-up',
@@ -83,12 +81,15 @@ RSpec.describe Api::Admin::Csv::SearchReferenceChangeSerializer do
     it 'escapes every text cell that could run as a formula', :aggregate_failures do
       expect(row['Title']).to eq(%('=HYPERLINK("https://evil.example")))
       expect(row['Previous title']).to eq("'+SUM(1,2)")
-      expect(row['Previous usage']).to eq("'@usage")
       expect(row['Changed by']).to eq(%('=cmd|"/c calc"!A1))
     end
 
     it 'leaves other cells unchanged' do
       expect(row['Product line suffix']).to eq('80')
+    end
+
+    it 'does not write the usage' do
+      expect(rows.flatten).not_to include('Usage', 'Previous usage', "'@usage")
     end
 
     it 'never writes a cell that starts with a formula character' do

@@ -15689,5 +15689,5 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20261007140000_add_pricing
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261008100000_add_persona_breakdown_to_evaluation_runs.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261013090000_add_intended_result_count_to_evaluation_runs.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261014090000_add_label_to_evaluation_runs.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20261014150000_add_metadata_to_versions.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261015100000_add_whodunnit_name_to_versions.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20261016150000_add_metadata_to_versions.rb');

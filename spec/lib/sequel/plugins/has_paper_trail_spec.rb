@@ -59,6 +59,15 @@ RSpec.describe Sequel::Plugins::HasPaperTrail do
 
       expect(Version.last.metadata).to be_nil
     end
+
+    it 'does not write the metadata column when no metadata is set' do
+      model_with_plugin
+      allow(Version).to receive(:create).and_call_original
+
+      model_with_plugin.update(content: 'no metadata')
+
+      expect(Version).to have_received(:create).with(hash_excluding(:metadata))
+    end
   end
 
   describe '#versions' do

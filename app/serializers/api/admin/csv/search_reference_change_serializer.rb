@@ -11,14 +11,12 @@ module Api
         column :goods_nomenclature_item_id, column_name: 'Commodity code'
         column :productline_suffix, column_name: 'Product line suffix'
         column :title, column_name: 'Title'
-        column :usage, column_name: 'Usage'
         column :goods_nomenclature_url, column_name: 'Commodity URL'
         column :successor_ids, column_name: 'Successors' do |change|
           change.successor_ids.join(' ')
         end
         column :previous_goods_nomenclature_item_id, column_name: 'Previous commodity code'
         column :previous_title, column_name: 'Previous title'
-        column :previous_usage, column_name: 'Previous usage'
         column :changed_by_label, column_name: 'Changed by'
         column :changed_at, column_name: 'Changed at' do |change|
           change.changed_at&.iso8601
