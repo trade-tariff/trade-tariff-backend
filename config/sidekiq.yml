@@ -99,6 +99,9 @@
       cron: "0 23 * * 0" # 11pm UTC every Sunday
       description: Generates and emails a CSV report of the previous day's user action logs
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
+    SearchReferenceChangesReportWorker:
+      cron: "30 10 * * mon#1 Europe/London" # 10:30 UK time on the first Monday of each month
+      description: Generates and emails a CSV report of the previous calendar month's search reference changes
     ImportCustomsTariffDocumentWorker:
       cron: "0 9 * * *"
       description: "Checks GOV.UK for a new Customs Tariff document version and imports it"
