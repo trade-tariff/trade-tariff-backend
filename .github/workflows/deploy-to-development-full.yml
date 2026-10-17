@@ -2,23 +2,44 @@ name: Deploy to development full
 
 on:
   workflow_dispatch:
-  pull_request:
+    inputs:
+      sha:
+        description: 'Git SHA or ref to deploy (defaults to current HEAD)'
+        type: string
+        required: false
+  pull_request_target:
+    branches: [main]
     types:
       - opened
       - synchronize
       - reopened
       - labeled
-      - unlabeled
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
-  deploy-full-stack:
+  authorize:
     if: >
       github.event_name == 'workflow_dispatch' ||
-      contains(github.event.pull_request.labels.*.name, 'needs-full-deployment')
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       contains(github.event.pull_request.labels.*.name, 'needs-full-deployment') &&
+       (github.event.action != 'labeled' || github.event.label.name == 'needs-full-deployment')) ||
+      (github.event.pull_request.head.repo.full_name != github.repository &&
+       contains(github.event.pull_request.labels.*.name, 'needs-fork-full-deployment') &&
+       (github.event.action != 'labeled' || github.event.label.name == 'needs-fork-full-deployment'))
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.authorize.outputs.sha }}
+    steps:
+      - uses: trade-tariff/trade-tariff-tools/.github/actions/authorize-development-deployment@main
+        id: authorize
+
+  deploy-full-stack:
+    needs: authorize
+    permissions:
+      contents: read
+      id-token: write
     uses: trade-tariff/trade-tariff-tools/.github/workflows/deploy-multi-ecs.yml@main
     with:
       environment: development
@@ -26,6 +47,7 @@ jobs:
         [
           {
             "name": "tariff-backend",
+            "ref": "${{ needs.authorize.outputs.sha }}",
             "migrate": true,
             "service-names": ["backend-uk", "backend-xi", "worker-uk", "worker-xi"]
           },

@@ -63,6 +63,52 @@ Useful current workflow files:
 
 Development deploys can be requested through the relevant GitHub workflow or PR labels such as `needs-deployment` and `needs-full-deployment`. Staging and production promotion rules should be checked in the workflow files before release work.
 
+### Approved fork deployments
+
+The backend-only and full-stack development workflows use the shared tools
+authorization action. It reads
+[the central account policy](https://github.com/trade-tariff/trade-tariff-tools/blob/main/.github/approved-fork-deployers.json)
+from tools `main`. Add an external contributor's GitHub login under
+`trade-tariff-backend` through a reviewed tools PR. Approval for another
+repository does not grant backend approval.
+
+After review, a repository writer adds `needs-fork-deployment` for the backend
+alone or `needs-fork-full-deployment` for the full stack. These labels are manual
+only. The labeler and Dependabot do not add them. The existing `needs-deployment`
+and `needs-full-deployment` labels authorize upstream PRs only; they cannot
+authorize a fork deployment.
+
+An approved contributor can then deploy later updates from their own fork while
+the manual label remains on the PR. Removing the label blocks deployments from
+later PR events. It does not cancel runs already created.
+Both the original triggering account and the account that reruns a job
+must be approved for this repository or have repository write access. Unlisted
+forks cannot deploy through these workflows.
+
+Authorization runs trusted code with read-only GitHub access and no deployment
+secrets or OIDC permission. Deployment jobs use the exact authorized commit SHA.
+The existing upstream-only CloudWatch query check uses the same commit after
+deployment. Fork deployments skip this check.
+Full-stack deployment uses the authorized backend commit and the normal refs
+for frontend, admin, identity and dev hub. The policy approves fork-code sources;
+it does not filter these supporting apps.
+
+Approval trusts the contributor's build, migration and Terraform code with the
+existing deployment credentials. Development builds write images to shared
+production-account ECR. The policy does not reduce IAM permissions or sandbox
+fork code. Account-policy and caller-workflow changes need high-risk review.
+
+Repository writers retain upstream PR deployment and manual dispatch access.
+Run manual workflows from `main`. The optional `sha` input resolves a commit or
+ref to an exact SHA before deployment. External account approval does not grant
+manual dispatch access, organisation membership or personal AWS credentials.
+Staging and production workflows do not use this policy.
+
+Backend-only deployment does not run end-to-end tests.
+Full-stack deployment runs the existing tariff checks. Check the deployed commit
+and changed API behaviour on development. To roll back, a repository writer
+runs the manual development workflow with the previous deployed commit.
+
 ## Backend Runtime Shape
 
 Platform docs describe backend deployments as separate web and Sidekiq services for UK and XI. In this repo, service-specific behaviour is controlled by `SERVICE`, route mounting, synchronizer selection, and Sidekiq schedule flags.
