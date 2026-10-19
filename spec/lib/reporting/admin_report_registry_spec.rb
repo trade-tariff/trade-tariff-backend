@@ -60,6 +60,42 @@ RSpec.describe Reporting::AdminReportRegistry do
     end
   end
 
+  describe 'the search reference changes report' do
+    subject(:report) { described_class.fetch!('search_reference_changes') }
+
+    %w[uk xi].each do |service|
+      it "is available on the #{service.upcase} service" do
+        allow(TradeTariffBackend).to receive(:service).and_return(service)
+
+        expect(report.report_class).to eq(Reporting::SearchReferenceChanges)
+      end
+    end
+
+    it 'supports email and standalone generation' do
+      expect(report).to have_attributes(supports_email?: true, supports_generate?: true)
+    end
+
+    it 'enqueues the report worker with email delivery' do
+      allow(SearchReferenceChangesReportWorker).to receive(:perform_async)
+
+      report.send_email!
+
+      expect(SearchReferenceChangesReportWorker).to have_received(:perform_async).with(no_args)
+    end
+  end
+
+  describe '#supports_generate?' do
+    it 'is false for a report that only supports generate and email' do
+      allow(TradeTariffBackend).to receive(:service).and_return('uk')
+
+      expect(described_class.fetch!('differences')).not_to be_supports_generate
+    end
+
+    it 'is true for a report without email' do
+      expect(described_class.fetch!('commodities')).to be_supports_generate
+    end
+  end
+
   describe 'service scoped object keys' do
     it 'builds the UK commodities key independently of the running service' do
       allow(TradeTariffBackend).to receive(:service).and_return('xi')

@@ -1,0 +1,38 @@
+<% text_style = 'font-size:14px;color:#000;font-family:Calibri,Arial,sans-serif;' %>
+<% item_style = 'font-size:14px;color:#000;margin:0px;margin-left:1em;font-family:Calibri,Arial,sans-serif;' %>
+<p style='<%= text_style %>'>Hello,</p>
+<p style='<%= text_style %>'>This is the <%= @service_name %> search reference changes report for <%= @result.period_label %>
+    (<%= @result.period.begin.to_fs(:govuk) %> to <%= @result.period.end.to_fs(:govuk) %>).
+    The full list of changes is in the attached CSV file.</p>
+
+<% if @result.no_changes? %>
+  <p style='<%= text_style %>'>There were no search reference changes in this period.</p>
+<% else %>
+  <p style='<%= text_style %>'><%= pluralize(@result.total, 'search reference change') %> in total.
+    <%= pluralize(@result.removed_count, 'search reference') %> removed automatically because the commodity is no longer current.</p>
+
+  <h3 style='<%= text_style %>'>Changes by operation</h3>
+  <ul style='font-size:14px;color:#000;margin:0px;padding:0px'>
+    <% @result.sections.each do |section, entries| %>
+      <li style='<%= item_style %>'><%= SearchReferences::ChangeEntry::SECTIONS.fetch(section) %>: <%= entries.size %></li>
+    <% end %>
+  </ul>
+
+  <h3 style='<%= text_style %>'>Changes by source</h3>
+  <ul style='font-size:14px;color:#000;margin:0px;padding:0px'>
+    <% @result.counts_by_source.each do |source_count| %>
+      <li style='<%= item_style %>'><%= source_count.source %>: <%= source_count.count %>
+        <% if source_count.breakdown.any? %>
+          <ul style='font-size:14px;color:#000;margin:0px;padding:0px'>
+            <% source_count.breakdown.each do |admin_user| %>
+              <li style='<%= item_style %>'><%= admin_user.label %>: <%= admin_user.count %></li>
+            <% end %>
+          </ul>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% end %>
+
+<p style='<%= text_style %>'>Thank you,</p>
+<p style='<%= text_style %>'>The Online Tariff Team.</p>

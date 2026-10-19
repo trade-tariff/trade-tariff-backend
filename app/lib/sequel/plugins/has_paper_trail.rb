@@ -76,6 +76,10 @@ module Sequel
       end
 
       module InstanceMethods
+        # Set before save or destroy to store deletion-time or change-time facts on the version.
+        # It is cleared after the version is written.
+        attr_accessor :version_metadata
+
         def versions
           Version.where(item_type: model.name, item_id: item_id_for_version)
                  .order(:created_at)
@@ -101,7 +105,7 @@ module Sequel
         def create_version(event)
           return if model.paper_trail_disabled?
 
-          Version.create(
+          attributes = {
             item_type: model.name,
             item_id: item_id_for_version,
             event: event,
@@ -109,7 +113,13 @@ module Sequel
             whodunnit: TradeTariffRequest.whodunnit,
             whodunnit_name: TradeTariffRequest.whodunnit_name,
             created_at: Time.current,
-          )
+          }
+          # Only versions with a snapshot write the metadata column, so other versioned models
+          # do not depend on it.
+          attributes[:metadata] = Sequel.pg_jsonb_wrap(version_metadata.deep_stringify_keys) if version_metadata
+
+          Version.create(attributes)
+          self.version_metadata = nil
         end
 
         def item_id_for_version

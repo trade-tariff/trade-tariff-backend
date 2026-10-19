@@ -72,6 +72,7 @@ geographical_area_groups_*.xlsx
 CDS updates*.xlsx
 supplementary_units_*.csv
 tariff_data_basic_*.csv
+search_reference_changes_*.csv
 
 .claude/
 terraform/modules/*/.terraform.lock.hcl

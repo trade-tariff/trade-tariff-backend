@@ -8915,7 +8915,8 @@ CREATE TABLE uk.versions (
     object jsonb NOT NULL,
     whodunnit text,
     created_at timestamp without time zone NOT NULL,
-    whodunnit_name text
+    whodunnit_name text,
+    metadata jsonb
 );
 
 
@@ -15808,4 +15809,5 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20261008100000_add_persona
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261013090000_add_intended_result_count_to_evaluation_runs.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261014090000_add_label_to_evaluation_runs.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261015100000_add_whodunnit_name_to_versions.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20261016150000_add_metadata_to_versions.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261015120000_create_evaluation_synthetic_input_sets.rb');

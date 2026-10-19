@@ -66,6 +66,29 @@ RSpec.describe Api::Admin::ReportsController do
     it { expect(response.parsed_body.dig('data', 'id')).to eq('differences') }
     it { expect(response.parsed_body.dig('data', 'attributes', 'download_url')).to eq(Reporting::Differences.download_link_today) }
     it { expect(response.parsed_body.dig('data', 'attributes', 'supports_email')).to be(true) }
+    it { expect(response.parsed_body.dig('data', 'attributes', 'supports_generate')).to be(false) }
+  end
+
+  describe 'GET #show for the search reference changes report' do
+    before do
+      allow(TradeTariffBackend).to receive_messages(reporting_cdn_host: nil, service: 'xi')
+      get '/uk/admin/reports/search_reference_changes', headers: request_headers
+    end
+
+    it { expect(response).to have_http_status(:ok) }
+    it { expect(response.parsed_body.dig('data', 'attributes', 'supports_email')).to be(true) }
+    it { expect(response.parsed_body.dig('data', 'attributes', 'supports_generate')).to be(true) }
+  end
+
+  describe 'POST #send_email for the search reference changes report' do
+    before do
+      allow(TradeTariffBackend).to receive_messages(service: 'uk', reporting_cdn_host: nil)
+      allow(SearchReferenceChangesReportWorker).to receive(:perform_async)
+      post '/uk/admin/reports/search_reference_changes/send_email', headers: request_headers, as: :json
+    end
+
+    it { expect(response).to have_http_status(:accepted) }
+    it { expect(SearchReferenceChangesReportWorker).to have_received(:perform_async).with(no_args) }
   end
 
   describe 'POST #send_email' do
