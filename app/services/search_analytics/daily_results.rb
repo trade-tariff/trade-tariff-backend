@@ -32,7 +32,7 @@ module SearchAnalytics
       records = SearchAnalyticsQueryResult.where(service:, reporting_date: dates, name: definitions.keys - %w[journey_outcomes classic_outcomes search_actions] - SelectionRates::SOURCE_NAMES).all
       compatible = records.select { |row| row.fingerprint == definitions.fetch(row.name) }
       frontend_records, backend_records = compatible.partition { |row| row.name == 'frontend_events' }
-      required = definitions.keys - %w[frontend_events journey_outcomes classic_outcomes search_actions search_results] - SelectionRates::SOURCE_NAMES
+      required = definitions.keys - %w[frontend_events journey_outcomes classic_outcomes search_actions search_results result_offers] - SelectionRates::SOURCE_NAMES
       selection_rates = SelectionRates.call(service:, dates:, definitions:)
       selection_records = selection_rates.fetch(:records)
       return if compatible.empty? && selection_records.empty?
@@ -70,6 +70,7 @@ module SearchAnalytics
       payload['availability']['journey_outcome_coverage'] = outcomes.fetch('coverage')
       payload['frontend_events'] = FrontendEvents.call(
         records: frontend_records, dates:,
+        offer_records: backend_records.select { |row| row.name == 'result_offers' },
         supported: service == 'uk' && period.view != 'classic'
       )
       payload.merge!(OutcomeRates.call(service:, dates:, view: period.view, definitions:))

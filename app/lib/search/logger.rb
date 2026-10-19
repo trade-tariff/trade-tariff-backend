@@ -337,6 +337,16 @@ module Search
       }, event)
     end
 
+    def result_offered(event)
+      info log_entry({
+        event: 'result_offered',
+        request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
+        result_rank: event.payload[:result_rank],
+        confidence: event.payload[:confidence],
+      }, event)
+    end
+
     def result_selected(event)
       info log_entry({
         event: 'result_selected',

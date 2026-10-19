@@ -103,6 +103,10 @@ module Search
         )
       end
 
+      def result_offered(request_id:, result_rank:, confidence:)
+        instrument('result_offered', request_id:, search_type: 'interactive', result_rank:, confidence:)
+      end
+
       def result_selected(request_id:, goods_nomenclature_item_id:, goods_nomenclature_class:)
         instrument('result_selected', request_id:, goods_nomenclature_item_id:, goods_nomenclature_class:)
       end

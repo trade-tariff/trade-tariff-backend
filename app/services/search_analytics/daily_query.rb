@@ -85,6 +85,7 @@ module SearchAnalytics
       definitions['search_results'] = search_results_query
       definitions['selection_results'] = SelectionQuery.results(source:, log_stream_filter:, request_exclusion_filter:)
       definitions['selection_pages'] = SelectionQuery.selections(source:)
+      definitions['result_offers'] = ResultOffersQuery.call(source:, log_stream_filter:) if @service == 'uk'
       definitions
     end
 
@@ -173,7 +174,7 @@ module SearchAnalytics
       complete = rows.size < ROW_LIMIT
       # CloudWatch reports the failure subquery's records_matched for this query,
       # not its result cohort. Its exact distinct-ID count is checked below.
-      if (IDENTIFIER_QUERIES + %w[frontend_events classic_outcomes] - %w[selection_results]).include?(name)
+      if (IDENTIFIER_QUERIES + %w[frontend_events classic_outcomes result_offers] - %w[selection_results]).include?(name)
         raise QueryError, 'Missing journey completeness statistics' if matched.nil?
 
         count_field = name == 'search_journeys' ? 'started_events' : 'event_count'
