@@ -1,8 +1,14 @@
 module Reporting
   # Monthly summary of search reference changes. The admin download and the email both use
   # the CSV that generate builds, so they always contain the same data.
+  #
+  # The CSV contains admin user names, so it is not published like the other reports. It is
+  # stored in the private persistence bucket, not the reporting bucket that the public
+  # reporting CDN serves. Admin downloads it with a short-lived presigned URL.
   class SearchReferenceChanges
     include Reporting::Reportable
+
+    DOWNLOAD_URL_EXPIRES_IN = 5.minutes.to_i
 
     SECTION_ORDER = SearchReferences::ChangeEntry::SECTIONS.keys.freeze
 
@@ -96,6 +102,30 @@ module Reporting
 
       def object_key(period = default_period)
         "#{service}/reporting/#{year}/#{month}/#{day}/search_reference_changes_#{service}_#{period.begin.strftime('%Y_%m')}.csv"
+      end
+
+      # Private: the persistence bucket blocks public access and has no CDN.
+      def bucket
+        Rails.application.config.persistence_bucket
+      end
+
+      def available_today?
+        return File.exist?(File.basename(today_object_key)) unless Rails.env.production?
+
+        object(today_object_key).exists?
+      rescue Aws::Errors::ServiceError, Seahorse::Client::NetworkingError
+        false
+      end
+
+      # Admin asks for the link when the user clicks download, so a short expiry is enough.
+      def download_link_today
+        return today_object_key unless Rails.env.production?
+
+        object(today_object_key).presigned_url(
+          :get,
+          expires_in: DOWNLOAD_URL_EXPIRES_IN,
+          response_content_disposition: %(attachment; filename="#{File.basename(today_object_key)}"),
+        )
       end
 
     private

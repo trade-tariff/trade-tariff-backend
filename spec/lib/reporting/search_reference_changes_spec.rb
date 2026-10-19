@@ -26,6 +26,61 @@ RSpec.describe Reporting::SearchReferenceChanges do
     end
   end
 
+  describe '.bucket' do
+    it 'is the private persistence bucket, not the public reporting bucket', :aggregate_failures do
+      expect(described_class.bucket).to eq(Rails.application.config.persistence_bucket)
+      expect(described_class.bucket).not_to eq(Rails.application.config.reporting_bucket)
+    end
+  end
+
+  context 'when running in production' do
+    let(:persistence_bucket) { Rails.application.config.persistence_bucket }
+
+    before do
+      allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('production'))
+      persistence_bucket.client.setup_stubbing
+      persistence_bucket.client.api_requests.clear
+    end
+
+    describe '.available_today?' do
+      it 'is true when the object exists in the persistence bucket' do
+        persistence_bucket.client.stub_responses(:head_object, {})
+
+        expect(described_class.available_today?).to be(true)
+      end
+
+      it 'is false when the object does not exist' do
+        persistence_bucket.client.stub_responses(:head_object, 'NotFound')
+
+        expect(described_class.available_today?).to be(false)
+      end
+
+      it 'is false when S3 fails' do
+        persistence_bucket.client.stub_responses(:head_object, 'ServiceUnavailable')
+
+        expect(described_class.available_today?).to be(false)
+      end
+    end
+
+    describe '.download_link_today' do
+      subject(:uri) { URI.parse(described_class.download_link_today) }
+
+      def query
+        Rack::Utils.parse_query(uri.query)
+      end
+
+      it 'is a presigned URL for the object in the persistence bucket', :aggregate_failures do
+        expect(uri.host).to start_with("#{persistence_bucket.name}.")
+        expect(uri.path).to eq("/#{described_class.object_key}")
+        expect(query).to include('X-Amz-Signature', 'X-Amz-Expires' => described_class::DOWNLOAD_URL_EXPIRES_IN.to_s)
+      end
+
+      it 'asks the browser to download the file' do
+        expect(query['response-content-disposition']).to eq(%(attachment; filename="#{File.basename(described_class.object_key)}"))
+      end
+    end
+  end
+
   describe '.generate' do
     subject(:result) { described_class.generate }
 
@@ -128,24 +183,35 @@ RSpec.describe Reporting::SearchReferenceChanges do
     context 'when running in production' do
       include_context 'with a stubbed reporting bucket'
 
+      let(:persistence_bucket) { Rails.application.config.persistence_bucket }
+
       before do
         allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('production'))
+        persistence_bucket.client.setup_stubbing
+        persistence_bucket.client.stub_responses(:put_object)
+        persistence_bucket.client.api_requests.clear
       end
 
-      it 'uploads the CSV to the reporting bucket' do
+      it 'uploads the CSV to the private persistence bucket' do
         result
 
-        expect(s3_bucket.client.api_requests).to include(
+        expect(persistence_bucket.client.api_requests).to include(
           hash_including(
             operation_name: :put_object,
             params: hash_including(
-              bucket: s3_bucket.name,
+              bucket: persistence_bucket.name,
               key: described_class.object_key,
               body: result.csv_data,
               content_type: 'text/csv',
             ),
           ),
         )
+      end
+
+      it 'does not upload anything to the public reporting bucket' do
+        result
+
+        expect(s3_bucket.client.api_requests).to be_empty
       end
     end
   end

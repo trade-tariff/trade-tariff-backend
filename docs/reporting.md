@@ -42,7 +42,7 @@ To generate without emailing the report to HMRC use the following
 
 A CSV of every search reference change (create, update and delete) in the previous calendar month. The rows come from the paper trail `versions` table.
 
-`SearchReferenceChangesReportWorker` runs on both UK and XI at 10:30 UK time on the first Monday of each month. It generates the CSV, uploads it to the Reporting bucket and emails it with the CSV attached.
+`SearchReferenceChangesReportWorker` runs on both UK and XI at 10:30 UK time on the first Monday of each month. It generates the CSV, uploads it to the private persistence bucket and emails it with the CSV attached.
 
 **This report is emailed automatically** to `SEARCH_REFERENCES_REPORT_TO_EMAILS` (a comma-separated list or a Secrets Manager JSON hash). The support email is BCC'd. No email is sent if the variable is not set.
 
@@ -57,6 +57,8 @@ The email shows the admin user's name, not the UID. Admin sends the name in the 
 Titles and whodunnit values come from users, so the CSV serializer uses `escape_formulas!`. Any text cell that starts with `=`, `+`, `-`, `@`, a tab or a carriage return (after optional spaces) gets a leading `'`, so spreadsheet tools show it as text and do not run it.
 
 Technical operators can generate the report, with or without the email, from the admin Reports page. They can also download today's file there.
+
+**This report is not published on the reporting CDN.** Unlike the other reports, the CSV contains admin user names. The reporting CDN serves the whole Reporting bucket without authentication, at predictable keys. So this report is stored in the persistence bucket (`AWS_BUCKET_NAME`), at the usual `<service>/reporting/YYYY/MM/DD/…` key. That bucket blocks public access, has no CDN, and only shares its `data/` prefixes with other accounts. The admin download link is an S3 presigned URL that expires after 5 minutes (`DOWNLOAD_URL_EXPIRES_IN`). Admin asks for it when the user clicks download, after the admin API checks the user. Admin's download redirect allows the persistence bucket host as well as the reporting CDN host.
 
 ## Code
 
