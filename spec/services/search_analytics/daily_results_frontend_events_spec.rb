@@ -53,6 +53,19 @@ RSpec.describe SearchAnalytics::DailyResults do
     expect(payload.to_json).not_to include('hashed-id', 'journey_key')
   end
 
+  it 'serves offered-only rows without collecting on reads' do
+    store(date, 'frontend_events', [frontend_row])
+    SearchAnalyticsQueryResult.where(name: 'result_offers', reporting_date: date).update(rows: Sequel.pg_jsonb([
+      { 'result_rank' => '6', 'confidence' => 'possible', 'event_count' => '4' },
+    ]))
+    expect(read.payload.dig('frontend_events', 'selections')).to eq([
+      { 'result_rank' => 6, 'confidence' => 'possible', 'event_count' => 0, 'offered_count' => 4, 'selection_rate' => 0.0 },
+    ])
+    SearchAnalyticsQueryResult.where(name: 'result_offers').update(fingerprint: 'stale')
+    expect(read.payload.dig('frontend_events', 'selection_coverage', 'complete')).to be(false)
+    expect(read.payload.dig('frontend_events', 'outcomes')).to include(hash_including('outcome' => 'results', 'rendered_events' => 1))
+  end
+
   it 'shows unavailable rather than zero when the frontend definition is stale' do
     store(date, 'frontend_events', [frontend_row], 'old-definition')
     expect(read.payload.dig('frontend_events', 'available')).to be(false)

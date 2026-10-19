@@ -10,8 +10,8 @@ RSpec.describe SearchAnalytics::FrontendEvents do
     record_class.new(reporting_date: day, rows:, collected_at: Time.utc(2026, 9, 16))
   end
 
-  def aggregate(records, dates: [date], supported: true)
-    described_class.call(records:, dates:, supported:)
+  def aggregate(records, dates: [date], supported: true, offer_records: [])
+    described_class.call(records:, dates:, supported:, offer_records:)
   end
 
   it 'keeps rendered and browser-visible event counts separate and deduplicates journey IDs' do
@@ -45,7 +45,7 @@ RSpec.describe SearchAnalytics::FrontendEvents do
 
   it 'omits result selections that have no rank' do
     rows = [row('one', 'result_selected', confidence: 'strong', event_count: '2'), row('two', 'result_selected', result_rank: '1', confidence: 'good')]
-    expect(aggregate([record(rows)])['selections']).to eq([{ 'result_rank' => 1, 'confidence' => 'good', 'event_count' => 1 }])
+    expect(aggregate([record(rows)])['selections']).to eq([{ 'result_rank' => 1, 'confidence' => 'good', 'event_count' => 1, 'offered_count' => nil, 'selection_rate' => nil }])
   end
 
   it 'treats SQL null confidence as unknown and groups it with missing confidence' do
@@ -54,7 +54,7 @@ RSpec.describe SearchAnalytics::FrontendEvents do
       row('two', 'result_selected', result_rank: '1'),
     ]
     expect(aggregate([record(rows)])['selections']).to eq([
-      { 'result_rank' => 1, 'confidence' => nil, 'event_count' => 3 },
+      { 'result_rank' => 1, 'confidence' => nil, 'event_count' => 3, 'offered_count' => nil, 'selection_rate' => nil },
     ])
   end
 
@@ -65,9 +65,63 @@ RSpec.describe SearchAnalytics::FrontendEvents do
       row('two', 'result_selected', result_rank: '1', confidence: 'strong'),
     ]
     expect(aggregate([record(rows)])['selections']).to eq([
-      { 'result_rank' => 1, 'confidence' => 'strong', 'event_count' => 3 },
-      { 'result_rank' => 2, 'confidence' => 'good', 'event_count' => 1 },
+      { 'result_rank' => 1, 'confidence' => 'strong', 'event_count' => 3, 'offered_count' => nil, 'selection_rate' => nil },
+      { 'result_rank' => 2, 'confidence' => 'good', 'event_count' => 1, 'offered_count' => nil, 'selection_rate' => nil },
     ])
+  end
+
+  it 'includes unselected offers and divides total selections by total offers' do
+    clicks = [record([row('one', 'result_selected', result_rank: '1', confidence: 'strong', event_count: '2')]),
+              record([row('two', 'result_selected', result_rank: '1', confidence: 'strong')], day: date + 1)]
+    offers = [record([{ 'result_rank' => '1', 'confidence' => 'strong', 'event_count' => '4' }]),
+              record([{ 'result_rank' => '1', 'confidence' => 'strong', 'event_count' => '6' },
+                      { 'result_rank' => '6', 'confidence' => 'possible', 'event_count' => '2' }], day: date + 1)]
+    result = aggregate(clicks, dates: [date, date + 1], offer_records: offers)
+    expect(result['selections']).to eq([
+      { 'result_rank' => 1, 'confidence' => 'strong', 'event_count' => 3, 'offered_count' => 10, 'selection_rate' => 30.0 },
+      { 'result_rank' => 6, 'confidence' => 'possible', 'event_count' => 0, 'offered_count' => 2, 'selection_rate' => 0.0 },
+    ])
+    expect(result['selection_coverage']).to include('complete' => true)
+  end
+
+  it 'keeps counts but withholds offers and rates when either source is missing' do
+    clicks = [record([row('one', 'result_selected', result_rank: '1', confidence: 'strong')])]
+    offers = [record([{ 'result_rank' => '1', 'confidence' => 'strong', 'event_count' => '2' }])]
+    result = aggregate(clicks, dates: [date, date + 1], offer_records: offers)
+    expect(result['selections'].first).to include('event_count' => 1, 'offered_count' => nil, 'selection_rate' => nil)
+    expect(result['selection_coverage']).to include('complete' => false, 'missing_dates' => [(date + 1).iso8601])
+  end
+
+  it 'withholds rates when offers have no frontend telemetry' do
+    offers = [record([{ 'result_rank' => '1', 'confidence' => 'strong', 'event_count' => '4' }])]
+    result = aggregate([record([])], offer_records: offers)
+    expect(result['selections'].first).to include('event_count' => 0, 'offered_count' => nil, 'selection_rate' => nil)
+    expect(result['selection_coverage']).to include('complete' => false, 'missing_dates' => [date.iso8601])
+  end
+
+  it 'reports zero percent for results with no selections' do
+    offers = [record([{ 'result_rank' => '1', 'confidence' => 'strong', 'event_count' => '4' }])]
+    result = aggregate([record([row('one', 'results')])], offer_records: offers)
+    expect(result['selections'].first).to include('event_count' => 0, 'offered_count' => 4, 'selection_rate' => 0.0)
+    expect(result['selection_coverage']).to include('complete' => true)
+  end
+
+  it 'does not interpret pre-telemetry empty scans as zero offers' do
+    clicks = [record([row('one', 'result_selected', result_rank: '1', confidence: 'strong')])]
+    result = aggregate(clicks, offer_records: [record([])])
+    expect(result['selections'].first).to include('event_count' => 1, 'offered_count' => nil, 'selection_rate' => nil)
+    expect(result['selection_coverage']).to include('complete' => false, 'missing_dates' => [date.iso8601])
+  end
+
+  it 'allows repeat selections above 100 percent without inventing a zero-denominator rate' do
+    clicks = [record([row('one', 'result_selected', result_rank: '1', confidence: 'strong', event_count: '3'),
+                      row('two', 'result_selected', result_rank: '2', confidence: 'good')])]
+    offers = [record([{ 'result_rank' => '1', 'confidence' => 'strong', 'event_count' => '2' }])]
+    result = aggregate(clicks, offer_records: offers)
+    expect(result['selections']).to include(
+      hash_including('result_rank' => 1, 'selection_rate' => 150.0),
+      hash_including('result_rank' => 2, 'offered_count' => 0, 'selection_rate' => nil),
+    )
   end
 
   it 'uses the maximum reported question count per journey across dates and keeps unknown distinct from zero' do
