@@ -92,6 +92,20 @@ RSpec.describe SearchAnalytics::FrontendEvents do
     expect(result['selection_coverage']).to include('complete' => false, 'missing_dates' => [(date + 1).iso8601])
   end
 
+  it 'withholds rates when offers have no frontend telemetry' do
+    offers = [record([{ 'result_rank' => '1', 'confidence' => 'strong', 'event_count' => '4' }])]
+    result = aggregate([record([])], offer_records: offers)
+    expect(result['selections'].first).to include('event_count' => 0, 'offered_count' => nil, 'selection_rate' => nil)
+    expect(result['selection_coverage']).to include('complete' => false, 'missing_dates' => [date.iso8601])
+  end
+
+  it 'reports zero percent for results with no selections' do
+    offers = [record([{ 'result_rank' => '1', 'confidence' => 'strong', 'event_count' => '4' }])]
+    result = aggregate([record([row('one', 'results')])], offer_records: offers)
+    expect(result['selections'].first).to include('event_count' => 0, 'offered_count' => 4, 'selection_rate' => 0.0)
+    expect(result['selection_coverage']).to include('complete' => true)
+  end
+
   it 'does not interpret pre-telemetry empty scans as zero offers' do
     clicks = [record([row('one', 'result_selected', result_rank: '1', confidence: 'strong')])]
     result = aggregate(clicks, offer_records: [record([])])

@@ -83,6 +83,8 @@ module SearchAnalytics
       offers = @offer_records.index_by(&:reporting_date)
       collected = @dates.select do |date|
         next false unless frontend[date] && offers[date]
+        # Offers without frontend events cannot establish selection telemetry.
+        next false if offers[date].rows.any? && frontend[date].rows.empty?
 
         # An empty scan cannot establish historical offer telemetry when results
         # or clicks were recorded before result_offered logging existed.
