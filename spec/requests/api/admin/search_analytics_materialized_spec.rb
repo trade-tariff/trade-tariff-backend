@@ -2,13 +2,14 @@ RSpec.describe 'Stored search analytics materialized views', :truncation do
   let(:now) { Time.utc(2026, 9, 16, 12) }
   let(:date) { now.to_date - 1 }
   let(:region) { ENV.fetch('AWS_REGION', ENV.fetch('AWS_DEFAULT_REGION', 'eu-west-2')) }
+  let(:log_group_name) { SearchAnalytics::DailyQuery::SEARCH_LOG_GROUP_NAME }
   let(:key) { Digest::SHA256.hexdigest('frontend-journey') }
 
   around { |example| travel_to(now) { example.run } }
 
   before do
     allow(TradeTariffBackend).to receive(:service).and_return('uk')
-    definitions = SearchAnalytics::DailyQuery.new(reporting_date: date, region:).fingerprints
+    definitions = SearchAnalytics::DailyQuery.new(reporting_date: date, region:, log_group_name:).fingerprints
     groups = definitions.keys.index_with { [] }
     groups['search_journeys'] = [{ '@timestamp' => '2026-09-15T08:00:00Z', 'search_type' => 'classic', 'request_source' => 'frontend', 'journey_keys' => [key] }]
     groups['volume'] = [{ '@timestamp' => '2026-09-15T08:00:00Z', 'search_type' => 'classic', 'event' => 'search_completed', 'searches' => '1', 'zero_results' => '0' }]
@@ -29,6 +30,25 @@ RSpec.describe 'Stored search analytics materialized views', :truncation do
     expect(attributes.fetch('summary')).to include('searches' => 1)
     expect(attributes.dig('journeys', 'outcomes')).to include('completed' => 1, 'selected' => 1)
     expect(attributes.fetch('coverage')).to include('complete' => true, 'collected_days' => 1)
+  end
+
+  context 'when Rails runs in development' do
+    let(:log_group_name) { 'platform-logs-production' }
+
+    before do
+      allow(Rails.env).to receive(:development?).and_return(true)
+      allow(ENV).to receive(:fetch).and_call_original
+      allow(ENV).to receive(:fetch).with('SEARCH_ANALYTICS_LOG_GROUP_NAME', 'platform-logs-production').and_return('platform-logs-production')
+    end
+
+    it 'reads the restored materialized views' do
+      expect(SearchAnalytics::DailyResults).not_to receive(:legacy_call)
+      expect(SearchAnalytics::MaterializedViews).not_to receive(:refresh!)
+      get '/uk/admin/search_analytics.json', params: { period: '24h', view: 'all' }, headers: request_headers(format: :json)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body.dig('data', 'attributes', 'summary', 'searches')).to eq(1)
+    end
   end
 
   it 'serves fresh source data rather than stale materialized views after replacement' do

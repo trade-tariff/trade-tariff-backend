@@ -71,6 +71,11 @@ in public issues. On a new local database, `bin/setup /path/to/dump.sql` restore
 a plain SQL dump and starts Sidekiq to rebuild indexes. Stop Sidekiq after the
 indexing jobs finish, then start `bin/dev`.
 
+In Rails development mode, the admin search analytics dashboard reads stored
+production-backup results by default. No environment change or AWS access is
+needed. Set `SEARCH_ANALYTICS_LOG_GROUP_NAME` only to read results collected from
+another log group. Collection defaults and deployed environments are unchanged.
+
 ### Run the Northern Ireland service
 
 Set `SERVICE=xi` in the environment of the XI process. It needs an XI dataset and
