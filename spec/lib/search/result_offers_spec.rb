@@ -61,6 +61,18 @@ RSpec.describe Search::ResultOffers do
     expect(Search::Instrumentation).not_to have_received(:result_offered)
   end
 
+  it 'counts results with no questions' do
+    response[:meta][:interactive_search][:answers] = []
+    record
+    expect(Search::Instrumentation).to have_received(:result_offered).exactly(5).times
+  end
+
+  it 'counts results after an answered question' do
+    response[:meta][:interactive_search][:answers] = [{ question: 'Cut?', options: %w[Whole Fillet], answer: 'Fillet' }]
+    record
+    expect(Search::Instrumentation).to have_received(:result_offered).exactly(5).times
+  end
+
   it 'does not count blocking guidance results' do
     response[:meta][:description_intercept] = { excluded: true, message_header: 'Stop', message: 'Guidance' }
     record
