@@ -183,7 +183,7 @@ AdminApi.routes.draw do
               end
             end
           end
-          resources :synthetic_input_sets, only: %i[create]
+          resources :synthetic_input_sets, only: %i[index create]
           resources :runs, only: %i[index show create update] do
             collection do
               delete :bulk_destroy
