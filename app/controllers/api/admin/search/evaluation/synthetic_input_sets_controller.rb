@@ -13,7 +13,7 @@ module Api
             synthetic_input_set = ::Evaluation::SyntheticInputSetCreator.call(**set_params, created_by: TradeTariffRequest.whodunnit)
 
             if synthetic_input_set.errors.empty?
-              render json: serialize(synthetic_input_set), status: :created
+              render json: serialize(synthetic_input_set, params: { with_items: true }), status: :created
             else
               render json: serialize_errors(synthetic_input_set), status: :unprocessable_content
             end

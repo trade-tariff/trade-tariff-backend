@@ -27,6 +27,10 @@ RSpec.describe Api::Admin::Search::Evaluation::SyntheticInputSetsController, :ad
 
       expect(json_response.dig('meta', 'pagination')).to eq('page' => 1, 'per_page' => 1, 'total_count' => 2)
     end
+
+    it 'does not serialize items, which the picker never reads, to avoid a query per set plus a large response' do
+      expect(json_response['data']).to all(satisfy { |row| !row['attributes'].key?('items') })
+    end
   end
 
   describe 'POST #create' do
