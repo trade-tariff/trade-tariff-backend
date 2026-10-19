@@ -38,11 +38,32 @@ RSpec.describe TariffKnowledge::SyntheticAtarImporter do
     end
   end
 
-  def import(*rows, **options)
-    described_class.new(csv_content: csv_for(*rows, **options)).call
+  def import(*rows, headers: self.headers, **importer_options)
+    described_class.new(csv_content: csv_for(*rows, headers:), **importer_options).call
   end
 
   describe '#call' do
+    it 'records the source workbook and the row each created record came from' do
+      import(sheet_row(search: 'lunch box'), sheet_row(search: 'bucket', chapter: '39', code: '3923100000'), source_workbook: 'AI_Search_Test_Data_HMRC_v6(2).xlsx')
+
+      expect(TariffKnowledge::SyntheticAtar.by_real_user_search('lunch box').first).to have_attributes(source_workbook: 'AI_Search_Test_Data_HMRC_v6(2).xlsx', source_row: 2)
+      expect(TariffKnowledge::SyntheticAtar.by_real_user_search('bucket').first).to have_attributes(source_workbook: 'AI_Search_Test_Data_HMRC_v6(2).xlsx', source_row: 3)
+    end
+
+    it 'leaves both source columns nil when no workbook filename is supplied' do
+      import(sheet_row(search: 'lunch box'))
+
+      expect(TariffKnowledge::SyntheticAtar.by_real_user_search('lunch box').first).to have_attributes(source_workbook: nil, source_row: nil)
+    end
+
+    it 'updates the source workbook and row on an existing record when it is re-imported from a different file' do
+      create(:tariff_knowledge_synthetic_atar, real_user_search: 'lunch box', source_workbook: 'old_sheet.xlsx', source_row: 9)
+
+      import(sheet_row(search: 'lunch box'), source_workbook: 'new_sheet.xlsx')
+
+      expect(TariffKnowledge::SyntheticAtar.by_real_user_search('lunch box').first).to have_attributes(source_workbook: 'new_sheet.xlsx', source_row: 2)
+    end
+
     it 'creates a record for each finished row, matching columns by their start' do
       result = import(sheet_row(search: 'lunch box'), sheet_row(search: 'bucket', chapter: '39', code: '3923100000', notes: nil))
 

@@ -59,7 +59,7 @@ module Api
       end
 
       def bulk_import
-        result = TariffKnowledge::SyntheticAtarImporter.new(csv_content: bulk_import_params[:csv]).call
+        result = TariffKnowledge::SyntheticAtarImporter.new(csv_content: bulk_import_params[:csv], source_workbook: bulk_import_params[:source_workbook]).call
 
         if result.success?
           render json: serialize_bulk_import(result), status: :created
@@ -138,7 +138,7 @@ module Api
       end
 
       def bulk_import_params
-        params.require(:data).require(:attributes).permit(:csv)
+        params.require(:data).require(:attributes).permit(:csv, :source_workbook)
       end
 
       def serialize_bulk_import(result)
