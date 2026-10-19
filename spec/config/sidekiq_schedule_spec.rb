@@ -67,4 +67,15 @@ RSpec.describe 'config/sidekiq.yml' do
 
     expect(schedule.fetch('SearchAnalyticsQueryWorker')).to include('enabled' => false)
   end
+
+  it 'schedules the search reference changes report for the first Monday of each month for each backend service' do
+    %w[uk xi].each do |service|
+      job = sidekiq_schedule(environment: 'production', service:).fetch('SearchReferenceChangesReportWorker')
+      cron = Fugit::Cron.parse(job.fetch('cron'))
+
+      expect(job).not_to include('enabled' => false)
+      expect(cron.next_time(Time.utc(2026, 10, 14)).to_t).to eq(Time.utc(2026, 11, 2, 10, 30))
+      expect(cron.next_time(Time.utc(2027, 4, 1)).to_t).to eq(Time.utc(2027, 4, 5, 9, 30))
+    end
+  end
 end

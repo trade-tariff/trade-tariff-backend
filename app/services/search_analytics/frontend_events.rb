@@ -4,9 +4,10 @@ module SearchAnalytics
   class FrontendEvents
     def self.call(...) = new(...).call
 
-    def initialize(records:, dates:, supported:)
+    def initialize(records:, dates:, supported:, offer_records: [])
       @dates = dates.uniq.sort
       @records = supported ? records.select { |record| @dates.include?(record.reporting_date) } : []
+      @offer_records = supported ? offer_records.select { |record| @dates.include?(record.reporting_date) } : []
       @supported = supported
       @rows = @records.flat_map { |record| record.rows.to_a }
     end
@@ -29,6 +30,7 @@ module SearchAnalytics
         'outcomes' => FrontendEventsQuery::OUTCOMES.map { |outcome| outcome_counts(outcome) },
         'actions' => FrontendEventsQuery::ACTIONS.index_with { |action| count(@rows.select { |row| row['outcome'] == action }) },
         'selections' => selections,
+        'selection_coverage' => selection_coverage,
         'question_counts' => question_counts,
       }
     end
@@ -53,11 +55,50 @@ module SearchAnalytics
     end
 
     def selections
-      @rows.select { |row| row['outcome'] == 'result_selected' && Integer(row['result_rank'], exception: false) }.group_by { |row|
-        [Integer(row['result_rank'], exception: false), sql_presence(row['confidence'])]
-      }.map { |(rank, confidence), rows|
-        { 'result_rank' => rank, 'confidence' => confidence, 'event_count' => count(rows) }
+      selected = selection_groups(@rows.select { |row| row['outcome'] == 'result_selected' })
+      offered = selection_groups(@offer_records.flat_map { |record| record.rows.to_a })
+      complete = selection_coverage.fetch('complete')
+      (selected.keys | offered.keys).map { |rank, confidence|
+        key = [rank, confidence]
+        events = count(selected.fetch(key, []))
+        offers = complete ? count(offered.fetch(key, [])) : nil
+        {
+          'result_rank' => rank,
+          'confidence' => confidence,
+          'event_count' => events,
+          'offered_count' => offers,
+          'selection_rate' => offers&.positive? ? 100.0 * events / offers : nil,
+        }
       }.sort_by { |row| [row['result_rank'], row['confidence'].to_s] }
+    end
+
+    def selection_groups(rows)
+      rows.select { |row| Integer(row['result_rank'], exception: false) }.group_by do |row|
+        [Integer(row['result_rank'], exception: false), sql_presence(row['confidence'])]
+      end
+    end
+
+    def selection_coverage
+      frontend = @records.index_by(&:reporting_date)
+      offers = @offer_records.index_by(&:reporting_date)
+      collected = @dates.select do |date|
+        next false unless frontend[date] && offers[date]
+        # Offers without frontend events cannot establish selection telemetry.
+        next false if offers[date].rows.any? && frontend[date].rows.empty?
+
+        # An empty scan cannot establish historical offer telemetry when results
+        # or clicks were recorded before result_offered logging existed.
+        result_activity = frontend[date].rows.any? do |row|
+          %w[results result_selected].include?(row['outcome']) || (row['outcome'] == 'page_visible' && row['destination'] == 'results')
+        end
+        offers[date].rows.any? || !result_activity
+      end
+      {
+        'complete' => @supported && collected == @dates,
+        'collected_days' => collected.size,
+        'expected_days' => @dates.size,
+        'missing_dates' => (@dates - collected).map(&:iso8601),
+      }
     end
 
     def sql_presence(value)

@@ -553,6 +553,23 @@ RSpec.describe TradeTariffBackend::Config do
         expect(config.cupid_team_to_emails).to eq(['cupid@example.com'])
       end
     end
+
+    describe '.search_references_report_to_emails' do
+      it 'returns an empty array when the env var is not set' do
+        ENV.delete('SEARCH_REFERENCES_REPORT_TO_EMAILS')
+        expect(config.search_references_report_to_emails).to eq([])
+      end
+
+      it 'splits a comma-separated list into an array' do
+        ENV['SEARCH_REFERENCES_REPORT_TO_EMAILS'] = 'a@example.com, b@example.com'
+        expect(config.search_references_report_to_emails).to eq(['a@example.com', 'b@example.com'])
+      end
+
+      it 'extracts addresses from a JSON hash (AWS Secrets Manager format)' do
+        ENV['SEARCH_REFERENCES_REPORT_TO_EMAILS'] = '{"backend-search-references-report-to-emails":"a@example.com"}'
+        expect(config.search_references_report_to_emails).to eq(['a@example.com'])
+      end
+    end
   end
 
   describe 'Redis config' do

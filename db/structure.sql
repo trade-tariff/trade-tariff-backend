@@ -2686,7 +2686,6 @@ CREATE TABLE uk.evaluation_gold_query_sets (
     id integer NOT NULL,
     name text NOT NULL,
     requested_size integer NOT NULL,
-    atar_percentage integer NOT NULL,
     planned_count integer NOT NULL,
     generated_count integer DEFAULT 0 NOT NULL,
     failed_count integer DEFAULT 0 NOT NULL,
@@ -2694,6 +2693,7 @@ CREATE TABLE uk.evaluation_gold_query_sets (
     failures jsonb DEFAULT '[]'::jsonb NOT NULL,
     created_by text,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    atar_percentage integer DEFAULT 100 NOT NULL,
     CONSTRAINT evaluation_gold_query_sets_atar_percentage_check CHECK (((atar_percentage >= 0) AND (atar_percentage <= 100))),
     CONSTRAINT evaluation_gold_query_sets_status_check CHECK ((status = ANY (ARRAY['generating'::text, 'ready'::text, 'partly_failed'::text, 'failed'::text])))
 );
@@ -8915,7 +8915,8 @@ CREATE TABLE uk.versions (
     object jsonb NOT NULL,
     whodunnit text,
     created_at timestamp without time zone NOT NULL,
-    whodunnit_name text
+    whodunnit_name text,
+    metadata jsonb
 );
 
 
@@ -15808,4 +15809,6 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20261008100000_add_persona
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261013090000_add_intended_result_count_to_evaluation_runs.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261014090000_add_label_to_evaluation_runs.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261015100000_add_whodunnit_name_to_versions.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20261016150000_add_metadata_to_versions.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261015120000_create_evaluation_synthetic_input_sets.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20261019120000_default_evaluation_gold_query_sets_atar_percentage.rb');

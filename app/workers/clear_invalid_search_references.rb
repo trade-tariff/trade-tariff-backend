@@ -17,7 +17,7 @@ class ClearInvalidSearchReferences
 
     return if removed.empty?
 
-    logger.info("Removed search references: #{removed.map { |r| format_line(r) }.join('; ')}")
+    logger.info("Removed search references: #{removed.map { |r| SearchReferences::ChangeLineFormatter.format_line(r) }.join('; ')}")
 
     notify(removed)
   end
@@ -29,7 +29,13 @@ private
 
     return unless result[:removal_alert_required]
 
-    # destroy (not delete) so a version records the reference's last known state
+    # destroy (not delete) so a version records the reference's last known state. The version
+    # also keeps the removal reason, because later tariff data changes can change the result
+    # of InvalidationReasonService.
+    search_reference.version_metadata = {
+      removal_reason: result[:reason].to_s,
+      successor_ids: Array(result[:successor_ids]),
+    }
     search_reference.destroy
     removed << result
   rescue StandardError => e
@@ -64,15 +70,7 @@ private
   end
 
   def format_list(results)
-    results.map { |result| "* #{format_line(result)}" }.join("\n")
-  end
-
-  def format_line(result)
-    line = "#{result[:goods_nomenclature_item_id]} — #{result[:title]}"
-    line += ' [FPO only]' if result[:usage] == SearchReference::FPO_USAGE
-    line += " (#{result[:goods_nomenclature_url]})" if result[:goods_nomenclature_url].present?
-    line += " (successors: #{result[:successor_ids].join(', ')})" if result[:successor_ids].present?
-    line
+    SearchReferences::ChangeLineFormatter.format_list(results)
   end
 
   def client

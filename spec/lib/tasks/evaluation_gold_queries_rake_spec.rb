@@ -2,13 +2,12 @@ RSpec.describe 'tariff:evaluation:generate_gold_queries rake task' do
   before do
     allow(GenerateGoldQuerySetWorker).to receive(:perform_async)
     create_list(:tariff_knowledge_public_atar_ruling, 4)
-    create_list(:tariff_knowledge_synthetic_atar, 4)
   end
 
   after { Rake::Task['tariff:evaluation:generate_gold_queries'].reenable }
 
   around do |example|
-    names = %w[NAME SIZE ATAR_PERCENTAGE]
+    names = %w[NAME SIZE]
     original_values = names.index_with { |name| [ENV.key?(name), ENV[name]] }
     names.each { |name| ENV.delete(name) }
 
@@ -33,7 +32,7 @@ RSpec.describe 'tariff:evaluation:generate_gold_queries rake task' do
       invoke
 
       set = EvaluationGoldQuerySet.first(name: 'Set A')
-      expect(set).to have_attributes(requested_size: 3, atar_percentage: 100, planned_count: 3, status: 'generating')
+      expect(set).to have_attributes(requested_size: 3, planned_count: 3, status: 'generating')
     end
 
     it 'records that the rake task created it' do
@@ -52,16 +51,6 @@ RSpec.describe 'tariff:evaluation:generate_gold_queries rake task' do
     it 'prints the set id and how to follow its progress' do
       expect { Rake::Task['tariff:evaluation:generate_gold_queries'].invoke }
         .to output(/Created gold query set \d+ \(Set A\): 3 items planned.*Sidekiq.*EvaluationGoldQuerySet\[\d+\]/m).to_stdout
-    end
-
-    it 'takes the ATaR percentage from ATAR_PERCENTAGE' do
-      ENV['ATAR_PERCENTAGE'] = '50'
-      ENV['SIZE'] = '4'
-
-      invoke
-
-      expect(EvaluationGoldQuerySet.first(name: 'Set A')).to have_attributes(atar_percentage: 50, planned_count: 4)
-      expect(GenerateGoldQuerySetWorker).to have_received(:perform_async) { |_id, items| expect(items.map(&:first).tally).to eq('atar' => 2, 'synthetic_atar' => 2) }
     end
   end
 

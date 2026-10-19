@@ -55,6 +55,7 @@ RUN apk add --no-cache \
     shared-mime-info \
     socat \
     openssl-dev \
+    util-linux-misc \
     tzdata && \
     apk upgrade --no-cache expat && \
     cp /usr/share/zoneinfo/Europe/London /etc/localtime && \

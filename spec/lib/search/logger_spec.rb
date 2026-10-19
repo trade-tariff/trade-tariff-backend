@@ -75,6 +75,15 @@ RSpec.describe Search::Logger do
     end
   end
 
+  describe '#result_offered' do
+    it 'logs rank and confidence without result content' do
+      payload = { request_id: 'journey', search_type: 'interactive', result_rank: 2, confidence: 'possible' }
+      logger_instance.result_offered(build_event('result_offered', payload))
+      expect(parsed_log_output).to include(payload.stringify_keys.merge('event' => 'result_offered'))
+      expect(parsed_log_output).not_to have_key('query')
+    end
+  end
+
   describe '#search_started' do
     let(:payload) { { request_id: 'req-1', query: 'horses', search_type: 'interactive' } }
 

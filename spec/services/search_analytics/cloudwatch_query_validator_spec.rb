@@ -46,7 +46,7 @@ RSpec.describe SearchAnalytics::CloudwatchQueryValidator do
     expect(Aws::CloudWatchLogs::Client).not_to receive(:new)
     expect(SearchAnalyticsQueryResult).not_to receive(:fetch)
     validate
-    expect(output.string).to include('Validated daily/search_journeys', 'Validated daily/ai_cost_trend', 'Validated daily/classic_outcomes', 'Validated daily/search_actions', 'Validated daily/search_results', 'Validated daily/selection_results', 'Validated daily/selection_pages', "Validated #{TradeTariffBackend.service == 'uk' ? 15 : 14} distinct CloudWatch queries")
+    expect(output.string).to include('Validated daily/search_journeys', 'Validated daily/ai_cost_trend', 'Validated daily/classic_outcomes', 'Validated daily/search_actions', 'Validated daily/search_results', 'Validated daily/selection_results', 'Validated daily/selection_pages', "Validated #{TradeTariffBackend.service == 'uk' ? 16 : 14} distinct CloudWatch queries")
     expect(client).to have_received(:start_query).with(hash_including(query_string: a_string_including("request_source = 'frontend'", "worker-#{TradeTariffBackend.service}/"))).at_least(:once)
     expect(client).to have_received(:start_query).with(
       start_time: (day_end - 5.minutes).to_i, end_time: day_end.to_i, query_language: 'SQL',
@@ -54,7 +54,7 @@ RSpec.describe SearchAnalytics::CloudwatchQueryValidator do
         "UNIX_TIMESTAMP(`@timestamp`) >= #{(day_end - 5.minutes).to_i}",
         "UNIX_TIMESTAMP(`@timestamp`) < #{day_end.to_i}",
       )
-    ).exactly(TradeTariffBackend.service == 'uk' ? 15 : 14).times
+    ).exactly(TradeTariffBackend.service == 'uk' ? 16 : 14).times
     expect(client).to have_received(:start_query).with(hash_including(query_string: a_string_matching(/request_id NOT IN \(.*UNIX_TIMESTAMP\(`@timestamp`\) >= #{(day_end - 1.day).to_i}.*UNIX_TIMESTAMP\(`@timestamp`\) < #{day_end.to_i}/m))).at_least(:once)
   end
 

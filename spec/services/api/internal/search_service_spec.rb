@@ -52,6 +52,20 @@ RSpec.describe Api::Internal::SearchService do
       end
     end
 
+    it 'records offers independently of export expansion capture' do
+      allow(TradeTariffBackend.search_client).to receive(:search).and_return({ 'hits' => { 'hits' => [] } })
+      allow(Search::ResultOffers).to receive(:record)
+      described_class.new(q: 'chicken', expanded_query: 'chicken poultry', request_id: 'offers-journey').call
+      expect(Search::ResultOffers).to have_received(:record).with(response: hash_including(data: []), request_id: 'offers-journey')
+    end
+
+    it 'does not record guided offers for internal classic search' do
+      allow(TradeTariffBackend.search_client).to receive(:search).and_return({ 'hits' => { 'hits' => [] } })
+      allow(Search::ResultOffers).to receive(:record)
+      described_class.new(q: 'chicken', search_type: 'internal').call
+      expect(Search::ResultOffers).not_to have_received(:record)
+    end
+
     it 'captures the original input before processing CAS prefixes' do
       allow(TradeTariffBackend.search_client).to receive(:search).and_return({ 'hits' => { 'hits' => [] } })
       allow(SearchExport::JourneyProjection).to receive(:record)
