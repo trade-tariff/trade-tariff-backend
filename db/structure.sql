@@ -8742,6 +8742,8 @@ CREATE TABLE uk.tariff_knowledge_synthetic_atars (
     completed_by text,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
+    source_workbook text,
+    source_row integer,
     CONSTRAINT synthetic_atars_chapter_format CHECK (((chapter)::text ~ '^[0-9]{2}$'::text)),
     CONSTRAINT synthetic_atars_item_id_format CHECK (((goods_nomenclature_item_id)::text ~ '^[0-9]{10}$'::text))
 );
@@ -15812,3 +15814,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20261015100000_add_whodunn
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261016150000_add_metadata_to_versions.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261015120000_create_evaluation_synthetic_input_sets.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261019120000_default_evaluation_gold_query_sets_atar_percentage.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20261019130000_add_source_workbook_and_row_to_synthetic_atars.rb');
