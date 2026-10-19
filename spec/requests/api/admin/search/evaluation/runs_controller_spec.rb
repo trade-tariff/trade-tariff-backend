@@ -381,6 +381,7 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
 
       it { is_expected.to have_http_status :success }
       it { expect(json_response['data']['attributes']['gold_query_set_id']).to be_nil }
+      it { expect(json_response['data']['attributes']['synthetic_input_set_id']).to be_nil }
     end
 
     context 'when the run has run-time overrides' do
@@ -437,6 +438,21 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
 
         expect { experiment.update(gold_query_set_id: other_set.id) }.to raise_error(Sequel::ValidationFailed)
         expect(json_response['data']['attributes']['gold_query_set_id']).to eq(gold_query_set.id)
+      end
+    end
+
+    context 'when the run\'s experiment has a synthetic input set' do
+      let(:experiment) { create(:evaluation_experiment, synthetic_input_set_id: synthetic_input_set.id) }
+      let(:id) { run.id }
+
+      # Memoised in a method, not a let, to stay within the memoized helper limit.
+      def synthetic_input_set
+        @synthetic_input_set ||= create(:evaluation_synthetic_input_set)
+      end
+
+      it 'reports the set of the experiment, the same way gold_query_set_id does, so the eval app can tell which kind of set to fetch' do
+        expect(json_response['data']['attributes']['synthetic_input_set_id']).to eq(synthetic_input_set.id)
+        expect(json_response['data']['attributes']['gold_query_set_id']).to be_nil
       end
     end
 
