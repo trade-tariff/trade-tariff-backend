@@ -10,7 +10,7 @@ module TariffKnowledge
   class SyntheticAtar < Sequel::Model(:tariff_knowledge_synthetic_atars)
     CHAPTER_FORMAT = /\A\d{2}\z/
     CODE_FORMAT = /\A\d{10}\z/
-    OPTIONAL_TEXT_COLUMNS = %i[likely_heading notes completed_by].freeze
+    OPTIONAL_TEXT_COLUMNS = %i[likely_heading notes completed_by source_workbook].freeze
 
     plugin :timestamps, update_on_create: true
     plugin :auto_validations, not_null: :presence
