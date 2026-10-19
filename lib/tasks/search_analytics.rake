@@ -30,7 +30,7 @@ module_function
   end
 
   def validate_cloudwatch_queries
-    %w[period cloudwatch_snapshot_query journey_queries latency_histogram frontend_events_query journey_outcomes_query classic_outcomes_query action_query selection_query daily_query cloudwatch_query_validator].each do |service|
+    %w[period cloudwatch_snapshot_query journey_queries latency_histogram frontend_events_query journey_outcomes_query classic_outcomes_query action_query selection_query result_offers_query daily_query cloudwatch_query_validator].each do |service|
       require Rails.root.join("app/services/search_analytics/#{service}")
     end
 
