@@ -39,7 +39,7 @@ RSpec.describe Api::Admin::TariffKnowledgeSyntheticAtarsController do
   end
 
   describe '#show' do
-    let!(:synthetic_atar) { create(:tariff_knowledge_synthetic_atar, real_user_search: 'plastic box') }
+    let!(:synthetic_atar) { create(:tariff_knowledge_synthetic_atar, real_user_search: 'plastic box', source_workbook: 'HMRC_v6.xlsx', source_row: 14) }
 
     it 'returns the record with version metadata' do
       get "/uk/admin/tariff_knowledge_synthetic_atars/#{synthetic_atar.id}.json", headers: headers
@@ -51,6 +51,8 @@ RSpec.describe Api::Admin::TariffKnowledgeSyntheticAtarsController do
         'chapter' => '39',
         'goods_nomenclature_item_id' => '3924100000',
         'completed_by' => 'AB',
+        'source_workbook' => 'HMRC_v6.xlsx',
+        'source_row' => 14,
       )
       expect(json.dig('meta', 'version', 'current')).to be true
     end
@@ -162,11 +164,38 @@ RSpec.describe Api::Admin::TariffKnowledgeSyntheticAtarsController do
   describe '#bulk_import' do
     let(:header) { 'Chapter,Real user search,Full product description,Commodity code (10 digits),Status' }
 
-    def post_import(csv)
+    def post_import(csv, source_workbook: nil)
+      attributes = { csv: }
+      attributes[:source_workbook] = source_workbook if source_workbook
+
       post '/uk/admin/tariff_knowledge_synthetic_atars/bulk_import.json',
-           params: { data: { type: 'tariff_knowledge_synthetic_atar_bulk_import', attributes: { csv: } } },
+           params: { data: { type: 'tariff_knowledge_synthetic_atar_bulk_import', attributes: } },
            headers: headers.merge('X-Whodunnit' => 'user-123'),
            as: :json
+    end
+
+    it 'records the source workbook and row when a filename is supplied' do
+      csv = <<~CSV
+        #{header}
+        39,lunch box,Plastic lunch box with a lid.,3924100000,Done
+      CSV
+
+      post_import(csv, source_workbook: 'AI_Search_Test_Data_HMRC_v6(2).xlsx')
+
+      expect(response).to have_http_status(:created)
+      expect(TariffKnowledge::SyntheticAtar.first).to have_attributes(source_workbook: 'AI_Search_Test_Data_HMRC_v6(2).xlsx', source_row: 2)
+    end
+
+    it 'leaves the source columns nil when no filename is supplied, same as before this existed' do
+      csv = <<~CSV
+        #{header}
+        39,lunch box,Plastic lunch box with a lid.,3924100000,Done
+      CSV
+
+      post_import(csv)
+
+      expect(response).to have_http_status(:created)
+      expect(TariffKnowledge::SyntheticAtar.first).to have_attributes(source_workbook: nil, source_row: nil)
     end
 
     it 'imports finished rows, skips unfinished ones and reports the counts' do
