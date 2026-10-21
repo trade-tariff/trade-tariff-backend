@@ -6,7 +6,7 @@ module "worker_uk" {
 
   cluster_name              = "trade-tariff-cluster-${var.environment}"
   subnet_ids                = data.aws_subnets.private.ids
-  security_groups           = [data.aws_security_group.this.id]
+  security_groups           = local.search_client_security_groups
   cloudwatch_log_group_name = "platform-logs-${var.environment}"
 
   service_count = 1

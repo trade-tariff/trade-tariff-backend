@@ -9,7 +9,7 @@ module "backend_xi" {
 
   cluster_name    = "trade-tariff-cluster-${var.environment}"
   subnet_ids      = data.aws_subnets.private.ids
-  security_groups = [data.aws_security_group.this.id]
+  security_groups = local.search_client_security_groups
 
   target_group_arn = data.aws_lb_target_group.backend_xi_https.arn
   container_port   = 8443

@@ -5,3 +5,5 @@ memory          = 2048
 min_capacity_uk = 1
 min_capacity_xi = 1
 max_capacity    = 1
+
+enable_private_search_access = true

@@ -66,3 +66,32 @@ Development deploys can be requested through the relevant GitHub workflow or PR 
 ## Backend Runtime Shape
 
 Platform docs describe backend deployments as separate web and Sidekiq services for UK and XI. In this repo, service-specific behaviour is controlled by `SERVICE`, route mounting, synchronizer selection, and Sidekiq schedule flags.
+
+### Development private search access
+
+`terraform/config_development.tfvars` enables `enable_private_search_access`.
+Deploy the platform-owned `opensearch-client-development` security group before
+deploying this backend configuration. Terraform looks up the group by its exact
+name and VPC. A missing group stops the plan; there is no fallback.
+
+The UK and XI API and worker services retain their shared ECS security group and
+add the search-client group. The backend job module uses the same group list.
+Staging and production keep the default value, `false`, and retain their existing
+group list.
+
+This change does not update `ELASTICSEARCH_URL`, SSM parameters, or Secrets Manager
+configuration. Search traffic continues to use the current domain until a separate
+data migration and cutover.
+
+ECS task definitions do not store security groups. Operational `RunTask` launchers
+must supply both groups explicitly when a job needs private search. The shared
+tools launcher and database replication workflows supply their own network
+configuration. Do not assume that updating the backend job module changes those
+launchers. Database backup and backup-check schedules keep only the existing ECS
+group because they do not need search access.
+
+Before deployment, review the development plan for security-group additions
+without removal of the existing ECS group. After deployment, verify the task ENIs
+for both APIs and workers include the client group. Use an approved search job
+with both groups to verify HTTPS connectivity to the private domain. Verify that
+an unrelated task with only the shared group cannot connect.

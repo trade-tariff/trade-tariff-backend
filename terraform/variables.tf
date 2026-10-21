@@ -3,6 +3,12 @@ variable "environment" {
   type        = string
 }
 
+variable "enable_private_search_access" {
+  description = "Attach the platform search-client security group after it exists in this environment. This does not change the search URL."
+  type        = bool
+  default     = false
+}
+
 variable "region" {
   description = "AWS region to use."
   type        = string
