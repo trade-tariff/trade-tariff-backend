@@ -131,6 +131,15 @@ RSpec.describe EvaluationRun do
       expect(run.intended_result_count).to eq(3)
     end
 
+    it "snapshots the experiment's synthetic input set size onto intended_result_count at the moment it starts" do
+      synthetic_input_set = create(:evaluation_synthetic_input_set, actual_size: 5)
+      experiment_with_set = create(:evaluation_experiment, name: 'experiment-with-synthetic-set', synthetic_input_set_id: synthetic_input_set.id)
+
+      run = described_class.start!(experiment: experiment_with_set, triggered_by: 'operator', idempotency_key: SecureRandom.uuid)
+
+      expect(run.intended_result_count).to eq(5)
+    end
+
     it 'leaves intended_result_count nil when the experiment has no gold query set' do
       run = described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: SecureRandom.uuid)
 

@@ -8,6 +8,31 @@ RSpec.describe Api::Admin::Search::Evaluation::SyntheticInputSetsController, :ad
 
   let(:json_response) { JSON.parse(api_response.body) }
 
+  describe 'GET #index' do
+    let(:make_request) { authenticated_get api_admin_search_evaluation_synthetic_input_sets_path(format: :json), params: }
+    let(:params) { {} }
+
+    let!(:older_set) { create(:evaluation_synthetic_input_set, name: 'Older set', created_at: 2.days.ago) }
+    let!(:newer_set) { create(:evaluation_synthetic_input_set, name: 'Newer set', created_at: 1.day.ago) }
+
+    it { is_expected.to have_http_status :ok }
+
+    it 'lists every set, newest first, for the experiment picker to choose from' do
+      expect(json_response['data'].pluck('id')).to eq([newer_set.id.to_s, older_set.id.to_s])
+      expect(json_response['data'].first['attributes']).to include('name' => 'Newer set')
+    end
+
+    it 'paginates like the gold query sets index does' do
+      params[:per_page] = 1
+
+      expect(json_response.dig('meta', 'pagination')).to eq('page' => 1, 'per_page' => 1, 'total_count' => 2)
+    end
+
+    it 'does not serialize items, which the picker never reads, to avoid a query per set plus a large response' do
+      expect(json_response['data']).to all(satisfy { |row| !row['attributes'].key?('items') })
+    end
+  end
+
   describe 'POST #create' do
     let(:make_request) { authenticated_post api_admin_search_evaluation_synthetic_input_sets_path(format: :json), params:, headers: }
     let(:headers) { { 'X-Whodunnit' => 'operator-1' } }
