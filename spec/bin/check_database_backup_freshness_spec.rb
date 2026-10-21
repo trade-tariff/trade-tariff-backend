@@ -134,6 +134,14 @@ RSpec.describe 'bin/check-database-backup-freshness' do
     expect(command_log(tempdir).grep(/cloudwatch put-metric-data/).first).to include('--value 1')
   end
 
+  it 'publishes the dimensions as one comma-separated argument' do
+    run_check(tempdir)
+
+    expect(command_log(tempdir).grep(/cloudwatch put-metric-data/).first).to include(
+      '--dimensions Environment=development,Bucket=trade-tariff-database-backups-test,LatestKey=tariff-merged-development.sql.gz',
+    )
+  end
+
   it 'falls back to the previous day when a backup crosses midnight' do
     touch_flag 'archive_previous_day'
 
