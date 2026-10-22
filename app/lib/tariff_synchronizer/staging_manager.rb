@@ -32,7 +32,15 @@ module TariffSynchronizer
   # hex ID so they never collide with a future import run.  Future imports are
   # unaffected.  Orphans can be identified and removed with:
   #   SELECT relname FROM pg_class WHERE relname LIKE 'stg_%' AND relkind = 'r';
+  #
+  # Ordering: the oplog's latest oid decides each record's current state, so
+  # promoted rows must receive oids in the order they were staged. A file can
+  # create and delete the same record; reversing that pair revives the record.
+  # PostgreSQL does not return rows in insertion order without ORDER BY, so
+  # each staging table carries a STAGING_ORDER_COLUMN that promote! sorts by.
   class StagingManager
+    STAGING_ORDER_COLUMN = :staging_position
+
     def initialize
       # Short unique ID scoped to this import run.  Used to build staging
       # table names that are guaranteed not to collide with other runs.
@@ -63,12 +71,12 @@ module TariffSynchronizer
       Sequel::Model.db.transaction do
         @staged_tables.each do |real_table, staging_table|
           # Exclude oid: the real table's sequence assigns it on insert.
-          columns = Sequel::Model.db[staging_table].columns.reject { |c| c == :oid }
+          columns = Sequel::Model.db[staging_table].columns - [:oid, STAGING_ORDER_COLUMN]
           next if columns.empty?
 
           Sequel::Model.db[real_table].insert(
             columns,
-            Sequel::Model.db[staging_table].select(*columns),
+            Sequel::Model.db[staging_table].select(*columns).order(STAGING_ORDER_COLUMN),
           )
         end
       end
@@ -106,6 +114,10 @@ module TariffSynchronizer
       Sequel::Model.db.run(<<~SQL)
         CREATE UNLOGGED TABLE #{staging_name}
           AS SELECT * FROM #{real_table} WHERE false
+      SQL
+      Sequel::Model.db.run(<<~SQL)
+        ALTER TABLE #{staging_name}
+          ADD COLUMN #{STAGING_ORDER_COLUMN} bigint GENERATED ALWAYS AS IDENTITY
       SQL
     end
   end
