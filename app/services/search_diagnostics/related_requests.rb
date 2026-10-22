@@ -9,23 +9,17 @@ module SearchDiagnostics
     Request = Data.define(:request_id, :occurred_at, :query, :experiment, :browser_session_id)
     Result = Data.define(:browser_session_id, :experiment, :requests)
 
-    def self.for_search_request(request_id:, lookback_hours: nil, client: RequestLogLookup.client, now: Time.current)
-      new(lookback_hours:, client:, now:).for_search_request(request_id)
+    def self.for_search_request(request_id:, lookback_hours: nil, from: nil, to: nil, client: RequestLogLookup.client, now: Time.current)
+      new(lookback_hours:, from:, to:, client:, now:).for_search_request(request_id)
     end
 
-    def self.for_filter(browser_session_id: nil, experiment: nil, lookback_hours: nil, client: RequestLogLookup.client, now: Time.current)
-      new(lookback_hours:, client:, now:).for_filter(browser_session_id:, experiment:)
+    def self.for_filter(browser_session_id: nil, experiment: nil, lookback_hours: nil, from: nil, to: nil, client: RequestLogLookup.client, now: Time.current)
+      new(lookback_hours:, from:, to:, client:, now:).for_filter(browser_session_id:, experiment:)
     end
 
-    def initialize(lookback_hours:, client:, now:)
-      @lookback_hours = bounded_integer(
-        lookback_hours,
-        default: RequestLogLookup::DEFAULT_LOOKBACK_HOURS,
-        min: 1,
-        max: RequestLogLookup::MAX_LOOKBACK_HOURS,
-      )
+    def initialize(lookback_hours:, client:, now:, from: nil, to: nil)
+      @window = TimeWindow.resolve(lookback_hours:, from:, to:, now:)
       @client = client
-      @now = now
     end
 
     def for_search_request(request_id)
@@ -56,7 +50,7 @@ module SearchDiagnostics
 
   private
 
-    attr_reader :lookback_hours, :client, :now
+    attr_reader :window, :client
 
     def empty_result
       Result.new(browser_session_id: nil, experiment: nil, requests: [])
@@ -166,8 +160,8 @@ module SearchDiagnostics
     def query_rows(query_string)
       query_id = client.start_query(
         log_group_name: RequestLogLookup::SEARCH_LOG_GROUP_NAME,
-        start_time: (now - lookback_hours.hours).to_i,
-        end_time: now.to_i,
+        start_time: window.start_time.to_i,
+        end_time: window.end_time.to_i,
         query_string:,
       ).query_id
 
@@ -187,14 +181,6 @@ module SearchDiagnostics
       end
 
       raise RequestLogLookup::QueryError, 'CloudWatch query timed out while polling'
-    end
-
-    def bounded_integer(value, default:, min:, max:)
-      return default if value.blank?
-
-      Integer(value).clamp(min, max)
-    rescue ArgumentError, TypeError
-      default
     end
   end
 end

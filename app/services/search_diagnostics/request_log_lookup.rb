@@ -3,7 +3,7 @@ module SearchDiagnostics
     QueryError = Class.new(StandardError)
 
     DEFAULT_LOOKBACK_HOURS = 72
-    MAX_LOOKBACK_HOURS = 168
+    MAX_LOOKBACK_HOURS = 336
     DEFAULT_LIMIT = 200
     MAX_LIMIT = 500
     QUERY_POLL_INTERVAL_SECONDS = 1
@@ -13,20 +13,19 @@ module SearchDiagnostics
     Result = Data.define(:request_id, :log_group_name, :start_time, :end_time, :events)
     Event = Data.define(:timestamp, :event, :search_type, :message, :fields)
 
-    def self.call(request_id:, lookback_hours: nil, limit: nil)
-      new(request_id:, lookback_hours:, limit:).call
+    def self.call(request_id:, lookback_hours: nil, limit: nil, from: nil, to: nil)
+      new(request_id:, lookback_hours:, limit:, from:, to:).call
     end
 
     def self.client
       @client ||= Aws::CloudWatchLogs::Client.new
     end
 
-    def initialize(request_id:, lookback_hours: nil, limit: nil, client: self.class.client, now: Time.current)
+    def initialize(request_id:, lookback_hours: nil, limit: nil, from: nil, to: nil, client: self.class.client, now: Time.current)
       @request_id = request_id.to_s.strip
-      @lookback_hours = bounded_integer(lookback_hours, default: DEFAULT_LOOKBACK_HOURS, min: 1, max: MAX_LOOKBACK_HOURS)
+      @window = TimeWindow.resolve(lookback_hours:, from:, to:, now:)
       @limit = bounded_integer(limit, default: DEFAULT_LIMIT, min: 1, max: MAX_LIMIT)
       @client = client
-      @now = now
 
       raise ArgumentError, 'request_id is required' if @request_id.blank?
     end
@@ -56,15 +55,9 @@ module SearchDiagnostics
 
   private
 
-    attr_reader :request_id, :lookback_hours, :limit, :client, :now
+    attr_reader :request_id, :window, :limit, :client
 
-    def start_time
-      @start_time ||= now - lookback_hours.hours
-    end
-
-    def end_time
-      now
-    end
+    delegate :start_time, :end_time, to: :window
 
     def await_query_results(query_id)
       QUERY_MAX_POLLS.times do

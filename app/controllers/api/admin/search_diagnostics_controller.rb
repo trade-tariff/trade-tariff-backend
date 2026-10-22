@@ -6,6 +6,8 @@ module Api
           browser_session_id: params[:browser_session_id],
           experiment: params[:experiment],
           lookback_hours: params[:lookback_hours],
+          from: params[:from],
+          to: params[:to],
         )
 
         render json: Api::Admin::SearchDiagnosticRequestSerializer.new(
@@ -22,6 +24,8 @@ module Api
         result = SearchDiagnostics::RequestLogLookup.call(
           request_id: params[:request_id],
           lookback_hours: params[:lookback_hours],
+          from: params[:from],
+          to: params[:to],
           limit: params[:limit],
         )
         correlation = related_requests
@@ -40,6 +44,8 @@ module Api
         SearchDiagnostics::RelatedRequests.for_search_request(
           request_id: params[:request_id],
           lookback_hours: params[:lookback_hours],
+          from: params[:from],
+          to: params[:to],
         )
       rescue SearchDiagnostics::RequestLogLookup::QueryError, Aws::Errors::ServiceError => e
         Rails.logger.warn("Related search diagnostics unavailable: #{e.class}")
