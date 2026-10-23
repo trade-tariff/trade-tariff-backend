@@ -1,7 +1,7 @@
 class CdsUpdatesSynchronizerWorker
   include Sidekiq::Worker
 
-  sidekiq_options queue: :sync, retry: false
+  sidekiq_options retry: false
 
   DEFAULT_CHECK_FOR_TODAYS_FILE = true
   DEFAULT_REAPPLY_DATA_MIGRATIONS = false

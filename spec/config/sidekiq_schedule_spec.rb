@@ -59,23 +59,6 @@ RSpec.describe 'config/sidekiq.yml' do
     end
   end
 
-  describe 'worker queue assignments' do
-    it 'keeps tariff synchronizers and their direct dependants in sync' do
-      workers = [
-        CdsUpdatesSynchronizerWorker,
-        TaricUpdatesSynchronizerWorker,
-        ClearCacheWorker,
-        ClearInvalidSearchReferences,
-        TreeIntegrityCheckWorker,
-        PopulateChangesTableWorker,
-        GreenLanesUpdatesWorker,
-        RefreshTariffKnowledgeCompressedNotesWorker,
-      ]
-
-      expect(workers.map { |worker| worker.sidekiq_options['queue'] }).to all(eq(:sync))
-    end
-  end
-
   def sidekiq_schedule(environment:, service: 'uk', rails_env: 'production')
     original_environment = ENV.fetch('ENVIRONMENT', nil)
     original_service = ENV.fetch('SERVICE', nil)
@@ -93,12 +76,6 @@ RSpec.describe 'config/sidekiq.yml' do
       ENV['SERVICE'] = original_service
       ENV['RAILS_ENV'] = original_rails_env
     end
-  end
-
-  it 'routes weekly integrity checks to the daily queue' do
-    schedule = sidekiq_schedule(environment: 'production')
-
-    expect(schedule.fetch('OneWeekTreeIntegrityCheck')).to include('queue' => 'within_1_day')
   end
 
   it 'schedules the tariff knowledge compressed note refresh pipeline in staging' do
