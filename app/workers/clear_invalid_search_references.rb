@@ -1,7 +1,7 @@
 class ClearInvalidSearchReferences
   include Sidekiq::Worker
 
-  sidekiq_options queue: :within_1_minute, retry: false
+  sidekiq_options queue: :sync, retry: false
 
   TEMPLATE_ID = NOTIFY_CONFIGURATION.dig(:templates, :search_references, :invalidation_alert)
   WHODUNNIT = 'ClearInvalidSearchReferences'.freeze

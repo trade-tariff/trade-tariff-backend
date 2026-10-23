@@ -9,8 +9,8 @@ RSpec.describe CreateTariffKnowledgeSourceGraphWorker, type: :worker do
     end
   end
 
-  it 'uses the sync queue' do
-    expect(described_class.sidekiq_options['queue']).to eq(:sync)
+  it 'uses the data queue' do
+    expect(described_class.sidekiq_options['queue']).to eq(:within_1_minute)
   end
 
   it 'does not retry failures' do

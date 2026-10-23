@@ -31,8 +31,8 @@ RSpec.describe GenerateSelfTextReindexWorker, type: :worker do
   end
 
   describe 'sidekiq options' do
-    it 'uses the default queue' do
-      expect(described_class.sidekiq_options['queue']).to eq(:default)
+    it 'uses the daily background queue' do
+      expect(described_class.sidekiq_options['queue']).to eq(:within_1_day)
     end
 
     it 'disables retries' do
