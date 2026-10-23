@@ -2,7 +2,7 @@ class CachedCommodityService
   include DeclarableSerialization
   include JsonapiCacheKey
 
-  CACHE_VERSION = 7
+  CACHE_VERSION = 8
   RELATIONSHIP_FIELDS = %i[
     ancestors
     chapter
