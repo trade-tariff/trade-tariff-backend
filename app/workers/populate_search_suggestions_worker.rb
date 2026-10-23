@@ -1,7 +1,7 @@
 class PopulateSearchSuggestionsWorker
   include Sidekiq::Worker
 
-  sidekiq_options queue: :default, retry: false
+  sidekiq_options retry: false
 
   def perform
     logger.info 'Running PopulateSearchSuggestionsWorker for populating search suggestions'

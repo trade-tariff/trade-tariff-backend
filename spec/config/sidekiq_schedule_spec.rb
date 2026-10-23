@@ -1,7 +1,64 @@
 require 'erb'
 require 'yaml'
+require 'sidekiq/cli'
 
 RSpec.describe 'config/sidekiq.yml' do
+  def capsule_configuration
+    cli = Sidekiq::CLI.new
+    cli.config = Sidekiq::Config.new
+    cli.parse(['-C', Rails.root.join('config/sidekiq.yml').to_s])
+    cli.config
+  end
+
+  describe 'capsules' do
+    before do
+      allow(ENV).to receive(:fetch).and_call_original
+      allow(ENV).to receive(:fetch).with('SIDEKIQ_CONCURRENCY', 10).and_return('10')
+    end
+
+    it 'reserves capacity for each queue within the total thread budget' do
+      config = capsule_configuration
+
+      expect(config.capsules.transform_values(&:concurrency)).to eq(
+        'default' => 2,
+        'sync' => 1,
+        'within_1_minute' => 3,
+        'within_1_hour' => 2,
+        'within_1_day' => 1,
+        'evaluation' => 1,
+      )
+      expect(config.total_concurrency).to eq(10)
+      config.capsules.each do |name, capsule|
+        expect(capsule.queues).to eq([name])
+      end
+    end
+
+    it 'allocates additional configured capacity to the default queue' do
+      allow(ENV).to receive(:fetch).with('SIDEKIQ_CONCURRENCY', 10).and_return('14')
+
+      config = capsule_configuration
+
+      expect(config.total_concurrency).to eq(14)
+      expect(config.default_capsule.concurrency).to eq(6)
+      expect(config.capsules.fetch('sync').concurrency).to eq(1)
+    end
+
+    it 'supports the minimum thread budget' do
+      allow(ENV).to receive(:fetch).with('SIDEKIQ_CONCURRENCY', 10).and_return('9')
+
+      config = capsule_configuration
+
+      expect(config.total_concurrency).to eq(9)
+      expect(config.default_capsule.concurrency).to eq(1)
+    end
+
+    it 'rejects a thread budget that leaves no capacity for the default queue' do
+      allow(ENV).to receive(:fetch).with('SIDEKIQ_CONCURRENCY', 10).and_return('8')
+
+      expect { capsule_configuration }.to raise_error(ArgumentError, /must be at least 9/)
+    end
+  end
+
   def sidekiq_schedule(environment:, service: 'uk', rails_env: 'production')
     original_environment = ENV.fetch('ENVIRONMENT', nil)
     original_service = ENV.fetch('SERVICE', nil)
