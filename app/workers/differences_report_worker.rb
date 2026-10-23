@@ -9,7 +9,7 @@ class DifferencesReportWorker
 
   # retry_in is not a Sidekiq option; sidekiq_retry_in is the supported way to
   # delay retries, giving a late report publication time to appear.
-  sidekiq_options retry: 2
+  sidekiq_options queue: :within_1_hour, retry: 2
 
   sidekiq_retry_in { 1.hour.to_i }
 

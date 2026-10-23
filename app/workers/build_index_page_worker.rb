@@ -3,7 +3,7 @@ class BuildIndexPageWorker
 
   include Sidekiq::Worker
 
-  sidekiq_options queue: :default, retry: false
+  sidekiq_options queue: :within_1_minute, retry: false
 
   delegate :opensearch_client, to: TradeTariffBackend
 

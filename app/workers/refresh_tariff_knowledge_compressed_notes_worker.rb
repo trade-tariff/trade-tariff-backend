@@ -1,7 +1,7 @@
 class RefreshTariffKnowledgeCompressedNotesWorker
   include Sidekiq::Worker
 
-  sidekiq_options queue: :sync, retry: false
+  sidekiq_options retry: false
 
   def perform
     result = TariffKnowledge::CompressedNoteRefresh.call

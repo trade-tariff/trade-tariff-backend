@@ -5,7 +5,7 @@ class GovukNotifierStatusCheckWorker
   SLACK_FAILURE_STATUSES = [GovukNotifier::TECHNICAL_FAILURE].freeze
 
   # Cap retries: Notify status checks must not use Sidekiq's default (25).
-  sidekiq_options queue: :default, retry: 3
+  sidekiq_options queue: :within_1_hour, retry: 3
 
   def perform(user_id, notification_id)
     return if notification_id.blank?

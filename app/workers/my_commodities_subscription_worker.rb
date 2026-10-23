@@ -2,7 +2,7 @@ class MyCommoditiesSubscriptionWorker
   include Sidekiq::Worker
 
   # Orchestrator only enqueues children; keep retries low to limit duplicate fan-out.
-  sidekiq_options retry: 3
+  sidekiq_options queue: :within_1_day, retry: 3
 
   # Stamping only happens once the whole enqueue loop has run without raising. It records
   # "this date has been handed off", not "every email landed", which is all this worker can

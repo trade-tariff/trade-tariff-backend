@@ -4,7 +4,7 @@ module SearchExport
   class WorkbookWorker
     include Sidekiq::Worker
 
-    sidekiq_options queue: :default, retry: false
+    sidekiq_options queue: :within_1_hour, retry: false
 
     def perform(export_id)
       export = WorkbookExport.find(export_id)

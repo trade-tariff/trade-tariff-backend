@@ -3,7 +3,7 @@ class QueuedSearchWorker
 
   # A failed search is terminal for the poller. Retrying requires a new submission,
   # rather than letting expensive searches accumulate Sidekiq retries.
-  sidekiq_options queue: :default, retry: false
+  sidekiq_options queue: :within_1_minute, retry: false
 
   def perform(id)
     search = QueuedSearch.new(id)

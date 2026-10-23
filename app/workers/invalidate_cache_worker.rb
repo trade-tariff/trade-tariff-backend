@@ -2,7 +2,7 @@ class InvalidateCacheWorker
   include Sidekiq::Worker
 
   # CloudFront invalidation; cap retries vs Sidekiq default (25).
-  sidekiq_options retry: 3
+  sidekiq_options queue: :within_1_hour, retry: 3
 
   SERVICES = ['/uk', '/xi', ''].freeze
   PATHS = %w[/api/*].freeze
