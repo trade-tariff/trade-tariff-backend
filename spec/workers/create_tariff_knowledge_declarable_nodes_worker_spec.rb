@@ -10,8 +10,8 @@ RSpec.describe CreateTariffKnowledgeDeclarableNodesWorker, type: :worker do
   end
 
   describe 'sidekiq options' do
-    it 'uses the sync queue' do
-      expect(described_class.sidekiq_options['queue']).to eq(:sync)
+    it 'uses the within_1_hour queue' do
+      expect(described_class.sidekiq_options['queue']).to eq(:within_1_hour)
     end
 
     it 'disables retries' do

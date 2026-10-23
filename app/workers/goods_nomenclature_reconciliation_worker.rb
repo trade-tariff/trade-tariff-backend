@@ -15,7 +15,7 @@ class GoodsNomenclatureReconciliationWorker
   include Sidekiq::Worker
   include ScheduledJobHeartbeat
 
-  sidekiq_options queue: :default, retry: 2
+  sidekiq_options retry: 2
 
   def perform
     affected = detect_changes

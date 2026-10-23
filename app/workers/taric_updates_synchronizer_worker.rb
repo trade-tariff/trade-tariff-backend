@@ -1,7 +1,7 @@
 class TaricUpdatesSynchronizerWorker
   include Sidekiq::Worker
 
-  sidekiq_options queue: :sync, retry: false
+  sidekiq_options retry: false
 
   DEFAULT_REAPPLY_DATA_MIGRATIONS = false
 

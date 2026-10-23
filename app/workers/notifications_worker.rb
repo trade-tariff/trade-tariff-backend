@@ -8,7 +8,7 @@ class NotificationsWorker
   include Sidekiq::Worker
 
   # Cap retries: Notify outages must not use Sidekiq's default (25).
-  sidekiq_options queue: :default, retry: 3
+  sidekiq_options queue: :within_1_minute, retry: 3
 
   def perform(notification_id)
     notification_data = notification_data(notification_id)

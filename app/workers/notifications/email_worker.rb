@@ -3,7 +3,7 @@ module Notifications
     include Sidekiq::Worker
 
     # Cap retries: Notify outages must not use Sidekiq's default (25) and crowd the default queue.
-    sidekiq_options queue: :default, retry: 3
+    sidekiq_options queue: :within_1_hour, retry: 3
 
     def perform(email, template_id, personalisation, status_check_worker_class, status_check_args)
       notification = client.send_email(email, template_id, personalisation, nil, nil)
