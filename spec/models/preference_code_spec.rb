@@ -201,7 +201,7 @@ RSpec.describe PreferenceCode do
             )
           end
 
-          it { is_expected.to eq('255') }
+          it { is_expected.to eq('225') }
         end
 
         context 'when GSP and authorised_use' do
@@ -300,7 +300,21 @@ RSpec.describe PreferenceCode do
   describe 'all' do
     subject(:all) { described_class.all }
 
-    it { expect(all.count).to eq(28) }
+    it { expect(all.count).to eq(31) }
+
+    it 'includes every code that determine_code can return' do
+      mapping = described_class.singleton_class::MEASURE_TYPE_ID_PREFERENCE_CODE_MAPPING
+      flags = [true, false].repeated_permutation(4)
+
+      returned_codes = mapping.keys.product(flags.to_a).filter_map do |measure_type_id, (provisions, special_nature, authorised_use, gsp_or_dcts)|
+        declarable = instance_double(Api::V2::Commodities::CommodityPresenter, authorised_use_provisions_submission?: provisions, special_nature?: special_nature)
+        measure = instance_double(CachedCommodityService::ResponseFilter::MeasureProxy, measure_type_id:, authorised_use?: authorised_use, gsp_or_dcts?: gsp_or_dcts)
+
+        described_class.determine_code(declarable, measure)
+      end
+
+      expect(returned_codes.uniq - all.map(&:code)).to be_empty
+    end
   end
 
   describe '[]' do
@@ -310,7 +324,7 @@ RSpec.describe PreferenceCode do
       let(:code) { '100' }
 
       it { expect(preference_code.code).to eq('100') }
-      it { expect(preference_code.description).to eq('Erga Omnes third country duty rates') }
+      it { expect(preference_code.description).to eq('Normal third country tariff duty (including ceilings). This code stands for all cases where no preference is claimed and the normal third country rate is applied.') }
     end
 
     context 'when the code does not exist' do
