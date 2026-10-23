@@ -77,11 +77,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1789726772,
-        "narHash": "sha256-OvaA1C7o/iRLl85KZJ/3sse+fqHBhmcpY2iIWdMVd6M=",
+        "lastModified": 1792753205,
+        "narHash": "sha256-Gj5I4c3yCe8jcDAYqx+1/RlV/NGvMJSc/tzOItTcXy0=",
         "owner": "bobvanderlinden",
         "repo": "nixpkgs-ruby",
-        "rev": "1e7441eb8822897e1cb0875e49ab5ab8efaf5bc8",
+        "rev": "d529b613deb4663522514d9f0bd0b2509ac022ba",
         "type": "github"
       },
       "original": {
