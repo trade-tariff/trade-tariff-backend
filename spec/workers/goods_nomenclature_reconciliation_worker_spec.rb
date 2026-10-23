@@ -414,7 +414,7 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
 
   describe 'sidekiq options' do
     it 'uses the default queue' do
-      expect(described_class.sidekiq_options['queue']).to eq(:default)
+      expect(described_class.sidekiq_options['queue']).to eq(:sync)
     end
 
     it 'retries twice' do

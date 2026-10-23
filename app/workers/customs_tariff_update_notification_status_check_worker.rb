@@ -2,7 +2,7 @@ class CustomsTariffUpdateNotificationStatusCheckWorker
   include Sidekiq::Worker
 
   # Cap retries: Notify status checks must not use Sidekiq's default (25).
-  sidekiq_options queue: :default, retry: 3
+  sidekiq_options queue: :within_1_hour, retry: 3
 
   PIPELINE = 'customs_tariff_update'.freeze
 

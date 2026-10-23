@@ -32,12 +32,30 @@ Sync and rollback work use `TradeTariffBackend.with_redis_lock` so only one upda
 
 Workers live under `app/workers/`. Queues and scheduled jobs are configured in `config/sidekiq.yml`.
 
-Queues:
+Each queue has a dedicated Sidekiq capsule. The default allocation per process is:
 
-- `sync`
-- `default`
-- `within_1_hour`
-- `within_1_day`
+| Queue | Workload | Job threads |
+| --- | --- | ---: |
+| `sync` | Data sync jobs and their dependants | 1 |
+| `within_1_minute` | Other data-related jobs, user-triggered jobs, and urgent notifications | 3 |
+| `within_1_hour` | Report-related jobs | 2 |
+| `within_1_day` | Most weekly and monthly jobs | 1 |
+| `default` | Jobs without another queue assignment | 2 |
+| `evaluation` | Evaluation searches | 1 |
+
+`SIDEKIQ_CONCURRENCY` remains the total job-thread budget per process, defaulting to 10.
+The named capsules reserve eight threads. The default capsule receives the remainder,
+so the minimum total is nine. Process entrypoints continue to derive `DB_POOL` from
+the total, unless explicitly overridden. Do not use the CLI `--concurrency` option
+to set the total: it changes only the default capsule's allocation.
+
+Capsules reserve job slots, not CPU, memory, or database capacity. Idle slots in one
+capsule are not available to another capsule. The single `sync` thread serializes
+that queue within one process only; Redis locks still protect updates across processes.
+The scheduler can override a worker's queue with a `queue` setting in `config/sidekiq.yml`.
+Otherwise, the worker's `sidekiq_options` queue applies. Jobs without either setting use
+`default`. Queue names do not enforce completion deadlines. Jobs in each queue share that
+queue's capsule capacity.
 
 Scheduled jobs include CDS/TARIC sync, goods nomenclature reconciliation, Appendix 5A refresh, search suggestions, reports, integrity checks, exchange rates, sync age metrics, FAQ feedback reports, subscriber cleanup, and GOV.UK Customs Tariff document imports.
 

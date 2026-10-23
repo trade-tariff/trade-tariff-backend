@@ -5,7 +5,7 @@ class ImportXiCnDocumentWorker
   include Sidekiq::Worker
   include ScheduledJobHeartbeat
 
-  sidekiq_options queue: :default, retry: 8
+  sidekiq_options retry: 8
 
   def perform
     return unless TradeTariffBackend.xi?
