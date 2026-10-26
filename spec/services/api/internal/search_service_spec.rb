@@ -257,6 +257,12 @@ RSpec.describe Api::Internal::SearchService do
         expect(configuration.fetch(:search_model)).to eq(selected: 'gpt-4o-mini', reasoning_effort: 'medium')
       end
 
+      it 'reflects a reasoning_effort override on search_model[:reasoning_effort]' do
+        configuration = captured_diagnostics_configuration('question_model' => 'gpt-5.6-luna', 'reasoning_effort' => 'max')
+
+        expect(configuration.fetch(:search_model)).to eq(selected: 'gpt-5.6-luna', reasoning_effort: 'max')
+      end
+
       it 'falls back to AdminConfiguration for search_model when no question_model override is supplied' do
         configuration = captured_diagnostics_configuration({})
 
@@ -2590,11 +2596,22 @@ RSpec.describe Api::Internal::SearchService do
         )
       end
 
+      it 'passes reasoning_effort through to InteractiveSearchService' do
+        described_class.new(
+          q: 'horses',
+          configuration_overrides: { 'question_model' => 'gpt-5.6-luna', 'reasoning_effort' => 'max' },
+        ).call
+
+        expect(InteractiveSearchService).to have_received(:call).with(
+          hash_including(question_model: 'gpt-5.6-luna', reasoning_effort: 'max'),
+        )
+      end
+
       it "defaults every override to nil when configuration_overrides is not given, reproducing today's behaviour" do
         described_class.new(q: 'horses').call
 
         expect(InteractiveSearchService).to have_received(:call).with(
-          hash_including(max_rounds: nil, question_model: nil, search_compressed_notes_enabled: nil, search_general_rules_enabled: nil),
+          hash_including(max_rounds: nil, question_model: nil, reasoning_effort: nil, search_compressed_notes_enabled: nil, search_general_rules_enabled: nil),
         )
       end
     end

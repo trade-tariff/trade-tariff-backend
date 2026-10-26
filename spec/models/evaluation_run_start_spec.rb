@@ -104,6 +104,47 @@ RSpec.describe EvaluationRun do
       expect(run.configuration_digest).to match(/\A[0-9a-f]{16}\z/)
     end
 
+    describe 'reasoning_effort' do
+      def start(overrides = {})
+        described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: SecureRandom.uuid, run_time_overrides: overrides)
+      end
+
+      it 'records the globally configured reasoning_effort in the effective configuration' do
+        expect(start.effective_configuration['reasoning_effort']).to eq('medium')
+      end
+
+      it 'applies a run-time reasoning_effort on top of the global setting' do
+        expect(start('reasoning_effort' => 'high').effective_configuration['reasoning_effort']).to eq('high')
+      end
+
+      it 'gives runs a different digest when only reasoning_effort differs' do
+        expect(start('reasoning_effort' => 'high').configuration_digest).not_to eq(start('reasoning_effort' => 'low').configuration_digest)
+      end
+
+      it 'gives runs a different digest when the global reasoning_effort changes between them' do
+        allow(AdminConfiguration).to receive(:nested_options_value).and_call_original
+        allow(AdminConfiguration).to receive(:nested_options_value).with('search_model')
+          .and_return({ selected: 'gpt-5.4', sub_values: { 'reasoning_effort' => 'low' } }, { selected: 'gpt-5.4', sub_values: { 'reasoning_effort' => 'high' } })
+
+        expect(start.configuration_digest).not_to eq(start.configuration_digest)
+      end
+
+      it 'rejects a reasoning_effort the run\'s question_model does not support, and creates no run' do
+        expect {
+          expect { start('question_model' => 'gpt-5.2', 'reasoning_effort' => 'xhigh') }
+            .to raise_error(EvaluationConfiguration::OverrideValidationError, /gpt-5\.2/)
+        }.not_to change(described_class, :count)
+      end
+
+      it 'checks a reasoning_effort override against the baseline question_model when the run does not override it' do
+        allow(EvaluationConfiguration::BaselineProvider).to receive(:call).and_wrap_original do |original|
+          original.call.merge('question_model' => 'gpt-5.2')
+        end
+
+        expect { start('reasoning_effort' => 'xhigh') }.to raise_error(EvaluationConfiguration::OverrideValidationError, /gpt-5\.2/)
+      end
+    end
+
     it 'stores a 16-character configuration_digest' do
       run = described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: SecureRandom.uuid)
       expect(run.configuration_digest).to match(/\A[0-9a-f]{16}\z/)

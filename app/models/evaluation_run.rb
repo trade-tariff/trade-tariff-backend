@@ -84,9 +84,9 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
     return resolve_reused_key!(existing, idempotency_key:, experiment:, triggered_by:, run_time_overrides:) if existing
 
     overrides = EvaluationConfiguration::Merger.call(experiment.configuration_overrides, run_time_overrides)
-    EvaluationConfiguration::AllowlistValidator.call(overrides)
-
     baseline = EvaluationConfiguration::BaselineProvider.call
+    EvaluationConfiguration::AllowlistValidator.call(overrides, baseline:)
+
     effective_configuration = EvaluationConfiguration::Merger.call(baseline, overrides)
     digest = EvaluationConfiguration::DigestCalculator.call(effective_configuration)
 

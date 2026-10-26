@@ -17,21 +17,21 @@ RSpec.describe Api::Admin::Search::Evaluation::ConfigurationsController, :admin 
       expect(json_response).to include('baseline', 'allowed_overrides')
     end
 
-    it 'returns exactly the 9 baseline keys with a real backend source' do
+    it 'returns exactly the 10 baseline keys with a real backend source' do
       api_response
       expect(json_response['baseline'].keys).to contain_exactly(
         'rrf_k', 'vector_score_threshold', 'vector_ef_search', 'search_non_declarables',
         'search_compressed_notes_enabled', 'search_general_rules_enabled',
-        'candidate_limit', 'max_rounds', 'question_model'
+        'candidate_limit', 'max_rounds', 'question_model', 'reasoning_effort'
       )
     end
 
-    it 'returns exactly the 10 allowed override keys, each with its own type metadata' do
+    it 'returns exactly the 11 allowed override keys, each with its own type metadata' do
       api_response
       expect(json_response['allowed_overrides'].map { |o| o['name'] }).to contain_exactly(
         'question_model', 'simulator_model', 'candidate_limit', 'max_rounds', 'rrf_k',
         'vector_score_threshold', 'vector_ef_search', 'search_non_declarables',
-        'search_compressed_notes_enabled', 'search_general_rules_enabled'
+        'search_compressed_notes_enabled', 'search_general_rules_enabled', 'reasoning_effort'
       )
     end
 
@@ -41,6 +41,7 @@ RSpec.describe Api::Admin::Search::Evaluation::ConfigurationsController, :admin 
       expect(overrides.map { |o| o['name'] }).to include('question_model', 'candidate_limit', 'search_non_declarables')
       expect(overrides.find { |o| o['name'] == 'question_model' }['config_type']).to eq('options')
       expect(overrides.find { |o| o['name'] == 'candidate_limit' }).to include('config_type' => 'integer', 'min' => 1, 'max' => 250)
+      expect(overrides.find { |o| o['name'] == 'reasoning_effort' }['config_type']).to eq('options')
       expect(overrides.find { |o| o['name'] == 'search_non_declarables' }).to include('name' => 'search_non_declarables', 'config_type' => 'boolean')
     end
 
