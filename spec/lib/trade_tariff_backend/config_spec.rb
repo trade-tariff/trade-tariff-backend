@@ -407,6 +407,13 @@ RSpec.describe TradeTariffBackend::Config do
   end
 
   describe 'AI / OpenAI config' do
+    describe '.search_inference_cache_enabled?' do
+      it 'defaults to false' do
+        ENV.delete('SEARCH_INFERENCE_CACHE_ENABLED')
+        expect(config.search_inference_cache_enabled?).to be(false)
+      end
+    end
+
     describe '.ai_model' do
       it 'defaults to gpt-5.2' do
         ENV.delete('AI_MODEL')

@@ -73,6 +73,17 @@ module Search
       }, event)
     end
 
+    def inference_cache_access(event)
+      info log_entry({
+        event: 'inference_cache_access',
+        request_id: event.payload[:request_id],
+        operation: event.payload[:operation],
+        outcome: event.payload[:outcome],
+        payload_bytes: event.payload[:payload_bytes],
+        error_type: event.payload[:error_type],
+      }.compact, event)
+    end
+
     def api_call_completed(event)
       data = {
         event: 'api_call_completed',

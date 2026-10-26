@@ -15,6 +15,7 @@ Working from 'inside' out, we cache at multiple levels
 * Backend uses a Redis backed Rails cache to store **some** API responses
   * this avoids repeated and sometimes expensive database queries
   * cleared after a Tariff sync occurs
+* Backend can optionally reuse search model output for seven days, including across Tariff syncs. This is off by default. See [Search inference cache](#search-inference-cache)
 * Backend sets HTTP cache headers instructing its clients how its responses may be cached
   * by default this is set to cache for 2 minutes then revalidate for anything older.
   * A response is valid unless a backend Deployment or a Sync has happened
@@ -48,6 +49,20 @@ Rails.cache.fetch('my-cache-key', version: VERSION) do
   }.to_json
 end
 ```
+
+## Search inference cache
+
+This is an opt-in proof of concept. Set `SEARCH_INFERENCE_CACHE_ENABLED=true` to reuse successful search model output for seven days. When it is off, query expansion uses `Rails.cache` and interactive search calls the model for every request.
+
+The cache stores model output, not search responses:
+
+* Query expansion is keyed by the model, reasoning effort, prompt template and lower-case query.
+* Interactive questions and answers are keyed by the model, reasoning effort and the fully rendered prompt. The prompt contains the query, previous answers, candidates, notes and rules. Retrieval still runs for every search, so a Tariff change that alters the candidates also alters the key.
+* Reused output goes through the same validation as fresh output, including the duplicate-question guard and the candidate-code filter. Errors, fallbacks, rejected duplicate questions, stages that record a search failure, and evaluation searches are not stored.
+
+Entries are plain JSON in the backend cache Redis (`REDIS_URL`), under the `search-inference-<environment>-<service>-v1` namespace. `Rails.cache.clear` deletes only its own namespace, so these entries survive the clear after a Tariff sync. They are not durable: Redis can evict them early under memory pressure, and flushing the whole Redis database removes them. Change the namespace version to discard every entry after an incompatible change. Do not use Sidekiq Redis for this cache.
+
+Each lookup logs an `inference_cache_access` search event with the operation and an outcome of `hit`, `miss`, `write`, `rejected`, `too_large` or `error`. A hit makes no model call, so it records no `api_call_completed` cost. A Redis error falls back to a model call.
 
 ## HTTP caching
 

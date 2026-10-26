@@ -40,7 +40,7 @@ class InteractiveSearchService
     return no_results_error if no_results?
     return final_answer if max_questions_reached?
 
-    handle_parsed_response(parse_model_response(build_context, operation: 'interactive_search'))
+    resolve_model_response(build_context, operation: 'interactive_search')
   rescue StandardError => e
     record_failure(e.message, error_type: e.class.name)
     nil
@@ -299,19 +299,61 @@ private
   end
 
   def final_answer
-    context = build_context + FINAL_ANSWER_INSTRUCTION
-    parsed = parse_model_response(context, operation: 'interactive_search_final_answer')
+    resolve_model_response(build_context + FINAL_ANSWER_INSTRUCTION, operation: 'interactive_search_final_answer', final_answer: true)
+  end
+
+  def resolve_model_response(context, operation:, duplicate_retry: false, final_answer: false)
+    unless cache_inference?
+      return handle_parsed_response(parse_model_response(context, operation:), duplicate_retry:, final_answer:)
+    end
+
+    failures_before = Array(TradeTariffRequest.search_failures)
+    key = Search::InferenceCache.key(operation:, inputs: inference_inputs(context))
+    cached = Search::InferenceCache.read(key, operation:, request_id:) { |value| reusable_response?(value) }
+    record_note_evidence(operation:) if cached
+    parsed = cached || parse_model_response(context, operation:)
+    accepted = false
+    result = handle_parsed_response(parsed, duplicate_retry:, final_answer:) { accepted = true }
+
+    stage_failed = Array(TradeTariffRequest.search_failures) != failures_before
+    if accepted && !cached && !stage_failed && reusable_response?(parsed)
+      Search::InferenceCache.write(key, parsed.slice('answers', 'questions'), operation:, request_id:)
+    elsif cached && !accepted
+      Search::InferenceCache.delete(key, operation:, request_id:)
+    end
+
+    result
+  end
+
+  # Evaluation runs measure fresh model behaviour, so they never reuse output.
+  def cache_inference?
+    Search::InferenceCache.enabled? && @search_type != 'evaluation'
+  end
+
+  # The rendered prompt contains every request input the model sees: query,
+  # answers, candidates, notes and rules. Current validation still runs on a hit.
+  def inference_inputs(context)
+    {
+      provider: TradeTariffBackend.openai_api_base_url,
+      model: configured_model,
+      reasoning_effort: configured_reasoning_effort,
+      context:,
+    }
+  end
+
+  def reusable_response?(parsed)
+    return false unless parsed.is_a?(Hash) && parsed['error'].blank?
 
     if parsed['answers'].present?
-      answers_result(parsed['answers'])
-    elsif parsed['error'].present?
-      error_result(parsed['error'])
+      parsed['answers'].is_a?(Array) &&
+        parsed['answers'].all? { |answer| answer.is_a?(Hash) && answer['commodity_code'].is_a?(String) }
     else
-      invalid_response_result
+      parsed['questions'].is_a?(Array) && parsed['questions'].any? &&
+        parsed['questions'].all? { |question| question.is_a?(Hash) || question.is_a?(String) }
     end
   end
 
-  def parse_model_response(context, operation:)
+  def record_note_evidence(operation:)
     Search::Instrumentation.note_evidence_evaluated(
       request_id:,
       query:,
@@ -322,6 +364,10 @@ private
       enabled: compressed_notes_enabled?,
       diagnostics: note_evidence_diagnostics,
     )
+  end
+
+  def parse_model_response(context, operation:)
+    record_note_evidence(operation:)
     response = Search::Instrumentation.api_call(
       request_id: request_id,
       model: configured_model,
@@ -334,13 +380,15 @@ private
     ExtractBottomJson.call(response)
   end
 
-  def handle_parsed_response(parsed, duplicate_retry: false)
-    if parsed['error'].present?
+  def handle_parsed_response(parsed, duplicate_retry: false, final_answer: false, &accepted)
+    if parsed['answers'].present? && (final_answer || parsed['error'].blank?)
+      answers_result(parsed['answers']).tap do |result|
+        accepted&.call if result.ranking_source == 'model_answers'
+      end
+    elsif parsed['error'].present?
       error_result(parsed['error'])
-    elsif parsed['answers'].present?
-      answers_result(parsed['answers'])
-    elsif has_questions?(parsed)
-      questions_result(parsed, duplicate_retry: duplicate_retry)
+    elsif !final_answer && has_questions?(parsed)
+      questions_result(parsed, duplicate_retry:, &accepted)
     else
       invalid_response_result
     end
@@ -432,7 +480,7 @@ private
     parsed['questions'].is_a?(Array) && parsed['questions'].any?
   end
 
-  def questions_result(parsed, duplicate_retry: false)
+  def questions_result(parsed, duplicate_retry: false, &accepted)
     questions = extract_questions(parsed)
     return invalid_response_result if questions.empty?
 
@@ -452,12 +500,14 @@ private
         return best_available_answers
       end
 
-      return handle_parsed_response(
-        parse_model_response(duplicate_retry_context(question, guard_result), operation: 'duplicate_question_retry'),
+      return resolve_model_response(
+        duplicate_retry_context(question, guard_result),
+        operation: 'duplicate_question_retry',
         duplicate_retry: true,
       )
     end
 
+    accepted&.call
     Search::Instrumentation.question_returned(
       request_id: request_id,
       question_count: questions.size,

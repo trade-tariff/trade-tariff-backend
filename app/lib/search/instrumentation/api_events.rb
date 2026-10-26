@@ -1,6 +1,10 @@
 module Search
   module Instrumentation
     module ApiEvents
+      def inference_cache_access(request_id:, operation:, outcome:, payload_bytes: nil, error_type: nil)
+        instrument('inference_cache_access', { request_id:, operation:, outcome:, payload_bytes:, error_type: }.compact)
+      end
+
       def api_call(request_id:, model:, attempt_number:, iteration: nil, effective_query: nil, operation: 'interactive_search')
         start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         result = yield

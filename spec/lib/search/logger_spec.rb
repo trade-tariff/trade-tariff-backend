@@ -231,6 +231,20 @@ RSpec.describe Search::Logger do
     end
   end
 
+  describe '#inference_cache_access' do
+    let(:payload) { { request_id: 'req-1', operation: 'interactive_search', outcome: 'hit', payload_bytes: 120 } }
+
+    it_behaves_like 'a search log entry', :inference_cache_access, 'inference_cache_access',
+                    { request_id: 'req-1', operation: 'interactive_search', outcome: 'hit', payload_bytes: 120 }
+
+    it 'logs the outcome without query text' do
+      logger_instance.inference_cache_access(build_event('inference_cache_access', payload))
+
+      expect(parsed_log_output).to include(payload.stringify_keys.merge('event' => 'inference_cache_access'))
+      expect(parsed_log_output).not_to have_key('query')
+    end
+  end
+
   describe '#api_call_completed' do
     let(:payload) do
       { request_id: 'req-1', model: 'gpt-4', duration_ms: 2500.0, response_type: 'answers', attempt_number: 1, operation: 'interactive_search' }

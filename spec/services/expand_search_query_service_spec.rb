@@ -759,4 +759,39 @@ RSpec.describe ExpandSearchQueryService do
       end
     end
   end
+
+  describe 'inference cache' do
+    let(:query) { 'laptop' }
+
+    around do |example|
+      Search::InferenceCache.store.clear
+      example.run
+    ensure
+      Search::InferenceCache.store.clear
+    end
+
+    before { allow(TradeTariffBackend).to receive(:search_inference_cache_enabled?).and_return(true) }
+
+    it 'reuses a successful expansion', :aggregate_failures do
+      first = described_class.call(query)
+
+      expect(described_class.call(query)).to eq(first)
+      expect(OpenaiClient).to have_received(:call).once
+    end
+
+    it 'does not reuse a failed expansion' do
+      allow(OpenaiClient).to receive(:call).and_raise(Faraday::TimeoutError)
+      2.times { described_class.call(query) }
+
+      expect(OpenaiClient).to have_received(:call).twice
+    end
+
+    it 'calls the model after a prompt change' do
+      described_class.call(query)
+      AdminConfiguration.where(name: 'expand_query_context').first.update(value: Sequel.pg_jsonb_wrap('Expand: %{search_query}'))
+      described_class.call(query)
+
+      expect(OpenaiClient).to have_received(:call).twice
+    end
+  end
 end

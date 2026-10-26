@@ -1,6 +1,10 @@
 module TradeTariffBackend
   module Config
     module Ai
+      def search_inference_cache_enabled?
+        ENV.fetch('SEARCH_INFERENCE_CACHE_ENABLED', 'false') == 'true'
+      end
+
       def ai_model
         ENV.fetch('AI_MODEL', 'gpt-5.2')
       end

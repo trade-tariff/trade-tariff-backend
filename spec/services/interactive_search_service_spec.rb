@@ -1369,4 +1369,86 @@ RSpec.describe InteractiveSearchService do
       end
     end
   end
+
+  describe 'inference cache' do
+    let(:ai_response) { '{"answers": [{"commodity_code": "4202210000", "confidence": "strong"}]}' }
+
+    around do |example|
+      Search::InferenceCache.store.clear
+      example.run
+    ensure
+      Search::InferenceCache.store.clear
+    end
+
+    before do
+      allow(TradeTariffBackend).to receive(:search_inference_cache_enabled?).and_return(true)
+      allow(OpenaiClient).to receive(:call).and_return(ai_response)
+    end
+
+    it 'reuses accepted output for the same prompt', :aggregate_failures do
+      first = described_class.call(**search_params)
+      second = described_class.call(**search_params(request_id: 'second-journey'))
+
+      expect(second.data).to eq(first.data)
+      expect(OpenaiClient).to have_received(:call).once
+      expect(Search::Instrumentation).to have_received(:api_call).once
+      expect(Search::Instrumentation).to have_received(:answer_returned).with(hash_including(request_id: 'second-journey'))
+    end
+
+    it 'calls the model when candidates change' do
+      described_class.call(**search_params)
+      described_class.call(**search_params(opensearch_results: default_search_results.first(2)))
+
+      expect(OpenaiClient).to have_received(:call).twice
+    end
+
+    it 'calls the model for evaluation searches' do
+      2.times { described_class.call(**search_params(search_type: 'evaluation')) }
+
+      expect(OpenaiClient).to have_received(:call).twice
+    end
+
+    context 'when the model returns an error' do
+      let(:ai_response) { '{"error": "Contradictory answers given"}' }
+
+      it 'does not reuse it' do
+        2.times { described_class.call(**search_params) }
+
+        expect(OpenaiClient).to have_received(:call).twice
+      end
+    end
+
+    context 'when every answer is hallucinated' do
+      let(:ai_response) { '{"answers": [{"commodity_code": "9999999999", "confidence": "strong"}]}' }
+
+      it 'does not reuse the fallback' do
+        2.times { described_class.call(**search_params) }
+
+        expect(OpenaiClient).to have_received(:call).twice
+      end
+    end
+
+    context 'when the model asks a question' do
+      let(:ai_response) { '{"questions": [{"question": "What is the material?", "options": ["Leather", "Synthetic"]}]}' }
+      let(:guard_result) do
+        lambda do |duplicate|
+          InteractiveSearch::DuplicateQuestionGuard::Result.new(
+            allowed?: !duplicate, duplicate?: duplicate, suspicious: duplicate, signals: [],
+            reason: 'test', duplicate_of_question: nil, duplicate_of_answer: nil
+          )
+        end
+      end
+
+      it 'checks a reused question for duplicates', :aggregate_failures do
+        allow(InteractiveSearch::DuplicateQuestionGuard).to receive(:call)
+          .and_return(guard_result.call(false), guard_result.call(true), guard_result.call(false))
+
+        2.times { described_class.call(**search_params) }
+
+        expect(InteractiveSearch::DuplicateQuestionGuard).to have_received(:call).exactly(3).times
+        expect(OpenaiClient).to have_received(:call)
+          .with(a_string_including('The previous candidate question repeated'), model: 'gpt-5.4', reasoning_effort: 'medium', event_kind: 'duplicate_question_retry')
+      end
+    end
+  end
 end

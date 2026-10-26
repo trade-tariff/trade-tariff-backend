@@ -6,6 +6,7 @@ class ExpandSearchQueryService
   CACHE_TTL = 7.days
   EXPANSION_TIMEOUT_SECONDS = 5.0
   EXPANSION_TIMEOUT_MS = (EXPANSION_TIMEOUT_SECONDS * 1000).to_i
+  OPERATION = 'search_query_expansion'.freeze
 
   Result = Data.define(:expanded_query, :reason)
 
@@ -28,6 +29,7 @@ class ExpandSearchQueryService
 
     def clear_cache!
       Rails.cache.delete_matched('expand_search_query/*')
+      Search::InferenceCache.clear(operation: OPERATION)
     end
 
     def valid_response?(response)
@@ -47,7 +49,7 @@ private
   end
 
   def expand_query
-    cached = Rails.cache.read(cache_key)
+    cached = read_cached_response
     if cached
       cached_response = cached.is_a?(Hash) ? cached.stringify_keys : cached
       if self.class.valid_response?(cached_response)
@@ -64,20 +66,20 @@ private
       request_id:,
       model: configured_model,
       attempt_number: 1,
-      operation: 'search_query_expansion',
+      operation: OPERATION,
     ) do
       OpenaiClient.call(
         context_for(query),
         model: configured_model,
         reasoning_effort: configured_reasoning_effort,
-        event_kind: 'search_query_expansion',
+        event_kind: OPERATION,
         timeout: EXPANSION_TIMEOUT_SECONDS,
       )
     end
 
     if self.class.valid_response?(response)
       result = result_from_response(response)
-      Rails.cache.write(cache_key, { expanded_query: result.expanded_query, reason: result.reason }, expires_in: CACHE_TTL)
+      write_cached_result(result)
       result
     else
       record_failure('Query expansion response was malformed')
@@ -177,9 +179,40 @@ private
       request_id:,
       search_type: 'interactive',
       failure_code: Search::FailureCodes::QUERY_EXPANSION_FAILED,
-      operation: 'search_query_expansion',
+      operation: OPERATION,
       error_type:,
       error_message: message,
+    )
+  end
+
+  def read_cached_response
+    return Rails.cache.read(cache_key) unless Search::InferenceCache.enabled?
+
+    Search::InferenceCache.read(inference_cache_key, operation: OPERATION, request_id:) do |cached|
+      self.class.valid_response?(cached)
+    end
+  end
+
+  def write_cached_result(result)
+    value = { expanded_query: result.expanded_query, reason: result.reason }
+    if Search::InferenceCache.enabled?
+      Search::InferenceCache.write(inference_cache_key, value, operation: OPERATION, request_id:)
+    else
+      Rails.cache.write(cache_key, value, expires_in: CACHE_TTL)
+    end
+  end
+
+  # Unlike the legacy key, this includes the whole prompt and reasoning effort.
+  def inference_cache_key
+    @inference_cache_key ||= Search::InferenceCache.key(
+      operation: OPERATION,
+      inputs: {
+        provider: TradeTariffBackend.openai_api_base_url,
+        model: configured_model,
+        reasoning_effort: configured_reasoning_effort,
+        context: configured_context,
+        query: query.downcase,
+      },
     )
   end
 

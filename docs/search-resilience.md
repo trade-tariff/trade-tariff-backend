@@ -72,7 +72,7 @@ This backend status does not specify the rendered frontend HTTP status. The fron
 - [Internal SearchService](../app/services/api/internal/search_service.rb) skips interactive generation after an embedding/vector failure. After interactive generation fails, it selects OpenSearch results for hybrid retrieval unless OpenSearch also failed, in which case it selects vector results. It removes the interactive response, including generated questions and confidence.
 - With `retrieval_method=vector` or `opensearch`, there is no second retrieval leg to recover from. An interactive failure retains that configured source's candidates; a retrieval exception follows the normal error path.
 - Disabled expansion, disabled interactive generation, exact matches, empty results and guardrail rejection do not themselves set a failure code. Frontend eligibility and rollout routing are separate from this dependency fallback contract.
-- A malformed expansion cache entry records a failure and is evicted before a fresh attempt. A successful fresh attempt can therefore use expanded wording while still reporting `query_expansion_failed` for the recovered cache failure.
+- A malformed expansion cache entry records a failure and is evicted before a fresh attempt. A successful fresh attempt can therefore use expanded wording while still reporting `query_expansion_failed` for the recovered cache failure. With the opt-in [search inference cache](caching.md#search-inference-cache), a malformed entry is a cache miss and does not record a failure.
 
 ### Duplicate-question behaviour
 
