@@ -21,6 +21,27 @@ SERVICES_STOPPED=false
 RESTORE_PHASE=before_restore
 REPLICATION_LOCK_PID=
 
+# These migrations change only excluded tables. Keep their local applied state too.
+REPLICATION_EXCLUDED_MIGRATIONS=(
+    20260803000001_create_evaluation_experiments.rb
+    20260803000002_create_evaluation_runs.rb
+    20260803000003_create_evaluation_results.rb
+    20260812000001_create_evaluation_gold_queries.rb
+    20260817163645_add_idempotency_key_to_evaluation_runs.rb
+    20260818120000_add_run_time_overrides_to_evaluation_runs.rb
+    20260824120000_add_provider_calls_to_evaluation_results.rb
+    20260925100000_create_tariff_knowledge_synthetic_atars.rb
+    20260925110000_create_evaluation_gold_query_sets.rb
+    20261007120000_add_summary_aggregates_to_evaluation_runs.rb
+    20261007140000_add_pricing_known_to_evaluation_results.rb
+    20261008100000_add_persona_breakdown_to_evaluation_runs.rb
+    20261013090000_add_intended_result_count_to_evaluation_runs.rb
+    20261014090000_add_label_to_evaluation_runs.rb
+    20261015120000_create_evaluation_synthetic_input_sets.rb
+    20261019120000_default_evaluation_gold_query_sets_atar_percentage.rb
+    20261019130000_add_source_workbook_and_row_to_synthetic_atars.rb
+)
+
 require_env() {
     local missing=false
 
@@ -254,35 +275,87 @@ download_database_dump_once() {
 
 stream_core_database_dump() {
   local dump_file=$1
+  local action kind table schema
 
-  gzip -dc "$dump_file" |
-    awk '
-      /^-- TRADE_TARIFF_POST_RESTORE_START$/ {
-        post_restore = 1
-        next
-      }
+  # pg_restore's documented TOC selection omits schema-wide drops and defers
+  # materialized-view refreshes to after.sql. No SQL or COPY data is rewritten.
+  pg_restore --list "$dump_file" |
+    awk '!($4 == "SCHEMA" || ($4 == "MATERIALIZED" && $5 == "VIEW" && $6 == "DATA"))' \
+      > "$dump_file.list" || return $?
 
-      !post_restore && /^VACUUM FULL ANALYZE;$/ {
-        post_restore = 1
-      }
+  while read -r action kind table; do
+    if [ "$action $kind" != "exclude table" ]; then
+      continue
+    fi
 
-      !post_restore &&
-      /^DROP EVENT TRIGGER / &&
-      !/^DROP EVENT TRIGGER IF EXISTS / {
-        sub(/^DROP EVENT TRIGGER /, "DROP EVENT TRIGGER IF EXISTS ")
-      }
+    schema=${table%%.*}
+    table=${table#*.}
+    if grep -Fq -e " TABLE $schema $table " -e " TABLE DATA $schema $table " "$dump_file.list"; then
+      echo "Replication archive contains excluded table $schema.$table. Refusing to restore." >&2
+      return 1
+    fi
+  done < "$(dirname "$0")/../config/database-replication.filter"
 
-      !post_restore {
-        print
-      }
-    '
+  printf 'CREATE SCHEMA IF NOT EXISTS public;\nCREATE SCHEMA IF NOT EXISTS uk;\nCREATE SCHEMA IF NOT EXISTS xi;\n'
+  pg_restore --clean --if-exists --no-owner --no-acl --file=- \
+    --use-list="$dump_file.list" "$dump_file"
+}
+
+preserve_evaluation_migration_history() {
+  local migrations
+  printf -v migrations "'%s'," "${REPLICATION_EXCLUDED_MIGRATIONS[@]}"
+  migrations=${migrations%,}
+
+  cat <<SQL
+CREATE TEMP TABLE replication_evaluation_migrations ON COMMIT DROP AS
+  SELECT filename, false AS applied
+  FROM unnest(ARRAY[$migrations]::text[]) AS migrations(filename);
+DO \$\$
+BEGIN
+  IF to_regclass('uk.schema_migrations') IS NOT NULL THEN
+    UPDATE pg_temp.replication_evaluation_migrations preserved
+    SET applied = true
+    FROM uk.schema_migrations current
+    WHERE preserved.filename = current.filename;
+  END IF;
+END
+\$\$;
+SQL
+}
+
+restore_evaluation_migration_history() {
+  cat <<'SQL'
+DO $$
+BEGIN
+  IF to_regclass('uk.schema_migrations') IS NOT NULL THEN
+    DELETE FROM uk.schema_migrations current
+    USING pg_temp.replication_evaluation_migrations preserved
+    WHERE current.filename = preserved.filename;
+
+    INSERT INTO uk.schema_migrations (filename)
+      SELECT filename FROM pg_temp.replication_evaluation_migrations WHERE applied;
+  END IF;
+END
+$$;
+SQL
 }
 
 restore_core_database_dump() {
   local dump_file=$1
 
-  stream_core_database_dump "$dump_file" |
-    psql --single-transaction -v ON_ERROR_STOP=1 "$DATABASE_URL"
+  {
+    local status
+    if preserve_evaluation_migration_history &&
+       stream_core_database_dump "$dump_file" &&
+       restore_evaluation_migration_history; then
+      :
+    else
+      status=$?
+      # psql otherwise commits on EOF even when the SQL producer fails.
+      printf '\n\\.\nROLLBACK;\n'
+      exit "$status"
+    fi
+  } | psql --single-transaction -v ON_ERROR_STOP=1 "$DATABASE_URL"
 }
 
 run_post_restore_maintenance() {
@@ -292,7 +365,7 @@ run_post_restore_maintenance() {
 cleanup_dump_file() {
   local dump_file=$1
 
-  retry_command "Remove temporary database dump" rm -f "$dump_file"
+  retry_command "Remove temporary database dump" rm -f "$dump_file" "$dump_file.list"
 }
 
 restore_database() {

@@ -1,0 +1,9 @@
+# Keep environment-local evaluations out of replication archives.
+exclude table uk.evaluation_experiments
+exclude table uk.evaluation_gold_queries
+exclude table uk.evaluation_gold_query_sets
+exclude table uk.evaluation_results
+exclude table uk.evaluation_runs
+exclude table uk.evaluation_synthetic_input_sets
+exclude table uk.evaluation_synthetic_input_set_items
+exclude table uk.tariff_knowledge_synthetic_atars

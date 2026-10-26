@@ -23,9 +23,13 @@ fi
 latest="s3://$S3_BUCKET/tariff-merged-${ENVIRONMENT}.sql.gz"
 today="s3://$S3_BUCKET/$(date +"%Y/%m/%d")/tariff-merged-${ENVIRONMENT}.sql.gz"
 staging="${latest}.$$.uploading"
+replication_latest="s3://$S3_BUCKET/tariff-merged-${ENVIRONMENT}.replication.dump"
+replication_today="s3://$S3_BUCKET/$(date +"%Y/%m/%d")/tariff-merged-${ENVIRONMENT}.replication.dump"
+replication_staging="${replication_latest}.$$.uploading"
 
 cleanup_staging() {
   aws s3 rm "$staging" > /dev/null 2>&1 || true
+  aws s3 rm "$replication_staging" > /dev/null 2>&1 || true
 }
 
 trap cleanup_staging EXIT
@@ -53,7 +57,20 @@ pg_dump "$DATABASE_URL" \
 aws s3 cp "$staging" "$latest" || exit 2
 aws s3 cp "$latest" "$today" || exit 3
 
+# Keep the complete recovery backup above. Exclude whole tables natively only
+# from the separate archive used to refresh staging and development.
+pg_dump "$DATABASE_URL" \
+  --format=custom \
+  --no-acl \
+  --no-owner \
+  --verbose \
+  --filter=- < "$(dirname "$0")/../config/database-replication.filter" |
+  aws s3 cp - "$replication_staging" || exit 4
+
+aws s3 cp "$replication_staging" "$replication_latest" || exit 4
+aws s3 cp "$replication_latest" "$replication_today" || exit 4
+
 ENDED=$(date +"%Y-%m-%d %H:%M:%S")
 SECONDS=$(( $(date -d "$ENDED" +%s) - $(date -d "$STARTED" +%s) ))
 
-echo "SQL backup uploaded successfully. Time: ${SECONDS}s" && exit 0
+echo "SQL backup and replication archive uploaded successfully. Time: ${SECONDS}s" && exit 0

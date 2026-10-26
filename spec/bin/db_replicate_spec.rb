@@ -22,7 +22,7 @@ RSpec.describe 'bin/db-replicate' do
       'DB_DUMP_USER' => 'dump-user',
       'DB_DUMP_PASSWORD' => 'dump-password',
       'DB_DUMP_SERVER' => 'https://dumps.example.test',
-      'RESTORE_FILE' => '/tariff.sql.gz',
+      'RESTORE_FILE' => '/tariff.replication.dump',
       'DATABASE_URL' => 'postgres://database.example.test/tariff',
     }.merge(env_overrides)
 
@@ -168,32 +168,34 @@ RSpec.describe 'bin/db-replicate' do
         fi
       done
 
-      {
-        printf 'CREATE TABLE restored_table(id integer);\n'
-        printf '%s\n' '-- TRADE_TARIFF_POST_RESTORE_START'
-        printf 'ANALYZE;\n'
-      } > "$output_file"
+      printf 'fake-archive\n' > "$output_file"
     BASH
 
-    write_executable "#{tempdir}/bin/gzip", <<~'BASH'
+    write_executable "#{tempdir}/bin/pg_restore", <<~'BASH'
       #!/usr/bin/env bash
       set -euo pipefail
-      echo "gzip $*" >> "$TMPDIR/commands.log"
+      echo "pg_restore $*" >> "$TMPDIR/commands.log"
 
-      if [[ -f "$TMPDIR/fail_gzip_once" ]]; then
-        attempts_file="$TMPDIR/gzip-attempts"
-        attempts=0
-        [[ -f "$attempts_file" ]] && attempts=$(cat "$attempts_file")
-        attempts=$((attempts + 1))
-        echo "$attempts" > "$attempts_file"
-
-        if [[ "$attempts" -eq 1 ]]; then
-          echo "temporary gzip failure" >&2
-          exit 42
-        fi
+      if [[ -f "$TMPDIR/fail_pg_restore" ]]; then
+        echo 'invalid archive' >&2
+        exit 42
       fi
 
-      cat "${!#}"
+      if [[ "$1" == '--list' ]]; then
+        printf '1; 2615 100 SCHEMA - uk owner\n'
+        printf '2; 1259 101 TABLE uk restored_table owner\n'
+        printf '3; 0 101 MATERIALIZED VIEW DATA uk restored_view owner\n'
+      else
+        for argument in "$@"; do
+          if [[ "$argument" == --use-list=* ]]; then
+            if grep -E ' SCHEMA | MATERIALIZED VIEW DATA ' "${argument#--use-list=}"; then
+              echo 'schema or materialized view data was selected' >&2
+              exit 43
+            fi
+          fi
+        done
+        printf 'CREATE TABLE restored_table(id integer);\n'
+      fi
     BASH
 
     write_executable "#{tempdir}/bin/psql", <<~'BASH'
@@ -351,18 +353,19 @@ RSpec.describe 'bin/db-replicate' do
     _stdout, stderr, status = run_replicate(tempdir)
 
     expect(status).to be_success, stderr
-    expect(command_log(tempdir).grep(%r{curl .*https://dumps.example.test/tariff.sql.gz}).count).to eq(2)
+    expect(command_log(tempdir).grep(%r{curl .*https://dumps.example.test/tariff.replication.dump}).count).to eq(2)
     expect(command_log(tempdir)).to include('sleep 5')
   end
 
-  it 'does not retry database decompression failures' do
+  it 'does not retry invalid replication archives' do
     install_successful_command_stubs
-    touch_flag 'fail_gzip_once'
+    touch_flag 'fail_pg_restore'
 
     _stdout, stderr, status = run_replicate(tempdir)
 
     expect(status).not_to be_success
-    expect(command_log(tempdir).grep(/gzip -dc/).count).to eq(1)
+    expect(command_log(tempdir).grep(/pg_restore --list/).count).to eq(1)
+    expect(stderr).to include('invalid archive')
     expect(stderr).not_to include('Retrying')
   end
 
@@ -444,8 +447,9 @@ RSpec.describe 'bin/db-replicate' do
 
     expect(status).to be_success, stderr
     expect(command_log(tempdir).grep(/^mktemp/).count).to eq(1)
-    expect(command_log(tempdir)).to include("rm -f #{tempdir}/database-dump.sql.gz")
+    expect(command_log(tempdir)).to include("rm -f #{tempdir}/database-dump.sql.gz #{tempdir}/database-dump.sql.gz.list")
     expect(File.exist?("#{tempdir}/database-dump.sql.gz")).to be(false)
+    expect(File.exist?("#{tempdir}/database-dump.sql.gz.list")).to be(false)
   end
 
   it 'fails and restarts services when cleanup fails after successful restore' do
@@ -485,7 +489,7 @@ RSpec.describe 'bin/db-replicate' do
     expect(command_log(tempdir).grep(/aws ecs update-service .*backend-web.*--desired-count 2/).count).to eq(1)
     expect(command_log(tempdir).grep(/aws ecs update-service .*backend-worker.*--desired-count 1/).count).to eq(1)
     expect(command_log(tempdir).grep(/aws s3 sync/)).to be_empty
-    expect(command_log(tempdir)).to include("rm -f #{tempdir}/database-dump.sql.gz")
+    expect(command_log(tempdir)).to include("rm -f #{tempdir}/database-dump.sql.gz #{tempdir}/database-dump.sql.gz.list")
     expect(File.exist?("#{tempdir}/database-dump.sql.gz")).to be(false)
   end
 
@@ -512,7 +516,7 @@ RSpec.describe 'bin/db-replicate' do
     expect(stderr).to include('Download database dump failed after')
     expect(command_log(tempdir).grep(/curl /).count).to eq(6)
     expect(command_log(tempdir).grep(/aws s3 sync/)).to be_empty
-    expect(command_log(tempdir)).to include("rm -f #{tempdir}/database-dump.sql.gz")
+    expect(command_log(tempdir)).to include("rm -f #{tempdir}/database-dump.sql.gz #{tempdir}/database-dump.sql.gz.list")
     expect(File.exist?("#{tempdir}/database-dump.sql.gz")).to be(false)
   end
 
