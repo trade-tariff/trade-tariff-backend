@@ -20,12 +20,16 @@ module Api
           # experiments to change first. The set's items are deleted with it by the
           # database (ON DELETE CASCADE).
           def destroy
-            experiment_names = synthetic_input_set.evaluation_experiments_dataset.order(:name).select_map(:name)
+            experiment_names = experiment_names_using_set
             return render_in_use(experiment_names) if experiment_names.any?
 
             synthetic_input_set.destroy
 
             head :no_content
+          rescue Sequel::ForeignKeyConstraintViolation
+            # An experiment began using the set after the check above. The foreign key stopped
+            # the delete, so answer the same 409, naming the experiments there are now.
+            render_in_use(experiment_names_using_set)
           end
 
           def create
@@ -54,13 +58,20 @@ module Api
             { pagination: { page: current_page, per_page:, total_count: paginated_dataset.pagination_record_count } }
           end
 
+          def experiment_names_using_set
+            synthetic_input_set.evaluation_experiments_dataset.order(:name).select_map(:name)
+          end
+
+          # An experiment's set is locked once chosen, so the only way to free the set is to delete
+          # the experiments. That also deletes their runs and results.
           def render_in_use(experiment_names)
             render json: {
               errors: [
                 {
                   status: '409',
                   title: 'Synthetic input set is in use',
-                  detail: "This set cannot be deleted because these experiments use it: #{experiment_names.join(', ')}. Point them at another set first.",
+                  detail: "This set cannot be deleted because these experiments use it: #{experiment_names.join(', ')}. " \
+                          "An experiment's set cannot be changed, so delete those experiments first. That also deletes their runs and results.",
                 },
               ],
             }, status: :conflict

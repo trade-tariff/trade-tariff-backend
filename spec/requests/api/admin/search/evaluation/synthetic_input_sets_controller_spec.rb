@@ -83,6 +83,30 @@ RSpec.describe Api::Admin::Search::Evaluation::SyntheticInputSetsController, :ad
         expect(json_response['errors'].first).to include('status' => '409', 'title' => 'Synthetic input set is in use')
         expect(json_response['errors'].first['detail']).to include('baseline', 'with-rerank')
       end
+
+      it 'tells the operator to delete the experiments, because an experiment cannot be moved to another set' do
+        detail = json_response['errors'].first['detail']
+
+        expect(detail).to include('delete those experiments first', 'runs and results')
+        expect(detail).not_to include('another set')
+      end
+    end
+
+    context 'when an experiment starts using the set after the check but before the delete' do
+      before do
+        set = EvaluationSyntheticInputSet.with_pk!(synthetic_input_set.id)
+        allow(set).to receive(:destroy) do
+          create(:evaluation_experiment, name: 'raced', synthetic_input_set_id: set.id)
+          raise Sequel::ForeignKeyConstraintViolation
+        end
+        allow(EvaluationSyntheticInputSet).to receive(:with_pk!).and_return(set)
+      end
+
+      it { is_expected.to have_http_status :conflict }
+
+      it 'names the experiment that got there first' do
+        expect(json_response['errors'].first['detail']).to include('raced')
+      end
     end
 
     context 'when an experiment uses a different set' do
