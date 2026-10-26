@@ -58,11 +58,7 @@ jobs:
             --overrides '{
                 "containerOverrides": [{
                   "name": "${{ env.CONTAINER_NAME }}",
-                  "command": ["/bin/sh", "-c", "exec ./bin/db-replicate"],
-                  "environment": [{
-                    "name": "RESTORE_FILE",
-                    "value": "/tariff-merged-production.replication.dump"
-                  }]
+                  "command": ["/bin/sh", "-c", "exec ./bin/db-replicate"]
                 }]
               }')
 

@@ -132,13 +132,6 @@ jobs:
         run: >-
           bundle exec ruby -rpg -e "PG.connect(host: 'localhost', dbname: 'postgres', user: 'postgres').tap { |connection| connection.exec(%q[ALTER SYSTEM SET log_min_messages TO 'fatal']); connection.exec('SELECT pg_reload_conf()') }"
 
-      # bin/backup-database uses pg_dump --filter, which needs a client of version 17 or newer, and
-      # the replication specs run the real pg_dump, pg_restore and psql. The runner ships version 16.
-      - name: Install PostgreSQL 18 client tools
-        run: |
-          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
-          sudo apt-get install -y postgresql-client-18
-
       - name: Prepare test databases
         run: bundle exec rails db:test:prepare_parallel
 
