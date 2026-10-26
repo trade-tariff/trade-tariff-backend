@@ -1,6 +1,7 @@
 module EvaluationConfiguration
   ALLOWED_OVERRIDE_KEYS = %w[
     question_model
+    reasoning_effort
     simulator_model
     candidate_limit
     max_rounds
@@ -10,7 +11,6 @@ module EvaluationConfiguration
     search_non_declarables
     search_compressed_notes_enabled
     search_general_rules_enabled
-    reasoning_effort
   ].freeze
 
   class AllowlistValidator

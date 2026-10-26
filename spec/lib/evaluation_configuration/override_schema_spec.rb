@@ -59,4 +59,10 @@ RSpec.describe EvaluationConfiguration::OverrideSchema do
 
     expect(entry[:options].map { |option| option[:key] }).to match_array(every_level)
   end
+
+  it 'lists reasoning_effort straight after question_model, because the launch form shows fields in this order' do
+    names = schema.map { |entry| entry[:name] }
+
+    expect(names.index('reasoning_effort')).to eq(names.index('question_model') + 1)
+  end
 end
