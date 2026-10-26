@@ -56,17 +56,19 @@ module SearchReferences
       id, title, code, suffix, referenced_class, usage, description, synonyms, terms, brands, *state = row
       escape = Api::Shared::CsvSerializer.method(:escape_formula)
 
-      [id,
-       escape.call(title),
-       code,
-       suffix,
-       referenced_class,
-       usage,
-       escape.call(description),
-       synonyms.to_a.join('; '),
-       terms.to_a.join('; '),
-       brands.to_a.join('; '),
-       *state]
+      [
+        id,
+        escape.call(title),
+        code,
+        suffix,
+        referenced_class,
+        usage,
+        escape.call(description),
+        escape.call(synonyms.to_a.join('; ')),
+        escape.call(terms.to_a.join('; ')),
+        escape.call(brands.to_a.join('; ')),
+        *state,
+      ]
     end
 
     private_class_method :rows, :build_row
