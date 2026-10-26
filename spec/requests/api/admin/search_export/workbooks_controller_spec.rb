@@ -6,7 +6,7 @@ RSpec.describe Api::Admin::SearchExport::WorkbooksController do
 
   before do
     allow(SearchExport::WorkbookWorker).to receive(:perform_async).and_return('job-id')
-    allow(SearchExport::CloudwatchReader).to receive(:call).and_return(SearchExport::CloudwatchReader::Result.new(journeys: [], clicks: {}))
+    allow(SearchExport::CloudwatchReader).to receive(:call).and_return(SearchExport::CloudwatchReader::Result.new(journeys: [], opened_pages: {}))
   end
 
   def submit
