@@ -33,6 +33,71 @@ RSpec.describe Api::Admin::Search::Evaluation::SyntheticInputSetsController, :ad
     end
   end
 
+  describe 'GET #show' do
+    let(:make_request) { authenticated_get api_admin_search_evaluation_synthetic_input_set_path(synthetic_input_set.id, format: :json) }
+    let(:synthetic_input_set) { create(:evaluation_synthetic_input_set, name: 'Set A', requested_size: 5, actual_size: 3, created_by: 'operator-1') }
+
+    before { create(:evaluation_synthetic_input_set_item, evaluation_synthetic_input_set: synthetic_input_set) }
+
+    it { is_expected.to have_http_status :ok }
+
+    it 'returns the set without its items, which have their own paginated endpoint' do
+      expect(json_response['data']['id']).to eq(synthetic_input_set.id.to_s)
+      expect(json_response['data']['type']).to eq('synthetic_input_set')
+      expect(json_response['data']['attributes']).to include('name' => 'Set A', 'requested_size' => 5, 'actual_size' => 3, 'created_by' => 'operator-1')
+      expect(json_response['data']['attributes']).not_to have_key('items')
+    end
+
+    context 'when the set does not exist' do
+      let(:make_request) { authenticated_get api_admin_search_evaluation_synthetic_input_set_path(0, format: :json) }
+
+      it { is_expected.to have_http_status :not_found }
+    end
+  end
+
+  describe 'DELETE #destroy' do
+    let(:make_request) { authenticated_delete api_admin_search_evaluation_synthetic_input_set_path(synthetic_input_set.id, format: :json) }
+    let!(:synthetic_input_set) { create(:evaluation_synthetic_input_set) }
+
+    before { create_list(:evaluation_synthetic_input_set_item, 2, evaluation_synthetic_input_set: synthetic_input_set) }
+
+    it { is_expected.to have_http_status :no_content }
+
+    it 'deletes the set and its items' do
+      expect { api_response }
+        .to change(EvaluationSyntheticInputSet, :count).by(-1)
+        .and change(EvaluationSyntheticInputSetItem, :count).by(-2)
+    end
+
+    context 'when an experiment uses the set' do
+      before do
+        create(:evaluation_experiment, name: 'baseline', synthetic_input_set_id: synthetic_input_set.id)
+        create(:evaluation_experiment, name: 'with-rerank', synthetic_input_set_id: synthetic_input_set.id)
+      end
+
+      it { is_expected.to have_http_status :conflict }
+      it { expect { api_response }.not_to change(EvaluationSyntheticInputSet, :count) }
+      it { expect { api_response }.not_to change(EvaluationSyntheticInputSetItem, :count) }
+
+      it 'names the experiments so the operator knows what to change' do
+        expect(json_response['errors'].first).to include('status' => '409', 'title' => 'Synthetic input set is in use')
+        expect(json_response['errors'].first['detail']).to include('baseline', 'with-rerank')
+      end
+    end
+
+    context 'when an experiment uses a different set' do
+      before { create(:evaluation_experiment, synthetic_input_set_id: create(:evaluation_synthetic_input_set).id) }
+
+      it { is_expected.to have_http_status :no_content }
+    end
+
+    context 'when the set does not exist' do
+      let(:make_request) { authenticated_delete api_admin_search_evaluation_synthetic_input_set_path(0, format: :json) }
+
+      it { is_expected.to have_http_status :not_found }
+    end
+  end
+
   describe 'POST #create' do
     let(:make_request) { authenticated_post api_admin_search_evaluation_synthetic_input_sets_path(format: :json), params:, headers: }
     let(:headers) { { 'X-Whodunnit' => 'operator-1' } }

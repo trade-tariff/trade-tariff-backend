@@ -183,7 +183,9 @@ AdminApi.routes.draw do
               end
             end
           end
-          resources :synthetic_input_sets, only: %i[index create]
+          resources :synthetic_input_sets, only: %i[index show create destroy] do
+            resources :items, controller: 'synthetic_input_set_items', only: %i[index]
+          end
           resources :runs, only: %i[index show create update] do
             collection do
               delete :bulk_destroy
