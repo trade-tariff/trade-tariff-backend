@@ -16,7 +16,22 @@ module Api
         ).serializable_hash
       end
 
+      def export
+        send_data ::SearchReferences::CsvExport.call,
+                  filename: "search_references_#{service}_#{date}.csv",
+                  type: 'text/csv',
+                  disposition: 'attachment'
+      end
+
     private
+
+      def service
+        TradeTariffBackend.uk? ? 'uk' : 'xi'
+      end
+
+      def date
+        Time.zone.today.strftime('%Y_%m_%d')
+      end
 
       def letter
         params.dig(:query, :letter) || ''
