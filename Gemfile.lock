@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/willfish/fast_excel.git
-  revision: eead492721afbc11080d32961be4cfd97c8467d1
+  revision: 898115eeb1f76db6ba25b69ea4cd011a4ac3f167
   branch: master
   specs:
     uber_fast_excel (0.6.0)
@@ -359,7 +359,7 @@ GEM
       io-console (~> 0.5)
     request_store (1.7.0)
       rack (>= 1.4)
-    resolv (0.8.0)
+    resolv (0.8.1)
     responders (3.2.1)
       actionpack (>= 7.0)
       railties (>= 7.0)
@@ -479,7 +479,7 @@ GEM
     unicode-emoji (4.2.0)
     uri (1.1.1)
     useragent (0.16.11)
-    webmock (3.26.4)
+    webmock (3.33.0)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
@@ -537,7 +537,7 @@ DEPENDENCIES
   redis
   redis-client
   redlock
-  resolv (~> 0.8.0)
+  resolv (~> 0.8.1)
   responders
   rspec-ctrf
   rspec-json_expectations
@@ -560,7 +560,7 @@ DEPENDENCIES
   webmock
 
 RUBY VERSION
-  ruby 4.0.7
+  ruby 4.0.9
 
 BUNDLED WITH
-  4.0.3
+  4.0.23

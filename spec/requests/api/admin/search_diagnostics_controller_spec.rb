@@ -30,6 +30,8 @@ RSpec.describe Api::Admin::SearchDiagnosticsController do
         browser_session_id:,
         experiment: nil,
         lookback_hours: nil,
+        from: nil,
+        to: nil,
       )
       expect(response.parsed_body.dig('data', 0, 'id')).to eq(related_request.request_id)
       expect(response.parsed_body.dig('data', 0, 'attributes', 'query')).to eq('fur coat')
@@ -123,6 +125,8 @@ RSpec.describe Api::Admin::SearchDiagnosticsController do
       expect(SearchDiagnostics::RequestLogLookup).to have_received(:call).with(
         request_id: 'request-123',
         lookback_hours: '24',
+        from: nil,
+        to: nil,
         limit: '50',
       )
       expect(response.parsed_body).to include_json(
@@ -145,6 +149,38 @@ RSpec.describe Api::Admin::SearchDiagnosticsController do
           }.ignore_extra_keys!,
         },
       )
+    end
+
+    it 'searches the requested date range' do
+      get '/uk/admin/search_diagnostics/request-123.json',
+          params: { from: '2026-06-01', to: '2026-06-01' },
+          headers: request_headers(format: :json)
+
+      expect(response).to have_http_status(:ok)
+      expect(SearchDiagnostics::RequestLogLookup).to have_received(:call).with(
+        hash_including(request_id: 'request-123', from: '2026-06-01', to: '2026-06-01'),
+      )
+      expect(SearchDiagnostics::RelatedRequests).to have_received(:for_search_request).with(
+        hash_including(request_id: 'request-123', from: '2026-06-01', to: '2026-06-01'),
+      )
+    end
+
+    context 'when the date range is invalid' do
+      before do
+        allow(SearchDiagnostics::RequestLogLookup).to receive(:call).and_raise(
+          SearchDiagnostics::TimeWindow::InvalidWindow,
+          'From must be on or before To.',
+        )
+      end
+
+      it 'returns an unprocessable content error' do
+        get '/uk/admin/search_diagnostics/request-123.json',
+            params: { from: '2026-06-02', to: '2026-06-01' },
+            headers: request_headers(format: :json)
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.parsed_body['errors'].first).to include('detail' => 'From must be on or before To.')
+      end
     end
 
     [SearchDiagnostics::RequestLogLookup::QueryError, Aws::Errors::ServiceError].each do |error_class|

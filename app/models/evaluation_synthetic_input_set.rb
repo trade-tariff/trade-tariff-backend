@@ -5,6 +5,7 @@ class EvaluationSyntheticInputSet < Sequel::Model(Sequel[:evaluation_synthetic_i
   plugin :validation_helpers
 
   one_to_many :evaluation_synthetic_input_set_items, key: :set_id
+  one_to_many :evaluation_experiments, key: :synthetic_input_set_id
 
   def validate
     super
