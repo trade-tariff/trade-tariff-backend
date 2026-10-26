@@ -365,6 +365,17 @@ RSpec.describe TradeTariffBackend::Config do
       end
     end
 
+    context 'when ENVIRONMENT is uat' do
+      before do
+        ENV['ENVIRONMENT'] = 'uat'
+        ENV.delete('REPORTING_CDN_HOST')
+      end
+
+      it 'returns the uat reporting host' do
+        expect(config.reporting_cdn_host).to eq('https://reporting.uat.trade-tariff.service.gov.uk')
+      end
+    end
+
     context 'when ENVIRONMENT is development' do
       before do
         ENV['ENVIRONMENT'] = 'development'
