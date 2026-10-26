@@ -1,0 +1,19 @@
+# Tables that database replication must never overwrite. They hold the evaluation experiments,
+# inputs, runs and results that operators create in staging and development, so they are left
+# out of the replication archive that bin/backup-database publishes. The full recovery backup
+# still contains them.
+#
+# Read by pg_dump --filter (bin/backup-database) and by bin/db-replicate, which rejects an
+# archive that contains any of them. Excluding a table also excludes its indexes, sequences,
+# constraints and rows.
+#
+# tariff_knowledge_synthetic_atars is not named "evaluation", but evaluation_synthetic_input_set_items
+# has a foreign key to it. If it were replaced, its DROP TABLE would fail against that key.
+exclude table uk.evaluation_experiments
+exclude table uk.evaluation_gold_queries
+exclude table uk.evaluation_gold_query_sets
+exclude table uk.evaluation_results
+exclude table uk.evaluation_runs
+exclude table uk.evaluation_synthetic_input_set_items
+exclude table uk.evaluation_synthetic_input_sets
+exclude table uk.tariff_knowledge_synthetic_atars

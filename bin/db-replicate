@@ -21,6 +21,36 @@ SERVICES_STOPPED=false
 RESTORE_PHASE=before_restore
 REPLICATION_LOCK_PID=
 
+# Replication restores the filtered archive that bin/backup-database publishes, never the full
+# recovery backup, so that it cannot overwrite the evaluation tables listed in the filter file.
+REPLICATION_ARCHIVE_SUFFIX=".replication.dump"
+REPLICATION_FILTER_FILE="$(dirname "$0")/../config/database-replication.filter"
+
+# Migrations that only create or change the tables in the filter file. Restoring replaces
+# uk.schema_migrations with production's, which would otherwise record these as applied or
+# unapplied according to production, not according to the retained tables in this database.
+# Their local applied state is saved before the restore and put back after it. Adding a
+# migration for one of the excluded tables means adding it here (a spec checks this).
+REPLICATION_EXCLUDED_MIGRATIONS=(
+    20260803000001_create_evaluation_experiments.rb
+    20260803000002_create_evaluation_runs.rb
+    20260803000003_create_evaluation_results.rb
+    20260812000001_create_evaluation_gold_queries.rb
+    20260817163645_add_idempotency_key_to_evaluation_runs.rb
+    20260818120000_add_run_time_overrides_to_evaluation_runs.rb
+    20260824120000_add_provider_calls_to_evaluation_results.rb
+    20260925100000_create_tariff_knowledge_synthetic_atars.rb
+    20260925110000_create_evaluation_gold_query_sets.rb
+    20261007120000_add_summary_aggregates_to_evaluation_runs.rb
+    20261007140000_add_pricing_known_to_evaluation_results.rb
+    20261008100000_add_persona_breakdown_to_evaluation_runs.rb
+    20261013090000_add_intended_result_count_to_evaluation_runs.rb
+    20261014090000_add_label_to_evaluation_runs.rb
+    20261015120000_create_evaluation_synthetic_input_sets.rb
+    20261019120000_default_evaluation_gold_query_sets_atar_percentage.rb
+    20261019130000_add_source_workbook_and_row_to_synthetic_atars.rb
+)
+
 require_env() {
     local missing=false
 
@@ -70,8 +100,16 @@ validate_positive_integer() {
     fi
 }
 
+require_replication_archive() {
+    if [[ "$RESTORE_FILE" != *"$REPLICATION_ARCHIVE_SUFFIX" ]]; then
+        echo "RESTORE_FILE must be a replication archive (a name ending in $REPLICATION_ARCHIVE_SUFFIX), not the full recovery backup: $RESTORE_FILE" >&2
+        exit 1
+    fi
+}
+
 require_known_environment
 require_non_production_target
+require_replication_archive
 validate_positive_integer RETRY_MAX_ATTEMPTS
 validate_positive_integer RETRY_INITIAL_DELAY_SECONDS
 
@@ -252,37 +290,118 @@ download_database_dump_once() {
     "$DB_DUMP_SERVER""$RESTORE_FILE"
 }
 
-stream_core_database_dump() {
-  local dump_file=$1
+excluded_tables() {
+  awk '$1 == "exclude" && $2 == "table" { print $3 }' "$REPLICATION_FILTER_FILE"
+}
 
-  gzip -dc "$dump_file" |
-    awk '
-      /^-- TRADE_TARIFF_POST_RESTORE_START$/ {
-        post_restore = 1
-        next
-      }
+# Fails unless the file is a readable archive that holds none of the excluded tables. An
+# unfiltered archive would overwrite the evaluation tables, so it is never restored.
+validate_replication_archive() {
+  local archive=$1
+  local listing=$2
+  local table
+  local schema
+  local name
 
-      !post_restore && /^VACUUM FULL ANALYZE;$/ {
-        post_restore = 1
-      }
+  if [ ! -s "$REPLICATION_FILTER_FILE" ] || [ -z "$(excluded_tables)" ]; then
+    echo "No excluded tables are listed in $REPLICATION_FILTER_FILE, so an unfiltered archive could not be detected." >&2
+    return 1
+  fi
 
-      !post_restore &&
-      /^DROP EVENT TRIGGER / &&
-      !/^DROP EVENT TRIGGER IF EXISTS / {
-        sub(/^DROP EVENT TRIGGER /, "DROP EVENT TRIGGER IF EXISTS ")
-      }
+  if ! pg_restore --list "$archive" >| "$listing"; then
+    echo "$RESTORE_FILE is not a valid replication archive: pg_restore cannot read it." >&2
+    return 1
+  fi
 
-      !post_restore {
-        print
-      }
-    '
+  while IFS= read -r table; do
+    schema=${table%%.*}
+    name=${table#*.}
+
+    # A list entry names its schema and then the table, for example "TABLE DATA uk evaluation_runs".
+    if awk -v schema="$schema" -v name="$name" '
+         !/^;/ { for (i = 1; i < NF; i++) if ($i == schema && $(i + 1) == name) found = 1 }
+         END { exit !found }
+       ' "$listing"; then
+      echo "$RESTORE_FILE is not a valid replication archive: it contains $table, which replication must not overwrite." >&2
+      return 1
+    fi
+  done < <(excluded_tables)
+}
+
+# The list of archive entries to restore: everything except
+# - schemas, so that no DROP SCHEMA ... CASCADE can reach the evaluation tables that stay
+#   behind in them, and any columns added to those tables locally survive;
+# - materialized view data, which bin/after.sql refreshes in post-restore maintenance.
+build_restore_list() {
+  local listing=$1
+  local restore_list=$2
+
+  grep -Ev '^[0-9]+; [0-9]+ [0-9]+ (SCHEMA|MATERIALIZED VIEW DATA) ' "$listing" >| "$restore_list"
+}
+
+sql_text_array() {
+  local separator=""
+  local value
+
+  printf 'ARRAY['
+  for value in "$@"; do
+    printf "%s'%s'" "$separator" "$value"
+    separator=","
+  done
+  printf ']::text[]'
+}
+
+# Restores in one explicit transaction. pg_restore writes the restore script and psql runs it.
+# COMMIT is only written when pg_restore finished, so if it fails part-way psql reaches the end
+# of its input with the transaction still open and the database rolls it back. (psql
+# --single-transaction would commit whatever it had been sent.)
+restore_replication_archive() {
+  local archive=$1
+  local restore_list=$2
+  local migrations
+
+  migrations=$(sql_text_array "${REPLICATION_EXCLUDED_MIGRATIONS[@]}")
+
+  {
+    printf 'BEGIN;\n'
+    # pg_restore from a newer client writes SET transaction_timeout, which servers before
+    # PostgreSQL 17 reject. It is removed from the script below and set here only when the
+    # server has the setting.
+    printf '%s\n' "DO \$\$ BEGIN IF current_setting('server_version_num')::int >= 170000 THEN EXECUTE 'SET LOCAL transaction_timeout = 0'; END IF; END \$\$;"
+    printf 'CREATE TEMP TABLE replication_preserved_migrations ON COMMIT DROP AS\n'
+    printf '  SELECT filename FROM uk.schema_migrations WHERE filename = ANY (%s);\n' "$migrations"
+
+    if ! pg_restore --clean --if-exists --no-owner --no-acl --use-list="$restore_list" --file=- "$archive" |
+        sed -e '/^SET transaction_timeout = 0;$/d'; then
+      echo "pg_restore failed, so the restore is abandoned and nothing is committed." >&2
+      exit 1
+    fi
+
+    printf 'DELETE FROM uk.schema_migrations WHERE filename = ANY (%s);\n' "$migrations"
+    printf 'INSERT INTO uk.schema_migrations (filename)\n'
+    printf '  SELECT filename FROM pg_temp.replication_preserved_migrations;\n'
+    printf 'COMMIT;\n'
+  } | psql -X -v ON_ERROR_STOP=1 "$DATABASE_URL"
 }
 
 restore_core_database_dump() {
-  local dump_file=$1
+  local archive=$1
+  local listing
+  local restore_list
+  local status=0
 
-  stream_core_database_dump "$dump_file" |
-    psql --single-transaction -v ON_ERROR_STOP=1 "$DATABASE_URL"
+  listing=$(mktemp) || return 1
+  restore_list=$(mktemp) || return 1
+
+  {
+    validate_replication_archive "$archive" "$listing" &&
+      build_restore_list "$listing" "$restore_list" &&
+      restore_replication_archive "$archive" "$restore_list"
+  } || status=$?
+
+  rm -f "$listing" "$restore_list"
+
+  return "$status"
 }
 
 run_post_restore_maintenance() {

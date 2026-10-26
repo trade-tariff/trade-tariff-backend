@@ -24,8 +24,16 @@ latest="s3://$S3_BUCKET/tariff-merged-${ENVIRONMENT}.sql.gz"
 today="s3://$S3_BUCKET/$(date +"%Y/%m/%d")/tariff-merged-${ENVIRONMENT}.sql.gz"
 staging="${latest}.$$.uploading"
 
+# The replication archive is a second, filtered dump that bin/db-replicate restores into staging
+# and development. It leaves out the evaluation tables listed in config/database-replication.filter,
+# so replication never overwrites them. The recovery backup above stays complete.
+replication_latest="s3://$S3_BUCKET/tariff-merged-${ENVIRONMENT}.replication.dump"
+replication_today="s3://$S3_BUCKET/$(date +"%Y/%m/%d")/tariff-merged-${ENVIRONMENT}.replication.dump"
+replication_staging="${replication_latest}.$$.uploading"
+
 cleanup_staging() {
   aws s3 rm "$staging" > /dev/null 2>&1 || true
+  aws s3 rm "$replication_staging" > /dev/null 2>&1 || true
 }
 
 trap cleanup_staging EXIT
@@ -53,7 +61,21 @@ pg_dump "$DATABASE_URL" \
 aws s3 cp "$staging" "$latest" || exit 2
 aws s3 cp "$latest" "$today" || exit 3
 
+# Custom format, so pg_restore can list what the archive holds and restore only part of it.
+# Like the recovery backup, it goes to a temporary key first, so a failed dump never replaces the
+# archive that replication last used.
+pg_dump "$DATABASE_URL" \
+  --format=custom       \
+  --filter="$(dirname "$0")/../config/database-replication.filter" \
+  --no-acl              \
+  --no-owner            \
+  --verbose |
+  aws s3 cp - "$replication_staging" || exit 4
+
+aws s3 cp "$replication_staging" "$replication_latest" || exit 4
+aws s3 cp "$replication_latest" "$replication_today" || exit 4
+
 ENDED=$(date +"%Y-%m-%d %H:%M:%S")
 SECONDS=$(( $(date -d "$ENDED" +%s) - $(date -d "$STARTED" +%s) ))
 
-echo "SQL backup uploaded successfully. Time: ${SECONDS}s" && exit 0
+echo "SQL backup and replication archive uploaded successfully. Time: ${SECONDS}s" && exit 0
