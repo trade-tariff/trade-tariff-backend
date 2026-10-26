@@ -16,24 +16,105 @@ RSpec.describe SearchExport::CloudwatchReader do
   before { client.stub_responses(:start_query, query_id: 'query-1') }
 
   def row(event, at: '2026-09-23T10:00:00Z')
-    [{ field: '@timestamp', value: at }, { field: '@message', value: event.to_json }]
+    message = event.key?(:controller) ? "I, [#{at} #1]  INFO -- : [http-id] [request_country=GB] #{event.to_json}" : event.to_json
+    [{ field: '@timestamp', value: at }, { field: '@message', value: message }]
+  end
+
+  def frontend_page(id: 'guided-1', code: '0207141000', status: 200, controller: 'CommoditiesController', action: 'show')
+    { method: 'GET', controller:, action:, status:, request_id: 'http-id', search_request_id: id, params: { request_id: id, id: code } }
   end
 
   def response(*events)
     { status: 'Complete', statistics: { records_matched: events.size.to_f }, results: events.map { |event| row(event) } }
   end
 
-  it 'joins backend selections only to guided terminal traces and orders journeys' do
-    click = { event: 'result_selected', request_id: 'guided-1', goods_nomenclature_item_id: '0207141000' }
-    client.stub_responses(:get_query_results, [response(trace), response(click, click.merge(request_id: 'classic-1'))])
+  def start_queries = client.api_requests.select { |request| request[:operation_name] == :start_query }
+  def visit_queries = start_queries.select { |request| request[:params][:query_string].include?('CommoditiesController') }
+  def journey_queries = start_queries - visit_queries
+
+  it 'joins page visits to result journeys without backend selections', :aggregate_failures do
+    client.stub_responses(:get_query_results, [response(trace), response, response(frontend_page(status: '304'), frontend_page(id: 'classic-1')), response(frontend_page)])
     result = reader.call
     expect(result.journeys.map(&:request_id)).to eq(%w[guided-1])
-    expect(result.clicks.keys).to eq(%w[guided-1])
-    expect(result.clicks['guided-1'].first.commodity_code).to eq('0207141000')
-    queries = client.api_requests.select { |request| request[:operation_name] == :start_query }
-    expect(queries.size).to eq(2)
-    expect(queries.first[:params][:query_string]).to include('request_source = "frontend"', 'ecs\\/(backend|worker)-uk\\/', 'jsonParse(@message)', 'toMillis(@timestamp) <')
-    expect(queries.last[:params][:end_time]).to eq(generated_at.to_i)
+    expect(result.opened_pages.transform_values { |pages| pages.map(&:commodity_code) }).to eq('guided-1' => %w[0207141000 0207141000])
+    expect(journey_queries.first[:params][:query_string]).to include('request_source = "frontend"', 'ecs\\/(backend|worker)-uk\\/', 'toMillis(@timestamp) <')
+    expect(journey_queries.first[:params][:query_string]).not_to include('result_selected', 'ecs\\/frontend')
+    expect(visit_queries.first[:params]).to include(start_time: Time.utc(2026, 9, 23).to_i)
+    expect(visit_queries.first[:params][:query_string]).to include('ecs\\/frontend\\/', '"action":"show"', '"request_id":"(guided-1)')
+    expect(start_queries.last[:params][:end_time]).to eq(generated_at.to_i)
+  end
+
+  it 'ignores unsuccessful and unrelated page requests' do
+    pages = [
+      frontend_page(status: 302),
+      frontend_page(status: 404),
+      frontend_page(action: 'origin'),
+      frontend_page(controller: 'HeadingsController'),
+      frontend_page(id: 'other-journey').merge(request_id: 'guided-1'),
+      frontend_page(code: nil),
+    ]
+    client.stub_responses(:get_query_results, [response(trace), response, response(*pages), response])
+    expect(reader.call.opened_pages).to be_empty
+  end
+
+  it 'uses visit filters that match frontend request logs' do
+    client.stub_responses(:get_query_results, response(trace))
+    reader.call
+    patterns = visit_queries.first[:params][:query_string].scan(%r{@message like /(.+?)/(?=\s|$)}).flatten
+    expect(patterns.size).to eq(3)
+    expect(patterns.map { |pattern| Regexp.new(pattern) }).to all(match(row(frontend_page).last[:value]))
+  end
+
+  it 'reads visits only for linkable result journeys' do
+    no_result = trace.merge(request_id: 'no-result', end_page_type: 'No result', details: trace[:details].merge(results: []))
+    client.stub_responses(:get_query_results, response(no_result, trace.merge(request_id: 'guided 1')))
+    expect(reader.call.journeys.size).to eq(2)
+    expect(visit_queries).to be_empty
+  end
+
+  it 'counts visits only within each journey visit window' do
+    reader = described_class.new(from:, to: from + 1, generated_at: generated_at + 30.days, client:)
+    later = trace.merge(request_id: 'guided-2', terminal_at: '2026-09-23T18:00:00Z')
+    visits = response.merge(results: [
+      row(frontend_page(id: 'guided-2'), at: '2026-09-23T11:00:00Z'),
+      row(frontend_page(id: 'guided-2'), at: '2026-09-23T18:30:00Z'),
+      row(frontend_page, at: '2026-09-23T10:30:00Z'),
+      row(frontend_page, at: '2026-09-25T00:00:00Z'),
+    ])
+    client.stub_responses(:get_query_results, [response(trace, later), response, response, visits, response])
+    pages = reader.call.opened_pages.transform_values { |values| values.map(&:opened_at) }
+    expect(pages).to eq('guided-1' => [Time.utc(2026, 9, 23, 10, 30)], 'guided-2' => [Time.utc(2026, 9, 23, 18, 30)])
+  end
+
+  it 'queries each day only for journeys that can have visits then' do
+    stub_const('SearchExport::CloudwatchReader::VISIT_BATCH_SIZE', 1)
+    reader = described_class.new(from:, to: from + 1, generated_at: generated_at + 30.days, client:)
+    client.stub_responses(:get_query_results, response(trace, trace.merge(request_id: 'guided-2-later', terminal_at: '2026-09-24T18:00:00Z')))
+    reader.call
+    expect(visit_queries.map { |request| [Time.find_zone!('UTC').at(request[:params][:start_time]).to_date.iso8601, request[:params][:query_string][/"request_id":"\(([^)]*)\)/, 1]] })
+      .to eq([%w[2026-09-23 guided-1], %w[2026-09-24 guided-1], %w[2026-09-24 guided-2], %w[2026-09-25 guided-2]])
+  end
+
+  it 'keeps full visit queries within the CloudWatch length limit' do
+    traces = Array.new(described_class::VISIT_BATCH_SIZE + 1) { trace.merge(request_id: SecureRandom.uuid) }
+    client.stub_responses(:get_query_results, [response(*traces), response])
+    reader.call
+    expect(visit_queries.size).to eq(4)
+    expect(visit_queries.map { |request| request[:params][:query_string].length }).to all(be <= 10_000)
+  end
+
+  it 'fails before reading visits when the projected scan exceeds 500 GiB' do
+    client.stub_responses(:get_query_results, [
+      response(trace).merge(statistics: { records_matched: 1.0, bytes_scanned: 200.gigabytes.to_f }),
+      response.merge(statistics: { records_matched: 0.0, bytes_scanned: 100.gigabytes.to_f }),
+    ])
+    expect { reader.call }.to raise_error(described_class::Error, /would exceed 500 GiB/)
+    expect(visit_queries).to be_empty
+  end
+
+  it 'fails when a visit query does not complete' do
+    client.stub_responses(:get_query_results, [response(trace), response, { status: 'Failed' }])
+    expect { reader.call }.to raise_error(described_class::Error, /could not complete/)
   end
 
   it 'uses the latest terminal trace for each journey and excludes out-of-range terminals' do
@@ -55,13 +136,13 @@ RSpec.describe SearchExport::CloudwatchReader do
     stub_const('SearchExport::CloudwatchReader::LIMIT', 2)
     client.stub_responses(:get_query_results, [response(trace, trace), response(trace), response, response])
     expect(reader.call.journeys.size).to eq(1)
-    expect(client.api_requests.count { |request| request[:operation_name] == :start_query }).to eq(4)
+    expect(journey_queries.size).to eq(4)
   end
 
   it 'splits when CloudWatch reports more matches than returned rows' do
     client.stub_responses(:get_query_results, [response(trace).merge(statistics: { records_matched: 3.0 }), response(trace), response, response])
     expect(reader.call.journeys.size).to eq(1)
-    expect(client.api_requests.count { |request| request[:operation_name] == :start_query }).to eq(4)
+    expect(journey_queries.size).to eq(4)
   end
 
   it 'fails instead of silently dropping saturation within a single second' do
@@ -127,10 +208,11 @@ RSpec.describe SearchExport::CloudwatchReader do
 
   it 'counts cumulative query statistics once across repeated polls' do
     client.stub_responses(:get_query_results, [
-      { status: 'Running', statistics: { bytes_scanned: 300.gigabytes.to_f } },
-      { status: 'Running', statistics: { bytes_scanned: 300.gigabytes.to_f } },
-      response(trace).merge(statistics: { records_matched: 1.0, bytes_scanned: 400.gigabytes.to_f }),
-      response.merge(statistics: { records_matched: 0.0, bytes_scanned: 100.gigabytes.to_f }),
+      { status: 'Running', statistics: { bytes_scanned: 150.gigabytes.to_f } },
+      { status: 'Running', statistics: { bytes_scanned: 150.gigabytes.to_f } },
+      response(trace).merge(statistics: { records_matched: 1.0, bytes_scanned: 200.gigabytes.to_f }),
+      response.merge(statistics: { records_matched: 0.0, bytes_scanned: 50.gigabytes.to_f }),
+      response,
     ])
     allow(reader).to receive(:sleep)
     expect(reader.call.journeys.size).to eq(1)
@@ -159,10 +241,10 @@ RSpec.describe SearchExport::CloudwatchReader do
     expect(client.api_requests.map { |request| request[:operation_name] }).to include(:stop_query)
   end
 
-  it 'interprets CloudWatch timestamps as UTC' do
-    event = { event: 'result_selected', request_id: 'guided-1', goods_nomenclature_item_id: '0207141000' }
-    client.stub_responses(:get_query_results, response(trace).merge(results: [row(trace), row(event, at: '2026-09-23 12:00:00.000')]))
-    expect(reader.call.clicks['guided-1'].first.clicked_at).to eq(Time.utc(2026, 9, 23, 12))
+  it 'interprets frontend CloudWatch timestamps as UTC' do
+    visit = response.merge(results: [row(frontend_page, at: '2026-09-23 12:00:00.000')])
+    client.stub_responses(:get_query_results, [response(trace), response, visit, response])
+    expect(reader.call.opened_pages['guided-1'].map(&:opened_at)).to eq([Time.utc(2026, 9, 23, 12)])
   end
 
   it 'submits more than 512 queries when the date range needs them' do
@@ -172,11 +254,11 @@ RSpec.describe SearchExport::CloudwatchReader do
     expect(client.api_requests.count { |request| request[:operation_name] == :start_query }).to eq(514)
   end
 
-  it 'bounds late-click retrieval to the day after the requested range' do
+  it 'bounds journey and visit retrieval to the day after the range' do
     reader = described_class.new(from:, to: from, generated_at: generated_at + 30.days, client:)
-    client.stub_responses(:get_query_results, response)
+    client.stub_responses(:get_query_results, response(trace))
     reader.call
-    queries = client.api_requests.select { |request| request[:operation_name] == :start_query }
-    expect(queries.last[:params][:end_time]).to eq(Time.utc(2026, 9, 25).to_i)
+    end_times = [journey_queries, visit_queries].map { |queries| JSON.parse(queries.last[:context].http_request.body_contents)['endTime'] }
+    expect(end_times).to eq([Time.utc(2026, 9, 25).to_i] * 2)
   end
 end
