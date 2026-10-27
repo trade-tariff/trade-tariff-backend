@@ -20,7 +20,7 @@ class InteractiveSearchService
     IMPORTANT: You have asked the maximum number of questions allowed. Based on the search input, OpenSearch results, and the answers provided so far, you MUST now provide your best answer. Do not ask any more questions. Rank the opensearch results by confidence using the information you have.
   INSTRUCTION
 
-  def initialize(query:, expanded_query:, opensearch_results:, answers: [], request_id: nil, max_rounds: nil, question_model: nil, search_compressed_notes_enabled: nil, search_general_rules_enabled: nil, search_type: 'interactive')
+  def initialize(query:, expanded_query:, opensearch_results:, answers: [], request_id: nil, max_rounds: nil, question_model: nil, reasoning_effort: nil, search_compressed_notes_enabled: nil, search_general_rules_enabled: nil, search_type: 'interactive')
     @query = query
     @expanded_query = expanded_query
     @opensearch_results = opensearch_results
@@ -29,6 +29,7 @@ class InteractiveSearchService
     @attempt = @answers.size + 1
     @max_rounds = max_rounds
     @question_model = question_model
+    @reasoning_effort = reasoning_effort
     @search_compressed_notes_enabled = search_compressed_notes_enabled
     @search_general_rules_enabled = search_general_rules_enabled
     @search_type = search_type
@@ -85,6 +86,7 @@ private
   end
 
   def configured_reasoning_effort
+    return @reasoning_effort if @reasoning_effort.present?
     return model_config[:sub_values]['reasoning_effort'] if @question_model.blank?
 
     reasoning_effort_for_question_model
@@ -95,17 +97,15 @@ private
   # question_model overrides before InteractiveSearchService is ever called. If that
   # validation is ever removed, MODEL_CONFIGS.dig below would silently treat an unknown
   # model as non-reasoning (returning nil) rather than raising.
+  # This fall-back only applies to the inherited, globally configured effort. A reasoning_effort
+  # override never reaches it: the evaluation launch validates that override against the run's
+  # question_model first (AllowlistValidator), so a run that sets one is never silently changed.
   def reasoning_effort_for_question_model
-    reasoning_levels = OpenaiClient::MODEL_CONFIGS.dig(@question_model, :reasoning_levels) || []
-    return nil if reasoning_levels.empty?
-
-    configured_effort = model_config[:sub_values]['reasoning_effort']
-    return configured_effort if reasoning_levels.include?(configured_effort)
-
-    # The globally configured reasoning_effort isn't valid for this overridden model
+    # The globally configured reasoning_effort may not be valid for this overridden model
     # (e.g. configured model uses 'xhigh' but the override only supports up to 'high').
-    # Fall back to the first/most conservative level rather than sending an invalid value.
-    reasoning_levels.first
+    # It falls back to the first/most conservative level rather than sending an invalid value,
+    # and a model that does not reason gets none.
+    EvaluationConfiguration::ReasoningEffort.resolve(model: @question_model, configured: model_config[:sub_values]['reasoning_effort'])
   end
 
   def configured_context

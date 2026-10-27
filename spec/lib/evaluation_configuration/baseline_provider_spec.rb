@@ -54,16 +54,27 @@ RSpec.describe EvaluationConfiguration::BaselineProvider do
       expect(described_class.call['question_model']).to eq('gpt-5.4')
     end
 
+    it 'maps reasoning_effort from the selected search_model option\'s sub value' do
+      expect(described_class.call['reasoning_effort']).to eq('medium')
+    end
+
+    it 'records no reasoning_effort when the search_model has none configured' do
+      allow(AdminConfiguration).to receive(:nested_options_value).with('search_model')
+        .and_return(selected: 'gpt-4o-mini', sub_values: {})
+
+      expect(described_class.call).to include('reasoning_effort' => nil)
+    end
+
     it 'omits simulator_model entirely, since it has no real backend source' do
       result = described_class.call
       expect(result).not_to have_key('simulator_model')
     end
 
-    it 'returns exactly the 9 keys with a real backend source' do
+    it 'returns exactly the 10 keys with a real backend source' do
       expect(described_class.call.keys).to contain_exactly(
         'rrf_k', 'vector_score_threshold', 'vector_ef_search', 'search_non_declarables',
         'search_compressed_notes_enabled', 'search_general_rules_enabled',
-        'candidate_limit', 'max_rounds', 'question_model'
+        'candidate_limit', 'max_rounds', 'question_model', 'reasoning_effort'
       )
     end
   end
