@@ -503,11 +503,9 @@ RSpec.describe 'admin_configurations:seed' do
     )
     config.update(value: Sequel.pg_jsonb_wrap(legacy_value))
 
-    versions = Version.where(item_type: 'AdminConfiguration', item_id: config.id.to_s)
-
     Rake::Task['admin_configurations:seed'].reenable
     expect { suppress_output { Rake::Task['admin_configurations:seed'].invoke } }
-      .not_to(change { [AdminConfiguration.count, versions.count] })
+      .not_to(change { [AdminConfiguration.count, config.versions.count] })
 
     refreshed_value = config.refresh.value.to_hash
     expect(refreshed_value).to include(

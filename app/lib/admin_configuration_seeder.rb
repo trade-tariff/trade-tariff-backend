@@ -65,7 +65,7 @@ module_function
   # writes through the dataset and does not add a Version row. The operator's
   # selection is kept, so version history shows only operator changes.
   def write_option_catalogue(config, value)
-    AdminConfiguration.where(id: config.id).update(value:, updated_at: Time.zone.now)
+    config.this.update(value:, updated_at: Time.zone.now)
   end
 
   def refresh_options(current_value, seeded_value)
