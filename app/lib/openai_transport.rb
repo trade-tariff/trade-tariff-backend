@@ -15,18 +15,21 @@ module_function
   # Yields a RubyLLM context for one request and returns the response.
   def request(timeout: TradeTariffBackend.openai_api_timeout, open_timeout: TradeTariffBackend.openai_api_open_timeout)
     capture = ResponseCapture.new(RubyLLM.config.instrumenter)
-    with_timeouts(timeout:, open_timeout:) { yield context(instrumenter: capture) }
-    capture.response
-  rescue RubyLLM::Error => e
-    raise unless e.response
 
-    provider_response(e.response)
-  rescue StandardError
-    # RubyLLM could not read a response that the provider sent. The caller
-    # applies its own rules to it.
-    raise unless capture&.response
+    begin
+      with_timeouts(timeout:, open_timeout:) { yield context(instrumenter: capture) }
+      capture.response
+    rescue RubyLLM::Error => e
+      raise unless e.response
 
-    capture.response
+      provider_response(e.response)
+    rescue StandardError
+      # RubyLLM could not read a response that the provider sent. The caller
+      # applies its own rules to it.
+      raise unless capture.response
+
+      capture.response
+    end
   end
 
   def context(instrumenter:)
