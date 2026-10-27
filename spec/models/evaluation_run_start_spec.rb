@@ -136,6 +136,55 @@ RSpec.describe EvaluationRun do
         }.not_to change(described_class, :count)
       end
 
+      # The eval app sends a run's recorded effective_configuration back as the overrides for every
+      # search it makes, so that recorded configuration has to pass the same validation again.
+      context 'when the run only changes the question model' do
+        before do
+          allow(AdminConfiguration).to receive(:nested_options_value).and_call_original
+          allow(AdminConfiguration).to receive(:nested_options_value).with('search_model')
+            .and_return(selected: 'gpt-5.4', sub_values: { 'reasoning_effort' => 'xhigh' })
+        end
+
+        it 'keeps the live effort when the new model supports it' do
+          expect(start('question_model' => 'gpt-5.5').effective_configuration['reasoning_effort']).to eq('xhigh')
+        end
+
+        it 'records the effort the search will really use when the live effort does not suit the new model' do
+          expect(start('question_model' => 'gpt-5.2').effective_configuration['reasoning_effort']).to eq('none')
+        end
+
+        it 'records no effort for a model that does not reason' do
+          expect(start('question_model' => 'gpt-4o-mini').effective_configuration).not_to have_key('reasoning_effort')
+        end
+
+        %w[gpt-5.5 gpt-5.2 gpt-4o-mini].each do |model|
+          it "records a configuration the search endpoint accepts back as overrides, for #{model}" do
+            run = start('question_model' => model)
+
+            expect(EvaluationConfiguration::AllowlistValidator.call(run.effective_configuration)).to be true
+          end
+        end
+      end
+
+      context 'when the live question model does not reason' do
+        before do
+          allow(AdminConfiguration).to receive(:nested_options_value).and_call_original
+          allow(AdminConfiguration).to receive(:nested_options_value).with('search_model')
+            .and_return(selected: 'gpt-4o-mini', sub_values: {})
+        end
+
+        it 'records no effort, and a configuration the search endpoint accepts back as overrides' do
+          run = start
+
+          expect(run.effective_configuration).not_to have_key('reasoning_effort')
+          expect(EvaluationConfiguration::AllowlistValidator.call(run.effective_configuration)).to be true
+        end
+      end
+
+      it 'records a configuration the search endpoint accepts back as overrides, with no overrides at all' do
+        expect(EvaluationConfiguration::AllowlistValidator.call(start.effective_configuration)).to be true
+      end
+
       it 'checks a reasoning_effort override against the baseline question_model when the run does not override it' do
         allow(EvaluationConfiguration::BaselineProvider).to receive(:call).and_wrap_original do |original|
           original.call.merge('question_model' => 'gpt-5.2')

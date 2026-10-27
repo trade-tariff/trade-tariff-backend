@@ -87,7 +87,7 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
     baseline = EvaluationConfiguration::BaselineProvider.call
     EvaluationConfiguration::AllowlistValidator.call(overrides, baseline:)
 
-    effective_configuration = EvaluationConfiguration::Merger.call(baseline, overrides)
+    effective_configuration = EvaluationConfiguration::ReasoningEffort.apply(EvaluationConfiguration::Merger.call(baseline, overrides))
     digest = EvaluationConfiguration::DigestCalculator.call(effective_configuration)
 
     run = create(

@@ -101,16 +101,11 @@ private
   # override never reaches it: the evaluation launch validates that override against the run's
   # question_model first (AllowlistValidator), so a run that sets one is never silently changed.
   def reasoning_effort_for_question_model
-    reasoning_levels = OpenaiClient::MODEL_CONFIGS.dig(@question_model, :reasoning_levels) || []
-    return nil if reasoning_levels.empty?
-
-    configured_effort = model_config[:sub_values]['reasoning_effort']
-    return configured_effort if reasoning_levels.include?(configured_effort)
-
-    # The globally configured reasoning_effort isn't valid for this overridden model
+    # The globally configured reasoning_effort may not be valid for this overridden model
     # (e.g. configured model uses 'xhigh' but the override only supports up to 'high').
-    # Fall back to the first/most conservative level rather than sending an invalid value.
-    reasoning_levels.first
+    # It falls back to the first/most conservative level rather than sending an invalid value,
+    # and a model that does not reason gets none.
+    EvaluationConfiguration::ReasoningEffort.resolve(model: @question_model, configured: model_config[:sub_values]['reasoning_effort'])
   end
 
   def configured_context
