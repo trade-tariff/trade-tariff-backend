@@ -122,7 +122,9 @@ private
   end
 
   def call_embeddings_api(batch, event_kind:)
-    resp = client.post('embeddings', { model: MODEL, input: batch }.to_json)
+    resp = OpenaiTransport.request do |llm|
+      llm.embed(batch, model: MODEL, provider: :openai, assume_model_exists: true, metadata: { event_kind: })
+    end
 
     if RETRYABLE_HTTP_STATUSES.include?(resp.status)
       raise ServerError.new(
@@ -151,29 +153,6 @@ private
         http_status: response.status,
         ai_usage: usage_metadata(response, event_kind:),
       )
-    end
-  end
-
-  def client
-    self.class.client
-  end
-
-  class << self
-    def client
-      @client ||= Faraday.new(url: TradeTariffBackend.openai_api_base_url) do |faraday|
-        faraday.adapter Faraday.default_adapter
-        faraday.headers['Accept'] = 'application/json'
-        faraday.headers['Content-Type'] = 'application/json'
-        faraday.headers['Authorization'] = "Bearer #{TradeTariffBackend.openai_api_key}"
-        faraday.headers['User-Agent'] = TradeTariffBackend.user_agent
-        faraday.response :json, content_type: /\bjson$/
-        faraday.options.timeout = TradeTariffBackend.openai_api_timeout
-        faraday.options.open_timeout = TradeTariffBackend.openai_api_open_timeout
-      end
-    end
-
-    def reset_client!
-      @client = nil
     end
   end
 end

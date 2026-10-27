@@ -58,6 +58,9 @@ gem 'jsonapi-serializer'
 gem 'jwt'
 gem 'responders'
 
+# AI providers
+gem 'ruby_llm', '~> 2.1'
+
 group :development do
   gem 'foreman'
   gem 'letter_opener'
