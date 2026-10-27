@@ -62,7 +62,7 @@ module Api
           def serializer_class = Api::Admin::Search::Evaluation::ExperimentSerializer
 
           def experiments
-            @experiments ||= EvaluationExperiment.order(:name).paginate(current_page, per_page)
+            @experiments ||= EvaluationExperiment.eager(:evaluation_gold_query_set, :evaluation_synthetic_input_set).order(:name).paginate(current_page, per_page)
           end
 
           def experiment
