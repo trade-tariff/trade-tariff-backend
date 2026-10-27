@@ -18,16 +18,12 @@ module Api
 
       def export
         send_data ::SearchReferences::CsvExport.call,
-                  filename: "search_references_#{service}_#{date}.csv",
+                  filename: "search_references_#{TradeTariffBackend.service}_#{date}.csv",
                   type: 'text/csv',
                   disposition: 'attachment'
       end
 
     private
-
-      def service
-        TradeTariffBackend.uk? ? 'uk' : 'xi'
-      end
 
       def date
         Time.zone.today.strftime('%Y_%m_%d')
