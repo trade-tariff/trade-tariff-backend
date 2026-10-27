@@ -281,4 +281,59 @@ RSpec.describe Api::Admin::Search::Evaluation::ExperimentsController, :admin do
       it { is_expected.to have_http_status :not_found }
     end
   end
+
+  describe 'the set an experiment is scored against' do
+    let(:gold_query_set) { create(:evaluation_gold_query_set, name: 'Baseline GQS') }
+    let(:synthetic_input_set) { create(:evaluation_synthetic_input_set, name: 'Baseline SIS') }
+
+    def attributes_of(name)
+      json_response['data'].find { |row| row['attributes']['name'] == name }['attributes']
+    end
+
+    describe 'GET #index' do
+      let(:make_request) { authenticated_get api_admin_search_evaluation_experiments_path(format: :json) }
+
+      before do
+        create(:evaluation_experiment, name: 'on-gold', gold_query_set_id: gold_query_set.id)
+        create(:evaluation_experiment, name: 'on-synthetic', synthetic_input_set_id: synthetic_input_set.id)
+        create(:evaluation_experiment, name: 'on-nothing')
+      end
+
+      it 'names the set of an experiment that uses a gold query set' do
+        expect(attributes_of('on-gold')).to include('source_type' => 'gold_query_set', 'source_name' => 'Baseline GQS')
+      end
+
+      it 'names the set of an experiment that uses a synthetic input set' do
+        expect(attributes_of('on-synthetic')).to include('source_type' => 'synthetic_input_set', 'source_name' => 'Baseline SIS')
+      end
+
+      it 'has no source for an experiment that has not chosen a set yet' do
+        expect(attributes_of('on-nothing')).to include('source_type' => nil, 'source_name' => nil)
+      end
+
+      it 'looks the sets up once for the whole page, not once per experiment' do
+        create_list(:evaluation_experiment, 4) { |experiment, index| experiment.update(gold_query_set_id: create(:evaluation_gold_query_set, name: "GQS #{index}").id) }
+        log = StringIO.new
+        EvaluationExperiment.db.loggers << Logger.new(log)
+
+        begin
+          api_response
+        ensure
+          EvaluationExperiment.db.loggers.pop
+        end
+
+        expect(log.string.scan(/FROM "uk"."evaluation_gold_query_sets"/).size).to eq(1)
+        expect(log.string.scan(/FROM "uk"."evaluation_synthetic_input_sets"/).size).to eq(1)
+      end
+    end
+
+    describe 'GET #show' do
+      let(:experiment) { create(:evaluation_experiment, gold_query_set_id: gold_query_set.id) }
+      let(:make_request) { authenticated_get api_admin_search_evaluation_experiment_path(experiment.id, format: :json) }
+
+      it 'names the set' do
+        expect(json_response['data']['attributes']).to include('source_type' => 'gold_query_set', 'source_name' => 'Baseline GQS')
+      end
+    end
+  end
 end
