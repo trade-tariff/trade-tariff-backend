@@ -21,6 +21,45 @@ SERVICES_STOPPED=false
 RESTORE_PHASE=before_restore
 REPLICATION_LOCK_PID=
 
+# Operators run evaluation experiments in staging and development, so replication must not replace
+# these tables. They are moved aside before the production dump is restored and moved back after it.
+# Keep this list to tables that only reference each other: the dump drops the whole schema, which
+# would reach anything else that depends on them. (A spec checks it against db/structure.sql.)
+REPLICATION_EXCLUDED_TABLES=(
+    uk.evaluation_experiments
+    uk.evaluation_gold_queries
+    uk.evaluation_gold_query_sets
+    uk.evaluation_results
+    uk.evaluation_runs
+    uk.evaluation_synthetic_input_set_items
+    uk.evaluation_synthetic_input_sets
+    uk.tariff_knowledge_synthetic_atars
+)
+
+# Migrations that only create or change the tables above. Restoring replaces uk.schema_migrations
+# with production's, which would record these as applied or unapplied according to production, not
+# according to the tables kept here. Their local applied state is saved before the restore and put
+# back after it. A migration for one of the tables above must be added here (a spec checks this).
+REPLICATION_EXCLUDED_MIGRATIONS=(
+    20260803000001_create_evaluation_experiments.rb
+    20260803000002_create_evaluation_runs.rb
+    20260803000003_create_evaluation_results.rb
+    20260812000001_create_evaluation_gold_queries.rb
+    20260817163645_add_idempotency_key_to_evaluation_runs.rb
+    20260818120000_add_run_time_overrides_to_evaluation_runs.rb
+    20260824120000_add_provider_calls_to_evaluation_results.rb
+    20260925100000_create_tariff_knowledge_synthetic_atars.rb
+    20260925110000_create_evaluation_gold_query_sets.rb
+    20261007120000_add_summary_aggregates_to_evaluation_runs.rb
+    20261007140000_add_pricing_known_to_evaluation_results.rb
+    20261008100000_add_persona_breakdown_to_evaluation_runs.rb
+    20261013090000_add_intended_result_count_to_evaluation_runs.rb
+    20261014090000_add_label_to_evaluation_runs.rb
+    20261015120000_create_evaluation_synthetic_input_sets.rb
+    20261019120000_default_evaluation_gold_query_sets_atar_percentage.rb
+    20261019130000_add_source_workbook_and_row_to_synthetic_atars.rb
+)
+
 require_env() {
     local missing=false
 
@@ -278,11 +317,92 @@ stream_core_database_dump() {
     '
 }
 
+sql_text_array() {
+  local separator=""
+  local value
+
+  printf 'ARRAY['
+  for value in "$@"; do
+    printf "%s'%s'" "$separator" "$value"
+    separator=","
+  done
+  printf ']::text[]'
+}
+
+# SQL that runs before the dump. It only does anything when every excluded table exists here. In an
+# environment that does not have them yet there is nothing local to keep, so production's tables and
+# migration history are restored as they are.
+sql_to_set_excluded_tables_aside() {
+  local tables=$1
+  local migrations=$2
+
+  printf 'CREATE TEMP TABLE replication_preservation ON COMMIT DROP AS\n'
+  printf '  SELECT count(*) = cardinality(%s) AS preserve\n' "$tables"
+  printf '  FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace\n'
+  printf "  WHERE c.relkind = 'r' AND n.nspname || '.' || c.relname = ANY (%s);\n" "$tables"
+  printf 'CREATE TEMP TABLE replication_preserved_migrations(filename text) ON COMMIT DROP;\n'
+  printf '%s\n' 'DO $$'
+  printf 'DECLARE excluded_table text;\n'
+  printf 'BEGIN\n'
+  printf '  IF (SELECT preserve FROM pg_temp.replication_preservation) THEN\n'
+  printf '    INSERT INTO pg_temp.replication_preserved_migrations\n'
+  printf '      SELECT filename FROM uk.schema_migrations WHERE filename = ANY (%s);\n' "$migrations"
+  printf '    CREATE SCHEMA replication_holding;\n'
+  printf '    FOREACH excluded_table IN ARRAY %s LOOP\n' "$tables"
+  printf "      EXECUTE format('ALTER TABLE %%s SET SCHEMA replication_holding', excluded_table);\n"
+  printf '    END LOOP;\n'
+  printf '  END IF;\n'
+  printf 'END\n'
+  printf '%s\n' '$$;'
+}
+
+# SQL that runs after the dump, which has created production's own copies of the excluded tables.
+# They are dropped and the local ones put back, then the migration history is corrected. The dump has
+# set search_path to empty by now, so every name here is schema-qualified.
+sql_to_put_excluded_tables_back() {
+  local tables=$1
+  local migrations=$2
+
+  printf '%s\n' 'DO $$'
+  printf 'DECLARE excluded_table text;\n'
+  printf 'BEGIN\n'
+  printf '  IF (SELECT preserve FROM pg_temp.replication_preservation) THEN\n'
+  printf "    EXECUTE 'DROP TABLE IF EXISTS ' || array_to_string(%s, ', ');\n" "$tables"
+  printf '    FOREACH excluded_table IN ARRAY %s LOOP\n' "$tables"
+  printf "      EXECUTE format('ALTER TABLE replication_holding.%%s SET SCHEMA %%s', split_part(excluded_table, '.', 2), split_part(excluded_table, '.', 1));\n"
+  printf '    END LOOP;\n'
+  printf '    DROP SCHEMA replication_holding;\n'
+  printf '    DELETE FROM uk.schema_migrations WHERE filename = ANY (%s);\n' "$migrations"
+  printf '    INSERT INTO uk.schema_migrations (filename)\n'
+  printf '      SELECT filename FROM pg_temp.replication_preserved_migrations;\n'
+  printf '  END IF;\n'
+  printf 'END\n'
+  printf '%s\n' '$$;'
+}
+
+# Restores in one explicit transaction. COMMIT is only written when the whole dump was read, so if
+# reading it fails part-way, psql reaches the end of its input with the transaction still open and
+# the database rolls it back. (psql --single-transaction would commit whatever it had been sent.)
 restore_core_database_dump() {
   local dump_file=$1
+  local tables
+  local migrations
 
-  stream_core_database_dump "$dump_file" |
-    psql --single-transaction -v ON_ERROR_STOP=1 "$DATABASE_URL"
+  tables=$(sql_text_array "${REPLICATION_EXCLUDED_TABLES[@]}")
+  migrations=$(sql_text_array "${REPLICATION_EXCLUDED_MIGRATIONS[@]}")
+
+  {
+    printf 'BEGIN;\n'
+    sql_to_set_excluded_tables_aside "$tables" "$migrations"
+
+    if ! stream_core_database_dump "$dump_file"; then
+      echo "Reading the database dump failed, so the restore is abandoned and nothing is committed." >&2
+      exit 1
+    fi
+
+    sql_to_put_excluded_tables_back "$tables" "$migrations"
+    printf 'COMMIT;\n'
+  } | psql -X -v ON_ERROR_STOP=1 "$DATABASE_URL"
 }
 
 run_post_restore_maintenance() {
