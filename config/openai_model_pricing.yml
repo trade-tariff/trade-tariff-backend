@@ -13,6 +13,30 @@ development: &pricing
     long_context_input_token_threshold: 272000
     long_context_input_multiplier: 2.0
     long_context_output_multiplier: 1.5
+  gpt-6.1-sol:
+    input_per_million_tokens: 2.0
+    cached_input_per_million_tokens: 0.1
+    output_per_million_tokens: 10.0
+    cache_write_input_multiplier: 1.25
+    long_context_input_token_threshold: 272000
+    long_context_input_multiplier: 2.0
+    long_context_output_multiplier: 1.5
+  gpt-6.1-terra:
+    input_per_million_tokens: 1.0
+    cached_input_per_million_tokens: 0.05
+    output_per_million_tokens: 5.0
+    cache_write_input_multiplier: 1.25
+    long_context_input_token_threshold: 272000
+    long_context_input_multiplier: 2.0
+    long_context_output_multiplier: 1.5
+  gpt-6-luna:
+    input_per_million_tokens: 0.1
+    cached_input_per_million_tokens: 0.01
+    output_per_million_tokens: 0.5
+    cache_write_input_multiplier: 1.25
+    long_context_input_token_threshold: 272000
+    long_context_input_multiplier: 2.0
+    long_context_output_multiplier: 1.5
   gpt-5.6: &gpt_5_6_sol
     input_per_million_tokens: 4.0
     cached_input_per_million_tokens: 0.4

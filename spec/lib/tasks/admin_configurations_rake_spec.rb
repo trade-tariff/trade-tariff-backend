@@ -118,6 +118,21 @@ RSpec.describe 'admin_configurations:seed' do
         'sub_options' => { 'reasoning_effort' => %w[low medium high xhigh max] },
       },
       {
+        'key' => 'gpt-6.1-sol',
+        'label' => 'GPT-6.1 Sol',
+        'sub_options' => { 'reasoning_effort' => %w[low medium high xhigh max] },
+      },
+      {
+        'key' => 'gpt-6.1-terra',
+        'label' => 'GPT-6.1 Terra (balanced)',
+        'sub_options' => { 'reasoning_effort' => %w[none low medium high xhigh max] },
+      },
+      {
+        'key' => 'gpt-6-luna',
+        'label' => 'GPT-6 Luna (cost-efficient)',
+        'sub_options' => { 'reasoning_effort' => %w[none low medium high xhigh max] },
+      },
+      {
         'key' => 'gpt-5.6',
         'label' => 'GPT-5.6 Sol',
         'sub_options' => { 'reasoning_effort' => %w[none low medium high xhigh max] },
@@ -167,6 +182,7 @@ RSpec.describe 'admin_configurations:seed' do
       OpenaiClient::MODEL_CONFIGS.each_key do |model_key|
         expect(option_keys).to include(model_key)
       end
+      expect(option_keys).not_to include('o4-mini-2025-04-16', 'gpt-4.1-nano-2025-04-14')
     end
   end
 
@@ -483,12 +499,15 @@ RSpec.describe 'admin_configurations:seed' do
     legacy_value = config.value.to_hash.merge(
       'selected' => 'gpt-5.4',
       'sub_values' => { 'reasoning_effort' => 'high' },
-      'options' => config.value['options'].reject { |option| option['key'].start_with?('gpt-5.6') },
+      'options' => config.value['options'].reject { |option| option['key'].start_with?('gpt-5.6', 'gpt-6') },
     )
     config.update(value: Sequel.pg_jsonb_wrap(legacy_value))
 
+    versions = Version.where(item_type: 'AdminConfiguration', item_id: config.id.to_s)
+
     Rake::Task['admin_configurations:seed'].reenable
-    expect { suppress_output { Rake::Task['admin_configurations:seed'].invoke } }.not_to change(AdminConfiguration, :count)
+    expect { suppress_output { Rake::Task['admin_configurations:seed'].invoke } }
+      .not_to(change { [AdminConfiguration.count, versions.count] })
 
     refreshed_value = config.refresh.value.to_hash
     expect(refreshed_value).to include(
@@ -497,6 +516,9 @@ RSpec.describe 'admin_configurations:seed' do
     )
     expect(refreshed_value['options']).to include(
       hash_including('key' => 'gpt-6-astra', 'label' => 'GPT-6 Astra (latest flagship)'),
+      hash_including('key' => 'gpt-6.1-sol', 'label' => 'GPT-6.1 Sol'),
+      hash_including('key' => 'gpt-6.1-terra', 'label' => 'GPT-6.1 Terra (balanced)'),
+      hash_including('key' => 'gpt-6-luna', 'label' => 'GPT-6 Luna (cost-efficient)'),
       hash_including('key' => 'gpt-5.6', 'label' => 'GPT-5.6 Sol'),
       hash_including('key' => 'gpt-5.6-terra', 'label' => 'GPT-5.6 Terra (balanced)'),
       hash_including('key' => 'gpt-5.6-luna', 'label' => 'GPT-5.6 Luna (cost-efficient)'),

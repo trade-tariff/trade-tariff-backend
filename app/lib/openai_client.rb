@@ -303,8 +303,11 @@ private
   end
 
   MODEL_CONFIGS = {
-    # GPT-6 (1M context)
+    # GPT-6 family (1M context)
     'gpt-6-astra' => { reasoning_levels: %w[low medium high xhigh max] },
+    'gpt-6.1-sol' => { reasoning_levels: %w[low medium high xhigh max] },
+    'gpt-6.1-terra' => { reasoning_levels: %w[none low medium high xhigh max] },
+    'gpt-6-luna' => { reasoning_levels: %w[none low medium high xhigh max] },
 
     # GPT-5.6 family (1M context)
     'gpt-5.6' => { reasoning_levels: %w[none low medium high xhigh max] },
@@ -327,14 +330,12 @@ private
     'gpt-5-nano-2025-08-07' => { reasoning_levels: %w[minimal low medium high] },
 
     # o-Series (reasoning models)
-    'o4-mini-2025-04-16' => { reasoning_levels: %w[low medium high] },
     'o3-2025-04-16' => { reasoning_levels: %w[low medium high] },
     'o3-pro' => { reasoning_levels: %w[low medium high] },
 
     # GPT-4.1 Series (1M token context)
     'gpt-4.1-2025-04-14' => { reasoning_levels: [] },
     'gpt-4.1-mini-2025-04-14' => { reasoning_levels: [] },
-    'gpt-4.1-nano-2025-04-14' => { reasoning_levels: [] },
 
     # GPT-4 Series (legacy)
     'gpt-4o' => { reasoning_levels: [] },
