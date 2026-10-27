@@ -17,7 +17,7 @@ module Api
       end
 
       def export
-        send_data ::SearchReferences::CsvExport.call,
+        send_data Api::Admin::Csv::SearchReferenceSerializer.new(SearchReference.admin_export).serialized_csv,
                   filename: "search_references_#{TradeTariffBackend.service}_#{date}.csv",
                   type: 'text/csv',
                   disposition: 'attachment'
