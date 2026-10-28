@@ -16,7 +16,7 @@ RSpec.describe SearchExport::CloudwatchReader do
   before { client.stub_responses(:start_query, query_id: 'query-1') }
 
   def row(event, at: '2026-09-23T10:00:00Z')
-    message = event.key?(:controller) ? "I, [#{at} #1]  INFO -- : [http-id] [request_country=GB] #{event.to_json}" : event.to_json
+    message = event.key?(:controller) && !event[:controller].start_with?('Api::') ? "I, [#{at} #1]  INFO -- : [http-id] [request_country=GB] #{event.to_json}" : event.to_json
     [{ field: '@timestamp', value: at }, { field: '@message', value: message }]
   end
 
@@ -55,7 +55,7 @@ RSpec.describe SearchExport::CloudwatchReader do
     expect(result.journeys.map(&:request_id)).to eq(%w[guided-1])
     expect(result.journeys.first.answers).to be_empty
     expect(visit_queries.map { |query| query[:params][:query_string] }).not_to include(a_string_including('classic-'))
-    expect(journey_queries.first[:params][:query_string]).to include('interactive_configuration_used', 'entry.skip_question = true')
+    expect(journey_queries.first[:params][:query_string]).to include('interactive_configuration_used', 'entry.skip_question = 1')
   end
 
   it 'excludes skip markers before traces' do
@@ -64,6 +64,20 @@ RSpec.describe SearchExport::CloudwatchReader do
 
     expect(reader.call.journeys).to be_empty
     expect(visit_queries).to be_empty
+  end
+
+  it 'excludes blocked hybrid request logs' do
+    requests = [true, 'true'].map.with_index do |skip_question, index|
+      { controller: 'Api::Internal::SearchController', request_id: "http-#{index}", params: { request_id: "blocked-#{index}", skip_question: } }
+    end
+    blocked = requests.map do |request|
+      trace.merge(request_id: request.dig(:params, :request_id), end_page_type: 'Intercept', details: trace[:details].merge(results: []))
+    end
+    guided = requests.first.merge(params: { request_id: 'guided-1', skip_question: false })
+    client.stub_responses(:get_query_results, [response(*blocked, trace), response(*requests, guided), response, response])
+
+    expect(reader.call.journeys.map(&:request_id)).to eq(%w[guided-1])
+    expect(journey_queries.first[:params][:query_string]).to include('entry.controller = "Api::Internal::SearchController"', 'entry.params.skip_question = 1', 'entry.params.skip_question = "true"')
   end
 
   it 'ignores unsuccessful and unrelated page requests' do
