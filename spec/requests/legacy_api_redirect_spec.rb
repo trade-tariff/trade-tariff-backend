@@ -55,6 +55,17 @@ RSpec.describe 'Legacy API path redirects', type: :request do
     end
   end
 
+  describe 'requests that send a v1 Accept header to an unprefixed v2 path' do
+    let(:v1_accept) { { 'Accept' => 'application/vnd.hmrc.1.0+json' } }
+
+    it 'is still served by the forwarder and does not redirect' do
+      get '/api/v2/sections', headers: v1_accept, env: { 'REQUEST_PATH' => '/api/v2/sections' }
+
+      expect(response).not_to have_http_status(:permanent_redirect)
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   describe 'paths that must not redirect' do
     it 'keeps returning 404 for the disabled v1 API' do
       get '/api/v1/sections'
