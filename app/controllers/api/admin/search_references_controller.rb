@@ -19,7 +19,7 @@ module Api
       def export
         csv = Api::Admin::Csv::SearchReferenceSerializer.new(
           SearchReference.admin_export,
-          include_ai_labels: include_ai_labels,
+          { include_ai_labels: include_ai_labels },
         ).serialized_csv
 
         send_data csv,

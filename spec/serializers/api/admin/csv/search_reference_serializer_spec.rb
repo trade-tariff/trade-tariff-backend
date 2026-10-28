@@ -1,6 +1,6 @@
 RSpec.describe Api::Admin::Csv::SearchReferenceSerializer do
   subject(:csv) do
-    CSV.parse(described_class.new(SearchReference.admin_export, include_ai_labels: true).serialized_csv, headers: true)
+    CSV.parse(described_class.new(SearchReference.admin_export, { include_ai_labels: true }).serialized_csv, headers: true)
   end
 
   let(:commodity) { create(:commodity, goods_nomenclature_item_id: '0101291000') }
