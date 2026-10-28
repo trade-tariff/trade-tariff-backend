@@ -10,6 +10,7 @@ module SearchAnalytics
           AND event = 'result_offered' AND search_type = 'interactive'
           AND request_source = 'frontend'
           AND result_rank > 0
+          AND #{ClassicHybridFilter.call(source:, log_stream_filter:)}
         GROUP BY result_rank, confidence
         LIMIT 10000
       SQL

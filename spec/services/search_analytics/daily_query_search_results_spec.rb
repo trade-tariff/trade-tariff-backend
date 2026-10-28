@@ -12,6 +12,7 @@ RSpec.describe SearchAnalytics::DailyQuery do
       final_result_type: 'text',
       results_type: 'text',
       search_degraded: 'boolean',
+      skip_question: 'boolean',
       '@logStream': 'text' }
   end
 
@@ -28,6 +29,7 @@ RSpec.describe SearchAnalytics::DailyQuery do
       final_result_type: nil,
       results_type: 'fuzzy_search',
       search_degraded: false,
+      skip_question: nil,
       '@logStream': 'ecs/backend-uk/test' }.merge(attributes)
   end
 
@@ -60,6 +62,8 @@ RSpec.describe SearchAnalytics::DailyQuery do
       event('legacy-empty', search_type: 'internal', results_type: 'opensearch', result_count: 0),
       event('legacy-vector', search_type: 'internal', results_type: 'vector', final_result_type: ''),
       event('unknown-terminal', search_type: 'internal', results_type: 'vector', final_result_type: 'unknown'),
+      event('classic-hybrid', search_type: 'interactive', results_type: 'hybrid'),
+      event('classic-hybrid', event: 'interactive_configuration_used', skip_question: true),
     )
     expect(rows).to contain_exactly(
       { search_type: 'interactive', request_source: 'frontend', searches: 1, zero_results: 0 },

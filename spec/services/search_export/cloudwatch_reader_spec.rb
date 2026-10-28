@@ -44,6 +44,28 @@ RSpec.describe SearchExport::CloudwatchReader do
     expect(start_queries.last[:params][:end_time]).to eq(generated_at.to_i)
   end
 
+  it 'excludes skipped journeys before visits' do
+    skipped = trace.merge(request_id: 'classic-hybrid')
+    configuration = { event: 'interactive_configuration_used', request_id: 'classic-hybrid', skip_question: true }
+    guided_configuration = configuration.merge(request_id: 'guided-1', skip_question: false)
+    client.stub_responses(:get_query_results, [response(skipped, guided_configuration, trace), response(configuration), response(frontend_page), response])
+
+    result = reader.call
+
+    expect(result.journeys.map(&:request_id)).to eq(%w[guided-1])
+    expect(result.journeys.first.answers).to be_empty
+    expect(visit_queries.map { |query| query[:params][:query_string] }).not_to include(a_string_including('classic-'))
+    expect(journey_queries.first[:params][:query_string]).to include('interactive_configuration_used', 'entry.skip_question = true')
+  end
+
+  it 'excludes skip markers before traces' do
+    configuration = { event: 'interactive_configuration_used', request_id: 'guided-1', skip_question: true }
+    client.stub_responses(:get_query_results, [response(configuration), response(trace)])
+
+    expect(reader.call.journeys).to be_empty
+    expect(visit_queries).to be_empty
+  end
+
   it 'ignores unsuccessful and unrelated page requests' do
     pages = [
       frontend_page(status: 302),
