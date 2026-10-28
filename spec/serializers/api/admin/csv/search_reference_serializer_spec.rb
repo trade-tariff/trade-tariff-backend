@@ -1,5 +1,7 @@
 RSpec.describe Api::Admin::Csv::SearchReferenceSerializer do
-  subject(:csv) { CSV.parse(described_class.new(SearchReference.admin_export).serialized_csv, headers: true) }
+  subject(:csv) do
+    CSV.parse(described_class.new(SearchReference.admin_export, include_ai_labels: true).serialized_csv, headers: true)
+  end
 
   let(:commodity) { create(:commodity, goods_nomenclature_item_id: '0101291000') }
 
@@ -56,6 +58,23 @@ RSpec.describe Api::Admin::Csv::SearchReferenceSerializer do
     create(:search_reference, title: 'gift', referenced: commodity)
 
     expect(csv.first.to_h).to include('Label description' => nil, 'Label stale' => nil)
+  end
+
+  it 'omits AI-generated label columns by default' do
+    create(:search_reference, title: 'gift', referenced: commodity)
+    csv_without_ai_labels = CSV.parse(described_class.new(SearchReference.admin_export).serialized_csv, headers: true)
+
+    expect(csv_without_ai_labels.headers).not_to include(
+      'Label description',
+      'Label synonyms',
+      'Label colloquial terms',
+      'Label known brands',
+      'Label stale',
+      'Label needs review',
+      'Label approved',
+      'Label manually edited',
+      'Label expired',
+    )
   end
 
   it 'includes references of every usage' do

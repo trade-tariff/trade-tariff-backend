@@ -4,6 +4,18 @@ module Api
       class SearchReferenceSerializer
         include Api::Shared::CsvSerializer
 
+        AI_GENERATED_LABEL_COLUMNS = %i[
+          label_description
+          label_synonyms
+          label_colloquial_terms
+          label_known_brands
+          label_stale
+          label_needs_review
+          label_approved
+          label_manually_edited
+          label_expired
+        ].freeze
+
         escape_formulas!
 
         column :id, column_name: 'Search reference ID'
@@ -40,6 +52,13 @@ module Api
         end
         column :label_expired, column_name: 'Label expired' do |ref|
           ref[:label_expired]
+        end
+
+        def column_options
+          columns = self.class.column_options
+          return columns if @options.fetch(:include_ai_labels, false)
+
+          columns.reject { |column_option| AI_GENERATED_LABEL_COLUMNS.include?(column_option[:column]) }
         end
       end
     end
