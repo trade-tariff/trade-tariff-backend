@@ -6,6 +6,7 @@ module SearchAnalytics
     ROW_LIMIT = 10_000
     MAX_PARTITIONS = 127
     PROCESSING_VERSION = 1
+    CLASSIC_HYBRID_PROCESSING_VERSION = 2
     # Recollect classic counts from the broken timestamp rewrite without
     # invalidating unrelated query groups that still contain valid history.
     QUERY_PROCESSING_VERSIONS = { 'classic_outcomes' => 2 }.freeze
@@ -36,6 +37,7 @@ module SearchAnalytics
     def fingerprints
       query_definitions.to_h do |name, sql|
         version = QUERY_PROCESSING_VERSIONS.fetch(name, PROCESSING_VERSION)
+        version = [version, CLASSIC_HYBRID_PROCESSING_VERSION].max if sql.include?(classic_hybrid_filter)
         [name, Digest::SHA256.hexdigest([version, @service, @region, sql].to_json)]
       end
     end
@@ -94,11 +96,17 @@ module SearchAnalytics
       # Keep failure cohorts scoped to the full day while partitioning metrics.
       metric_scope = true
       stream_filter = sql.include?(FrontendEventsQuery::STREAM_FILTER) ? FrontendEventsQuery::STREAM_FILTER : log_stream_filter
-      sql.gsub(stream_filter) do
-        bounds = metric_scope ? window_filter(start_at, end_at) : window_filter(now - 1.day, now)
-        metric_scope = false
-        "#{stream_filter} AND #{bounds}"
+      # A skipped request can start before midnight and complete the next day.
+      skipped_requests = classic_hybrid_filter
+      bounded_skipped_requests = skipped_requests.gsub(log_stream_filter, "#{log_stream_filter} AND #{window_filter(now - 2.days, now)}")
+      parts = sql.split(skipped_requests, -1).map do |part|
+        part.gsub(stream_filter) do
+          bounds = metric_scope ? window_filter(start_at, end_at) : window_filter(now - 1.day, now)
+          metric_scope = false
+          "#{stream_filter} AND #{bounds}"
+        end
       end
+      parts.join(bounded_skipped_requests)
     end
 
   private
@@ -210,7 +218,7 @@ module SearchAnalytics
     def execute_window(sql, start_at, end_at)
       query_id = response = nil
       bounded = bounded_query(sql, start_at:, end_at:)
-      scan_start, scan_end = sql.include?(classic_hybrid_filter) ? [now - 1.day, now] : [start_at, end_at]
+      scan_start, scan_end = sql.include?(classic_hybrid_filter) ? [now - 2.days, now] : [start_at, end_at]
       query_id = client.start_query(query_language: 'SQL', start_time: scan_start.to_i, end_time: scan_end.to_i, query_string: bounded).query_id
       QUERY_MAX_POLLS.times do
         response = client.get_query_results(query_id:)

@@ -13,6 +13,7 @@ RSpec.describe SearchAnalytics::DailyQuery do
       results_type: 'text',
       search_degraded: 'boolean',
       skip_question: 'boolean',
+      '@timestamp': 'timestamp',
       '@logStream': 'text' }
   end
 
@@ -30,15 +31,18 @@ RSpec.describe SearchAnalytics::DailyQuery do
       results_type: 'fuzzy_search',
       search_degraded: false,
       skip_question: nil,
+      '@timestamp': Time.utc(2026, 9, 14),
       '@logStream': 'ecs/backend-uk/test' }.merge(attributes)
   end
 
-  def execute(*events)
+  def execute(*events, bounded: false)
     values = events.map { |row| "(#{columns.map { |name, type| "#{db.literal(row.fetch(name))}::#{type}" }.join(', ')})" }
     names = columns.keys.map { |name| db.literal(Sequel.identifier(name)) }.join(', ')
     # Execute the actual collection predicates, including the failure cohort.
-    # Only CloudWatch identifier quoting differs from PostgreSQL here.
-    sql = collector.query_definitions.fetch('search_results').tr('`', '"')
+    # Translate CloudWatch quoting and epoch extraction for PostgreSQL.
+    sql = collector.query_definitions.fetch('search_results')
+    sql = collector.bounded_query(sql, start_at: Time.utc(2026, 9, 14), end_at: Time.utc(2026, 9, 15)) if bounded
+    sql = sql.tr('`', '"').gsub('UNIX_TIMESTAMP("@timestamp")', 'EXTRACT(EPOCH FROM "@timestamp")')
     db.fetch("WITH search_events(#{names}) AS (VALUES #{values.join(', ')}) #{sql}").all
   end
 
@@ -69,6 +73,21 @@ RSpec.describe SearchAnalytics::DailyQuery do
       { search_type: 'interactive', request_source: 'frontend', searches: 1, zero_results: 0 },
       { search_type: 'internal', request_source: 'frontend', searches: 2, zero_results: 1 },
     )
+  end
+
+  it 'excludes skipped requests across midnight' do
+    base = { search_type: 'interactive', results_type: 'hybrid' }
+    rows = execute(
+      event('hybrid', **base, '@timestamp': Time.utc(2026, 9, 14, 0, 0, 1)),
+      event('hybrid', **base, event: 'interactive_configuration_used', skip_question: true, '@timestamp': Time.utc(2026, 9, 13, 23, 59, 59)),
+      event('guided', **base),
+      event('outside', **base, '@timestamp': Time.utc(2026, 9, 13, 23, 59, 59)),
+      event('previous-failure', **base),
+      event('previous-failure', **base, event: 'search_stage_failed', '@timestamp': Time.utc(2026, 9, 13, 23, 59, 59)),
+      bounded: true,
+    )
+
+    expect(rows).to eq([{ search_type: 'interactive', request_source: 'frontend', searches: 2, zero_results: 0 }])
   end
 
   it 'excludes failed and degraded requests and non-frontend or non-UK events' do
