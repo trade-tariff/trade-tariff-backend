@@ -93,9 +93,11 @@ module SearchExport
       <<~QUERY
         fields @timestamp, @message, jsonParse(@message) as entry
         | filter @logStream like /ecs\\/(backend|worker)-#{TradeTariffBackend.service}\\//
-        | filter entry.service = "search" and entry.request_source = "frontend"
-        | filter entry.event in #{EVENTS.to_json}
-        | filter entry.event != "interactive_configuration_used" or entry.skip_question = true
+        | filter (entry.service = "search" and entry.request_source = "frontend"
+            and entry.event in #{EVENTS.to_json}
+            and (entry.event != "interactive_configuration_used" or entry.skip_question = 1))
+          or (entry.controller = "Api::Internal::SearchController"
+            and (entry.params.skip_question = 1 or entry.params.skip_question = "true"))
         | filter toMillis(@timestamp) >= #{start * 1000} and toMillis(@timestamp) < #{finish * 1000}
         | sort @timestamp asc
         | limit #{LIMIT}
@@ -170,6 +172,15 @@ module SearchExport
 
     def consume_event(fields)
       event = JSON.parse(fields.fetch('@message'))
+      # Blocking guidance can finish before configuration diagnostics are emitted.
+      if event['controller'] == 'Api::Internal::SearchController'
+        params = event['params']
+        if params.is_a?(Hash) && [true, 'true'].include?(params['skip_question']) && params['request_id'].present?
+          @classic_hybrid_ids.add(params['request_id'])
+        end
+        return
+      end
+
       id = event['request_id']
       return if id.blank?
 
