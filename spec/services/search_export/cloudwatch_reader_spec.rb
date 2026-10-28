@@ -80,6 +80,18 @@ RSpec.describe SearchExport::CloudwatchReader do
     expect(journey_queries.first[:params][:query_string]).to include('entry.controller = "Api::Internal::SearchController"', 'entry.params.skip_question = 1', 'entry.params.skip_question = "true"')
   end
 
+  it 'uses HTTP IDs for blank journey IDs' do
+    requests = [nil, ''].map.with_index do |request_id, index|
+      { controller: 'Api::Internal::SearchController', request_id: "blocked-#{index}", params: { request_id:, skip_question: true }.compact }
+    end
+    blocked = requests.map do |request|
+      trace.merge(request_id: request[:request_id], end_page_type: 'Intercept', details: trace[:details].merge(results: []))
+    end
+    client.stub_responses(:get_query_results, [response(*blocked, trace), response(*requests), response, response])
+
+    expect(reader.call.journeys.map(&:request_id)).to eq(%w[guided-1])
+  end
+
   it 'ignores unsuccessful and unrelated page requests' do
     pages = [
       frontend_page(status: 302),

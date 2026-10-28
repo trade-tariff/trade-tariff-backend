@@ -175,8 +175,9 @@ module SearchExport
       # Blocking guidance can finish before configuration diagnostics are emitted.
       if event['controller'] == 'Api::Internal::SearchController'
         params = event['params']
-        if params.is_a?(Hash) && [true, 'true'].include?(params['skip_question']) && params['request_id'].present?
-          @classic_hybrid_ids.add(params['request_id'])
+        if params.is_a?(Hash) && [true, 'true'].include?(params['skip_question'])
+          id = params['request_id'].presence || event['request_id'].presence
+          @classic_hybrid_ids.add(id) if id
         end
         return
       end
