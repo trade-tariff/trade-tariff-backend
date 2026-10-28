@@ -35,6 +35,12 @@ RSpec.describe 'Legacy API path redirects', type: :request do
       expect(response.headers['location']).to eq('/xi/api/v2/sections')
     end
 
+    it 'varies the redirect on Accept so caches do not reuse it for v1 Accept requests' do
+      get '/api/v2/sections'
+
+      expect(response.headers['vary']).to include('Accept')
+    end
+
     it 'sends the deprecation headers' do
       get '/api/v2/sections'
 
@@ -63,6 +69,16 @@ RSpec.describe 'Legacy API path redirects', type: :request do
 
       expect(response).not_to have_http_status(:permanent_redirect)
       expect(response).to have_http_status(:ok)
+    end
+
+    it 'adds the deprecation headers to the forwarded response' do
+      get '/api/v2/sections', headers: v1_accept, env: { 'REQUEST_PATH' => '/api/v2/sections' }
+
+      expect(response.headers).to include(
+        'deprecation' => "@#{LegacyApiRedirect::DEPRECATION_DATE.to_i}",
+        'sunset' => LegacyApiRedirect::SUNSET_DATE.httpdate,
+      )
+      expect(response.headers['link']).to include(docs_link)
     end
   end
 

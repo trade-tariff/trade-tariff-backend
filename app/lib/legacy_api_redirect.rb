@@ -15,7 +15,13 @@ class LegacyApiRedirect
     # A client that sends a v1 Accept header used to be served v2, because
     # VersionedForwarder sets Accept from the URL version. After a redirect the
     # v1 catch-all route would answer 404, so these clients are not redirected.
-    return VersionedForwarder.new.call(env) if V1_ACCEPT_HEADER.matches?(request)
+    # The response still carries the deprecation headers, because the path is
+    # scheduled for removal either way.
+    if V1_ACCEPT_HEADER.matches?(request)
+      status, headers, body = VersionedForwarder.new.call(env)
+      add_deprecation_headers(headers)
+      return [status, headers, body]
+    end
 
     # original_fullpath is captured before HandleApiGatewayParams rewrites
     # QUERY_STRING, so dotted names such as filter.type survive the redirect.
@@ -25,11 +31,21 @@ class LegacyApiRedirect
     # example X-Path-Transformed in HandleGoodsNomenclature). A plain Hash would not.
     headers = Rack::Headers.new
     headers['location'] = "/#{TradeTariffBackend.service}#{request.original_fullpath}"
+    # The redirect depends on Accept (see above), so caches must not reuse it
+    # for a request with a different Accept header.
+    headers['vary'] = 'Accept'
+    add_deprecation_headers(headers)
+
+    [308, headers, []]
+  end
+
+private
+
+  def add_deprecation_headers(headers)
     # Deprecation is an RFC 9745 Structured Field Date: "@" plus Unix seconds.
     headers['deprecation'] = "@#{DEPRECATION_DATE.to_i}"
     headers['sunset'] = SUNSET_DATE.httpdate
-    headers['link'] = %(<#{DOCS_URL}>; rel="deprecation")
-
-    [308, headers, []]
+    # Keep any Link header the forwarded response already has.
+    headers['link'] = [headers['link'], %(<#{DOCS_URL}>; rel="deprecation")].compact.join(', ')
   end
 end
