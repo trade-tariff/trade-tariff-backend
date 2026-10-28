@@ -415,6 +415,8 @@ module Api
       end
 
       def finish_terminal(response)
+        return response if @skip_question
+
         ::Search::ResultOffers.record(response:, request_id:) if @search_type == 'interactive'
         # Older clients return a query containing both expansion and answer refinements.
         # Without separate expansion data, omit the capture rather than guess.

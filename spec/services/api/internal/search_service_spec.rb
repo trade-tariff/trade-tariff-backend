@@ -1162,6 +1162,27 @@ RSpec.describe Api::Internal::SearchService do
         expect(result.dig(:meta, :search_failures)).to eq([])
       end
 
+      it 'does not capture classifier reporting' do
+        allow(SearchExport::JourneyProjection).to receive(:record)
+        allow(Search::ResultOffers).to receive(:record)
+
+        described_class.new(q: 'handbag', skip_question: true).call
+
+        expect(SearchExport::JourneyProjection).not_to have_received(:record)
+        expect(Search::ResultOffers).not_to have_received(:record)
+      end
+
+      it 'captures zero-question guided results' do
+        allow(InteractiveSearchService).to receive(:call).and_return(nil)
+        allow(SearchExport::JourneyProjection).to receive(:record)
+        allow(Search::ResultOffers).to receive(:record)
+
+        described_class.new(q: 'handbag', skip_question: false).call
+
+        expect(SearchExport::JourneyProjection).to have_received(:record).with(hash_including(answers: []))
+        expect(Search::ResultOffers).to have_received(:record)
+      end
+
       it 'runs the question round when skip_question is false' do
         result = described_class.new({ 'q' => 'handbag', 'skip_question' => 'false' }.with_indifferent_access).call
 

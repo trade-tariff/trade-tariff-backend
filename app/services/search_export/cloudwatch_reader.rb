@@ -10,7 +10,7 @@ module SearchExport
     RUNTIME_LIMIT = 40.minutes
     SCAN_LIMIT = 500.gigabytes
     LATE_OPEN_WINDOW = 1.day
-    EVENTS = %w[evaluation_journey_recorded search_failed search_stage_failed].freeze
+    EVENTS = %w[evaluation_journey_recorded search_failed search_stage_failed interactive_configuration_used].freeze
     # The frontend accepts only these guided request IDs. Visit queries match
     # short prefixes to stay within the CloudWatch query length limit; the
     # reader then matches complete IDs.
@@ -35,6 +35,7 @@ module SearchExport
       @first_terminals = {}
       @opened_pages = Hash.new { |hash, key| hash[key] = [] }
       @failed = Set.new
+      @classic_hybrid_ids = Set.new
       @scanned_bytes = 0
       @window_bytes = {}
     end
@@ -42,6 +43,7 @@ module SearchExport
     def call
       @deadline = monotonic_time + RUNTIME_LIMIT
       windows.each { |start, finish| read_window(start, finish, method(:journey_query), method(:consume_event)) }
+      @journeys.reject! { |id, _journey| @classic_hybrid_ids.include?(id) }
       plan = visit_plan
       # Each visit query scans its whole day again.
       projected = @scanned_bytes + plan.sum { |start, _finish, batches| batches.size * @window_bytes.fetch(start, 0) }
@@ -93,6 +95,7 @@ module SearchExport
         | filter @logStream like /ecs\\/(backend|worker)-#{TradeTariffBackend.service}\\//
         | filter entry.service = "search" and entry.request_source = "frontend"
         | filter entry.event in #{EVENTS.to_json}
+        | filter entry.event != "interactive_configuration_used" or entry.skip_question = true
         | filter toMillis(@timestamp) >= #{start * 1000} and toMillis(@timestamp) < #{finish * 1000}
         | sort @timestamp asc
         | limit #{LIMIT}
@@ -175,6 +178,8 @@ module SearchExport
         record_journey(event, id)
       when 'search_failed', 'search_stage_failed'
         @failed.add(id)
+      when 'interactive_configuration_used'
+        @classic_hybrid_ids.add(id) if event['skip_question'] == true
       end
     end
 
