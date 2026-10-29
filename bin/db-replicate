@@ -12,6 +12,7 @@ declare -A SERVICE_COUNTS
 declare -A ACCOUNT_IDS=(
     ["development"]="844815912454"
     ["staging"]="451934005581"
+    ["uat"]="352285845378"
     ["production"]="382373577178"
 )
 
