@@ -139,7 +139,7 @@ RSpec.describe Api::Admin::Search::Evaluation::SyntheticInputSetsController, :ad
         expect(json_response['data']['attributes']).to include('name' => 'Set A', 'requested_size' => 3, 'actual_size' => 3, 'created_by' => 'operator-1')
         items = json_response['data']['attributes']['items']
         expect(items.size).to eq(3)
-        expect(items.first.keys).to include('id', 'synthetic_atar_id', 'query', 'expected_code')
+        expect(items.first.keys).to include('id', 'synthetic_atar_id', 'query', 'oracle_text', 'expected_code')
       end
     end
 

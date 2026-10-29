@@ -34,6 +34,7 @@ RSpec.describe Api::Admin::Search::Evaluation::SyntheticInputSetItemsController,
         'synthetic_input_set_id' => synthetic_input_set.id,
         'synthetic_atar_id' => items.first.synthetic_atar_id,
         'query' => 'first query',
+        'oracle_text' => items.first.oracle_text,
         'expected_code' => '3924100000',
       )
     end

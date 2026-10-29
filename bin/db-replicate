@@ -58,6 +58,7 @@ REPLICATION_EXCLUDED_MIGRATIONS=(
     20261015120000_create_evaluation_synthetic_input_sets.rb
     20261019120000_default_evaluation_gold_query_sets_atar_percentage.rb
     20261019130000_add_source_workbook_and_row_to_synthetic_atars.rb
+    20261029120000_add_oracle_text_to_evaluation_synthetic_input_set_items.rb
 )
 
 require_env() {
