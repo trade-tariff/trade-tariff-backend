@@ -128,25 +128,31 @@ private
 
   # Sends one attempt through RubyLLM. Retries, deadlines, usage and errors
   # stay in #call, so the attempt returns the provider's response unchanged.
+  #
+  # The chat holds no messages. RubyLLM accepts fewer roles and content shapes
+  # than the Responses API, and #complete sends nothing when the transcript
+  # does not end with a user message. #generate always sends one request, and
+  # #keep_request_format adds the caller's messages to it unchanged.
   def complete(messages, model:, reasoning_effort:, remaining:)
     timeout, open_timeout = transport_timeouts(remaining)
 
     OpenaiTransport.request(timeout:, open_timeout:) do |llm|
       chat = llm.chat(model:, provider: :openai, assume_model_exists: true)
-      messages.each { |message| chat.add_message(message.to_h.symbolize_keys.slice(:role, :content)) }
       chat.with_thinking(effort: reasoning_effort) if reasoning_effort.present?
       chat.with_end_user(TradeTariffBackend.openai_user)
           .with_provider_options(text: { format: { type: 'json_object' } })
           .before_request { |payload| keep_request_format(payload, messages) }
-          .complete
+          .generate
     end
   end
 
   # RubyLLM sends system messages as instructions and asks for encrypted
-  # reasoning. Keep the request that the models have always received.
+  # reasoning. Keep the request that the models have always received,
+  # including the opt-out from provider storage.
   def keep_request_format(payload, messages)
     payload.except!(:instructions, :stream, :include)
     payload[:input] = messages
+    payload[:store] = false
   end
 
   def transport_timeouts(remaining)
