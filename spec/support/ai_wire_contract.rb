@@ -25,6 +25,9 @@ module AiWireContract
   RANDOM_ID = /\A\h{8}-\h{4}-\h{4}-\h{4}-\h{12}\z/
   # Sub-nanosecond float rounding in a socket timeout has no effect.
   TIMEOUT_PRECISION = 9
+  # Snapshots record the Authorization header. A fixed key keeps a key from
+  # the developer's environment out of committed fixtures.
+  API_KEY = 'test-api-key'.freeze
 
   def observe_ai_call(url:, script:, &)
     Observation.new(self, url:, script:).call(&)
@@ -98,6 +101,7 @@ module AiWireContract
     attr_reader :example
 
     def install
+      example.allow(TradeTariffBackend).to example.receive(:openai_api_key).and_return(API_KEY)
       example.stub_request(:post, @url).to_return { |request| respond(request) }
       example.allow(Net::HTTP).to(example.receive(:new).and_wrap_original do |original, *args|
         original.call(*args).tap { |http| @connections << http }
