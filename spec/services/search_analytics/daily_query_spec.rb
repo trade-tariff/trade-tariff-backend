@@ -14,21 +14,21 @@ RSpec.describe SearchAnalytics::DailyQuery do
   def collect(**extra) = collector(**extra).call
   def encoded(row) = row.map { |field, value| { field:, value: value.to_s } }
 
-  it 'stores fifteen complete logical query groups and reuses them without another scan' do
+  it 'stores sixteen complete logical query groups and reuses them without another scan' do
     rows = collect
-    expect(rows.size).to eq(15)
-    expect(starts.size).to eq(50)
-    expect(SearchAnalyticsQueryResult.count).to eq(15)
+    expect(rows.size).to eq(16)
+    expect(starts.size).to eq(51)
+    expect(SearchAnalyticsQueryResult.count).to eq(16)
     expect(collect).to eq(rows)
-    expect(starts.size).to eq(50)
+    expect(starts.size).to eq(51)
     expect(rows).not_to have_key('ai_cost_summary')
   end
 
   it 'can plan reusable results without constructing an AWS client' do
     collect
     expect(Aws::CloudWatchLogs::Client).not_to receive(:new)
-    expect(collector(client: nil).plan.values).to eq(%w[reuse] * 15)
-    expect(collector(client: nil).call.values).to eq([[]] * 15)
+    expect(collector(client: nil).plan.values).to eq(%w[reuse] * 16)
+    expect(collector(client: nil).call.values).to eq([[]] * 16)
   end
 
   it 'reruns only the missing query after a later query fails' do
@@ -37,15 +37,15 @@ RSpec.describe SearchAnalytics::DailyQuery do
     expect(SearchAnalyticsQueryResult.count).to eq(7)
     client.stub_responses(:get_query_results, complete)
     collect
-    expect(starts.size).to eq(51)
-    expect(SearchAnalyticsQueryResult.count).to eq(15)
+    expect(starts.size).to eq(52)
+    expect(SearchAnalyticsQueryResult.count).to eq(16)
   end
 
   it 'forces only the selected query and preserves other results' do
     collect
     ids = SearchAnalyticsQueryResult.where(name: 'volume').select_map(:id)
     collect(queries: %w[ai_cost_trend], force: true)
-    expect(starts.size).to eq(51)
+    expect(starts.size).to eq(52)
     expect(SearchAnalyticsQueryResult.where(name: 'volume').select_map(:id)).to eq(ids)
   end
 
@@ -53,7 +53,7 @@ RSpec.describe SearchAnalytics::DailyQuery do
     expect(collect(queries: %w[volume])).to eq('volume' => [])
     expect(starts.size).to eq(1)
     expect(SearchAnalyticsQueryResult.select_map(:name)).to eq(%w[volume])
-    expect(collector(queries: %w[volume]).plan.values.tally).to eq('reuse' => 1, 'skip' => 14)
+    expect(collector(queries: %w[volume]).plan.values.tally).to eq('reuse' => 1, 'skip' => 15)
   end
 
   it 'rejects unknown selections and incomplete dates without submissions' do
@@ -77,9 +77,9 @@ RSpec.describe SearchAnalytics::DailyQuery do
   end
 
   it 'recollects only legacy classic outcomes' do
-    previous = collector.query_definitions.to_h do |name, sql|
-      [name, Digest::SHA256.hexdigest([1, 'uk', 'eu-west-2', sql].to_json)]
-    end
+    previous = collector.fingerprints.merge(
+      'classic_outcomes' => Digest::SHA256.hexdigest([1, 'uk', 'eu-west-2', collector.query_definitions.fetch('classic_outcomes')].to_json),
+    )
     previous.each do |name, fingerprint|
       SearchAnalyticsQueryResult.fetch(service: 'uk', reporting_date: options[:reporting_date], name:, fingerprint:) { [] }
     end
@@ -113,7 +113,7 @@ RSpec.describe SearchAnalytics::DailyQuery do
 
   it 'uses half-open calendar bounds for metric scans and full-day failure cohorts' do
     collect
-    expect(starts.first[:params]).to include(start_time: Time.utc(2026, 9, 14).to_i, end_time: Time.utc(2026, 9, 15).to_i, query_language: 'SQL')
+    expect(starts.first[:params]).to include(start_time: Time.utc(2026, 9, 13).to_i, end_time: Time.utc(2026, 9, 15).to_i, query_language: 'SQL')
     expect(starts.first[:params][:query_string]).to include('UNIX_TIMESTAMP(`@timestamp`) >= 1789344000', 'UNIX_TIMESTAMP(`@timestamp`) < 1789430400')
     journey_sql = starts[14][:params][:query_string]
     expect(journey_sql).to include('UNIX_TIMESTAMP(`@timestamp`) >= 1789419600', "request_source = 'frontend'")
@@ -126,8 +126,9 @@ RSpec.describe SearchAnalytics::DailyQuery do
       start_at = Time.utc(2026, 9, 14) + index * 3.hours
       [start_at.to_i, (start_at + 3.hours).to_i]
     end
-    expect(bounds).to eq(expected)
-    expect(starts[7, 8].map { |request| request[:params].values_at(:start_time, :end_time) }).to eq(expected)
+    exclusion_bounds = [Time.utc(2026, 9, 13).to_i, Time.utc(2026, 9, 15).to_i]
+    expect(bounds).to eq(expected.map { |window| window + exclusion_bounds })
+    expect(starts[7, 8].map { |request| request[:params].values_at(:start_time, :end_time) }).to eq([exclusion_bounds] * 8)
   end
 
   it 'retains all model and embedding calls without token or failure-cohort filtering' do
@@ -152,6 +153,31 @@ RSpec.describe SearchAnalytics::DailyQuery do
     expect(SearchAnalyticsQueryResult.all.map { |r| r.rows.to_json }.join).not_to include('private-id')
   end
 
+  it 'keeps full-day skip lookups in aggregates' do
+    definitions = collector.query_definitions
+    filtered = %w[volume latency_histogram classic_selection_trend internal_selection_trend search_term_improvements item_id_improvements search_journeys search_results selection_results result_offers]
+    expect(definitions.slice(*filtered).values).to all(include("event = 'interactive_configuration_used' AND skip_question = true"))
+    expect(definitions.except(*filtered).values).not_to include(a_string_including('skip_question'))
+  end
+
+  it 'versions only cross-midnight cohorts' do
+    previous = collector.query_definitions.to_h do |name, sql|
+      version = name == 'classic_outcomes' ? 2 : 1
+      [name, Digest::SHA256.hexdigest([version, 'uk', 'eu-west-2', sql].to_json)]
+    end
+    changed = collector.fingerprints.reject { |name, fingerprint| previous.fetch(name) == fingerprint }.keys
+
+    expect(changed).to match_array(%w[volume latency_histogram classic_selection_trend internal_selection_trend search_term_improvements item_id_improvements search_journeys search_results selection_results result_offers])
+  end
+
+  it 'ignores exclusion match counts for starts' do
+    row = encoded('request_ids' => '["guided"]', 'journey_count' => '1', 'started_events' => '1')
+    client.stub_responses(:get_query_results, complete.merge(results: [row], statistics: { records_matched: 200.0 }))
+
+    expect(collect(queries: %w[search_journeys]).fetch('search_journeys').size).to eq(8)
+    expect(starts.size).to eq(8)
+  end
+
   it 'hashes complete frontend journey sets before storing them' do
     row = encoded('request_ids' => '["first","second"]', 'journey_count' => '2', 'started_events' => '3', 'request_source' => 'frontend', 'search_type' => 'interactive', '@timestamp' => '2026-09-14 00:00:00')
     response = complete.merge(results: [row], statistics: { records_matched: 3.0 })
@@ -164,15 +190,16 @@ RSpec.describe SearchAnalytics::DailyQuery do
   it 'rejects malformed or truncated journey sets without caching them' do
     row = encoded('request_ids' => '["first"]', 'journey_count' => '2', 'started_events' => '1')
     response = complete.merge(results: [row], statistics: { records_matched: 1.0 })
-    client.stub_responses(:get_query_results, [*Array.new(7) { complete }, response, *Array.new(7) { complete }])
-    expect { collect }.to raise_error(described_class::QueryError, /identifier set/)
+    client.stub_responses(:get_query_results, response)
+    expect { collect(queries: %w[search_journeys]) }.to raise_error(described_class::QueryError, /incomplete within one second/)
     expect(SearchAnalyticsQueryResult.where(name: 'search_journeys').count).to eq(0)
   end
 
   it 'splits incomplete journey output even when below the row cap' do
-    client.stub_responses(:get_query_results, [*Array.new(7) { complete }, complete.merge(statistics: { records_matched: 2.0 }), *Array.new(9) { complete }])
+    truncated = encoded('request_ids' => '["first"]', 'journey_count' => '2', 'started_events' => '2')
+    client.stub_responses(:get_query_results, [*Array.new(7) { complete }, complete.merge(results: [truncated], statistics: { records_matched: 2.0 }), *Array.new(9) { complete }])
     collect
-    expect(starts.size).to eq(52)
+    expect(starts.size).to eq(53)
     expect(starts[8][:params][:query_string]).to include('UNIX_TIMESTAMP(`@timestamp`) < 1789349400')
     expect(starts[9][:params][:query_string]).to include('UNIX_TIMESTAMP(`@timestamp`) >= 1789349400')
   end
@@ -197,12 +224,12 @@ RSpec.describe SearchAnalytics::DailyQuery do
     client.stub_responses(:get_query_results, [*Array.new(5) { complete }, capped, child, child, *Array.new(9) { complete }])
     result = collect.fetch('search_term_improvements')
     expect(result.map { |row| row['query'] }).to eq(%w[keep keep])
-    expect(starts[6][:params].values_at(:start_time, :end_time)).to eq([Time.utc(2026, 9, 14).to_i, Time.utc(2026, 9, 15).to_i])
+    expect(starts[6][:params].values_at(:start_time, :end_time)).to eq([Time.utc(2026, 9, 13).to_i, Time.utc(2026, 9, 15).to_i])
     child_sql = starts[6][:params][:query_string]
     expect(child_sql).to include('UNIX_TIMESTAMP(`@timestamp`) < 1789387200')
     expect(child_sql).to match(/request_id NOT IN \(.*1789344000.*1789430400/m)
     expect(child_sql.scan(/UNIX_TIMESTAMP\(`@timestamp`\) (?:>=|<) (\d+)/).flatten.map(&:to_i)).to eq([
-      1_789_344_000, 1_789_387_200, 1_789_344_000, 1_789_430_400
+      1_789_344_000, 1_789_387_200, 1_789_344_000, 1_789_430_400, 1_789_257_600, 1_789_430_400
     ])
   end
 

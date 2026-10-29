@@ -1,6 +1,12 @@
 module Reporting
   class AdminReportRegistry
-    ReportDefinition = Data.define(:id, :name, :description, :generator, :services, :dependencies, :email_generator) do
+    ReportDefinition = Data.define(:id, :name, :description, :generator, :services, :dependencies, :email_generator, :standalone_generation) do
+      # standalone_generation lets admin offer "Generate report" (without email) for a report
+      # that also supports email. It is false unless a definition opts in.
+      def initialize(standalone_generation: false, **)
+        super
+      end
+
       def available_for_service?
         services.include?(TradeTariffBackend.service)
       end
@@ -14,6 +20,10 @@ module Reporting
 
       def supports_email?
         email_generator.present?
+      end
+
+      def supports_generate?
+        !supports_email? || standalone_generation
       end
 
       def send_email!
@@ -142,6 +152,16 @@ module Reporting
             services: %w[uk xi],
             dependencies: [],
             email_generator: nil,
+          ),
+          ReportDefinition.new(
+            id: 'search_reference_changes',
+            name: 'Search reference changes report',
+            description: 'CSV of search reference changes in the previous calendar month. Emailed on the first Monday of each month.',
+            generator: -> { Reporting::SearchReferenceChanges },
+            services: %w[uk xi],
+            dependencies: [],
+            email_generator: -> { SearchReferenceChangesReportWorker.perform_async },
+            standalone_generation: true,
           ),
         ]
       end

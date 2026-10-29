@@ -18,6 +18,7 @@ InternalApi.routes.draw do
       if TradeTariffBackend.uk?
         resources :atars, only: %i[index show], param: :ref
         resources :evaluation_gold_queries, only: %i[index show]
+        resources :evaluation_synthetic_input_set_items, only: %i[index]
       end
     end
   end

@@ -1,6 +1,7 @@
 RSpec.describe Api::Admin::SearchAnalyticsController do
   let(:date) { Time.current.utc.to_date - 1 }
   let(:region) { ENV.fetch('AWS_REGION', ENV.fetch('AWS_DEFAULT_REGION', 'eu-west-2')) }
+  let(:log_group_name) { SearchAnalytics::DailyQuery::SEARCH_LOG_GROUP_NAME }
 
   before do
     allow(Aws::CloudWatchLogs::Client).to receive(:new).and_raise('API reads must not construct an AWS client')
@@ -9,7 +10,7 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
   end
 
   def create_results(day)
-    collector = SearchAnalytics::DailyQuery.new(reporting_date: day, region:)
+    collector = SearchAnalytics::DailyQuery.new(reporting_date: day, region:, log_group_name:)
     bucket = (day.to_time(:utc) + 8.hours).iso8601
     rows = collector.query_definitions.keys.index_with { [] }
     rows['volume'] = [{ '@timestamp' => bucket, 'search_type' => 'interactive', 'event' => 'search_completed', 'searches' => 3, 'zero_results' => 0 }]
@@ -42,6 +43,48 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
     expect(attributes['coverage']).to include('from' => date.iso8601, 'to' => date.iso8601, 'complete' => true, 'collected_days' => 1)
     expect(attributes['availability']).to include('journey_metrics' => true, 'costs_match_view' => true)
     expect(attributes['bucket_size']).to eq('hour')
+  end
+
+  context 'when Rails runs in development' do
+    let(:log_group_name) { 'platform-logs-production' }
+
+    before do
+      allow(Rails.env).to receive(:development?).and_return(true)
+      allow(ENV).to receive(:fetch).and_call_original
+      allow(ENV).to receive(:fetch).with('SEARCH_ANALYTICS_LOG_GROUP_NAME', 'platform-logs-production').and_return('platform-logs-production')
+    end
+
+    it 'reads backups without collection' do
+      expect { request_analytics(period: '7d') }.not_to change(SearchAnalyticsQueryResult, :count)
+
+      expect(response).to have_http_status(:ok)
+      expect(attributes['summary']).to include('searches' => 1)
+      expect(attributes['coverage']).to include('collected_days' => 1, 'expected_days' => 7)
+      collector = SearchAnalytics::DailyQuery.new(reporting_date: date, region:)
+      expect(collector.query_definitions.fetch('volume')).to include("FROM `#{SearchAnalytics::DailyQuery::SEARCH_LOG_GROUP_NAME}`")
+    end
+
+    it 'still rejects stale fingerprints' do
+      SearchAnalyticsQueryResult.dataset.update(fingerprint: 'stale')
+      request_analytics
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    context 'with an explicit log group' do
+      let(:log_group_name) { 'platform-logs-staging' }
+
+      before do
+        allow(ENV).to receive(:fetch).with('SEARCH_ANALYTICS_LOG_GROUP_NAME', 'platform-logs-production').and_return(log_group_name)
+      end
+
+      it 'reads the configured source' do
+        request_analytics
+
+        expect(response).to have_http_status(:ok)
+        expect(attributes['summary']).to include('searches' => 1)
+      end
+    end
   end
 
   context 'with only search-result collection' do
@@ -132,13 +175,13 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
     Sidekiq::Testing.fake! do
       SearchAnalyticsQueryWorker.clear
       SearchAnalyticsQueryWorker.new.perform
-      expect(SearchAnalyticsQueryWorker.jobs.size).to eq(TradeTariffBackend.service == 'uk' ? 15 : 14)
+      expect(SearchAnalyticsQueryWorker.jobs.size).to eq(TradeTariffBackend.service == 'uk' ? 16 : 14)
       SearchAnalyticsQueryWorker.drain
     end
     request_analytics
     expect(response).to have_http_status(:ok)
     expect(attributes['coverage']).to include('complete' => true, 'collected_days' => 1)
-    expect(SearchAnalyticsQueryResult.count).to eq(TradeTariffBackend.service == 'uk' ? 15 : 14)
+    expect(SearchAnalyticsQueryResult.count).to eq(TradeTariffBackend.service == 'uk' ? 16 : 14)
   end
 
   it 'normalises unknown period and view values' do

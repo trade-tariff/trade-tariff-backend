@@ -222,4 +222,69 @@ RSpec.describe EvaluationConfiguration::AllowlistValidator do
       end
     end
   end
+
+  describe 'reasoning_effort' do
+    let(:error_class) { EvaluationConfiguration::OverrideValidationError }
+
+    it 'accepts a level the overridden question_model supports' do
+      expect(described_class.call({ 'question_model' => 'gpt-5.6-luna', 'reasoning_effort' => 'max' })).to be true
+    end
+
+    it 'rejects a level the overridden question_model does not support, naming the model and the levels it does' do
+      expect {
+        described_class.call({ 'question_model' => 'gpt-5.2', 'reasoning_effort' => 'max' })
+      }.to raise_error(error_class, /reasoning_effort must be one of: none, low, medium, high for question_model gpt-5\.2/)
+    end
+
+    it 'checks the level against the baseline question_model when the run does not override the model' do
+      baseline = { 'question_model' => 'gpt-5.2' }
+
+      expect(described_class.call({ 'reasoning_effort' => 'high' }, baseline:)).to be true
+      expect {
+        described_class.call({ 'reasoning_effort' => 'xhigh' }, baseline:)
+      }.to raise_error(error_class, /gpt-5\.2/)
+    end
+
+    it 'prefers an overridden question_model to the baseline one' do
+      baseline = { 'question_model' => 'gpt-5.2' }
+
+      expect(described_class.call({ 'question_model' => 'gpt-5.6-luna', 'reasoning_effort' => 'max' }, baseline:)).to be true
+    end
+
+    it 'reads the baseline itself when it is not given one' do
+      allow(EvaluationConfiguration::BaselineProvider).to receive(:call).and_return('question_model' => 'gpt-5.2')
+
+      expect {
+        described_class.call({ 'reasoning_effort' => 'xhigh' })
+      }.to raise_error(error_class, /gpt-5\.2/)
+    end
+
+    it 'does not read the baseline when reasoning_effort is not being overridden' do
+      allow(EvaluationConfiguration::BaselineProvider).to receive(:call)
+
+      described_class.call({ 'max_rounds' => 3 })
+
+      expect(EvaluationConfiguration::BaselineProvider).not_to have_received(:call)
+    end
+
+    it 'does not read the baseline when the question_model is overridden alongside it' do
+      allow(EvaluationConfiguration::BaselineProvider).to receive(:call)
+
+      described_class.call({ 'question_model' => 'gpt-5.2', 'reasoning_effort' => 'low' })
+
+      expect(EvaluationConfiguration::BaselineProvider).not_to have_received(:call)
+    end
+
+    it 'rejects any level for a model that does not reason' do
+      expect {
+        described_class.call({ 'question_model' => 'gpt-4o-mini', 'reasoning_effort' => 'low' })
+      }.to raise_error(error_class, /question_model gpt-4o-mini does not support reasoning_effort/)
+    end
+
+    it 'rejects a value that is not a string' do
+      expect {
+        described_class.call({ 'question_model' => 'gpt-5.2', 'reasoning_effort' => 3 })
+      }.to raise_error(error_class, /reasoning_effort must be one of/)
+    end
+  end
 end

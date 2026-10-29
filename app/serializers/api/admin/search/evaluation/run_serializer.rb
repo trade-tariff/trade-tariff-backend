@@ -42,10 +42,28 @@ module Api
             run.evaluation_experiment&.gold_query_set_id
           end
 
+          # Same live-read, same accepted limitation as gold_query_set_id above. The eval app
+          # reads whichever of these two is present to decide which kind of set to fetch rows
+          # from (AI-1451) -- without this, a run whose experiment uses a synthetic input set
+          # had no way to say so.
+          attribute :synthetic_input_set_id do |run|
+            run.evaluation_experiment&.synthetic_input_set_id
+          end
+
+          # Which kind of set the run's experiment uses, and its name. Same live read and same accepted
+          # limitation as gold_query_set_id above.
+          attribute :source_type do |run|
+            run.evaluation_experiment&.source_type
+          end
+
+          attribute :source_name do |run|
+            run.evaluation_experiment&.source_name
+          end
+
           # The run list (spec section 9.1) names each row by its experiment, not a bare run id.
           # Reads the same already-eager-loaded association gold_query_set_id does above, so this
-          # adds no extra query — RunsController#filtered_runs already calls
-          # EvaluationRun.eager(:evaluation_experiment) for every index request.
+          # adds no extra query — RunsController#filtered_runs already eager-loads the experiment
+          # (and the sets source_name reads) for every index request.
           attribute :experiment_name do |run|
             run.evaluation_experiment&.name
           end

@@ -20,7 +20,7 @@ module SearchAnalytics
       @service = TradeTariffBackend.service
       # Fingerprints do not depend on the reporting date; collection requires a completed day.
       @definitions = DailyQuery.new(reporting_date: last_date, region:, log_group_name:, now:).fingerprints
-      @required = @definitions.keys - %w[frontend_events journey_outcomes classic_outcomes search_actions search_results] - SelectionRates::SOURCE_NAMES
+      @required = @definitions.keys - %w[frontend_events journey_outcomes classic_outcomes search_actions search_results result_offers] - SelectionRates::SOURCE_NAMES
     end
 
     def call
@@ -64,7 +64,7 @@ module SearchAnalytics
       query_dates = (@required + %w[search_results]).index_with do |name|
         compatible.select { |row| row.name == name }.map(&:reporting_date).uniq.sort
       end
-      optional = compatible.select { |row| (%w[frontend_events search_results] + SelectionRates::SOURCE_NAMES).include?(row.name) }
+      optional = compatible.select { |row| (%w[frontend_events search_results result_offers] + SelectionRates::SOURCE_NAMES).include?(row.name) }
       collected_dates = (present.map(&:reporting_date) + optional.map(&:reporting_date)).uniq.sort
       projection = MaterializedProjection.new(
         service: @service,
@@ -79,7 +79,10 @@ module SearchAnalytics
       selection_rates = SelectionRates.call(service: @service, dates: @dates, definitions: @definitions)
       payload = MaterializedAggregate.new(period: @period, results:, projection:, query_dates:, selection_rates:).payload
       attach_outcomes(payload, projection, metadata, dates)
-      payload['frontend_events'] = FrontendEvents.call(records: frontend, dates: @dates, supported: @service == 'uk' && @period.view != 'classic')
+      payload['frontend_events'] = FrontendEvents.call(
+        records: frontend, dates: @dates, offer_records: backend.select { |row| row.name == 'result_offers' },
+        supported: @service == 'uk' && @period.view != 'classic'
+      )
       payload.merge!(OutcomeRates.call(service: @service, dates: @dates, view: @period.view, definitions: @definitions))
       payload['actions'] = ActionBreakdown.call(service: @service, dates: @dates, period: @period, definitions: @definitions, payload:, materialized: true)
       payload['coverage'] = DailyResults.coverage(

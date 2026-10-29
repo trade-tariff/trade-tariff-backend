@@ -215,7 +215,7 @@ RSpec.describe 'bin/db-replicate' do
         exit 0
       fi
 
-      if [[ "$*" == *"--single-transaction"* ]]; then
+      if [[ "$1" == "-X" ]]; then
         cat > "$TMPDIR/core-restore.sql"
 
         if [[ -f "$TMPDIR/always_fail_core_restore" ]]; then
@@ -306,19 +306,67 @@ RSpec.describe 'bin/db-replicate' do
     expect(command_log(tempdir)).to include('sleep 5')
   end
 
-  it 'restores the core dump once in a transaction and runs maintenance separately' do
+  it 'restores the core dump once in an explicit transaction and runs maintenance separately' do
     install_successful_command_stubs
 
     _stdout, stderr, status = run_replicate(tempdir)
 
     expect(status).to be_success, stderr
     expect(command_log(tempdir).grep(
-      %r{\Apsql --single-transaction -v ON_ERROR_STOP=1 postgres://database\.example\.test/tariff\z},
+      %r{\Apsql -X -v ON_ERROR_STOP=1 postgres://database\.example\.test/tariff\z},
     ).count).to eq(1)
-    expect(File.read("#{tempdir}/core-restore.sql")).to include('CREATE TABLE restored_table')
-    expect(File.read("#{tempdir}/core-restore.sql")).not_to include('ANALYZE;')
+    expect(command_log(tempdir).grep(/--single-transaction/)).to be_empty
+
+    core_restore = File.read("#{tempdir}/core-restore.sql")
+    expect(core_restore).to start_with("BEGIN;\n")
+    expect(core_restore).to end_with("COMMIT;\n")
+    expect(core_restore).to include('CREATE TABLE restored_table')
+    expect(core_restore).not_to include('ANALYZE;')
     expect(File.read("#{tempdir}/post-restore.sql")).to include("\nANALYZE;\n")
     expect(File.read("#{tempdir}/post-restore.sql")).not_to include('VACUUM')
+  end
+
+  it 'moves the evaluation tables aside before the dump, then drops production\'s copies and moves them back' do
+    install_successful_command_stubs
+
+    _stdout, stderr, status = run_replicate(tempdir)
+
+    expect(status).to be_success, stderr
+    core_restore = File.read("#{tempdir}/core-restore.sql")
+    moved_aside = core_restore.index('SET SCHEMA replication_holding')
+    restored = core_restore.index('CREATE TABLE restored_table')
+    production_copies_dropped = core_restore.index('DROP TABLE IF EXISTS')
+    moved_back = core_restore.index('ALTER TABLE replication_holding.')
+    expect(moved_aside).to be < restored
+    expect(restored).to be < production_copies_dropped
+    expect(production_copies_dropped).to be < moved_back
+    expect(core_restore).to include('uk.evaluation_experiments', 'uk.tariff_knowledge_synthetic_atars')
+  end
+
+  it 'keeps the local applied state of the evaluation-only migrations around the restore' do
+    install_successful_command_stubs
+
+    _stdout, stderr, status = run_replicate(tempdir)
+
+    expect(status).to be_success, stderr
+    core_restore = File.read("#{tempdir}/core-restore.sql")
+    saved = core_restore.index('replication_preserved_migrations')
+    restored = core_restore.index('CREATE TABLE restored_table')
+    put_back = core_restore.rindex('INSERT INTO uk.schema_migrations')
+    expect(saved).to be < restored
+    expect(restored).to be < put_back
+    expect(core_restore).to include("'20260803000001_create_evaluation_experiments.rb'")
+  end
+
+  it 'never commits when the dump cannot be read to the end' do
+    install_successful_command_stubs
+    touch_flag 'fail_gzip_once'
+
+    _stdout, _stderr, status = run_replicate(tempdir)
+
+    expect(status).not_to be_success
+    expect(File.read("#{tempdir}/core-restore.sql")).not_to include('COMMIT;')
+    expect(command_log(tempdir).grep(/aws ecs update-service .*backend-web.*--desired-count 2/).count).to eq(1)
   end
 
   it 'acquires the replication lock before changing service desired counts' do
@@ -468,7 +516,7 @@ RSpec.describe 'bin/db-replicate' do
 
     expect(status).not_to be_success
     expect(stderr).to include('permanent core restore failure')
-    expect(command_log(tempdir).grep(/psql --single-transaction -v ON_ERROR_STOP=1/).count).to eq(1)
+    expect(command_log(tempdir).grep(/psql -X -v ON_ERROR_STOP=1/).count).to eq(1)
     expect(command_log(tempdir).grep(/aws s3 sync/)).to be_empty
   end
 
@@ -480,7 +528,7 @@ RSpec.describe 'bin/db-replicate' do
 
     expect(status).not_to be_success
     expect(command_log(tempdir).grep(
-      %r{\Apsql --single-transaction -v ON_ERROR_STOP=1 postgres://database\.example\.test/tariff\z},
+      %r{\Apsql -X -v ON_ERROR_STOP=1 postgres://database\.example\.test/tariff\z},
     ).count).to eq(1)
     expect(command_log(tempdir).grep(/aws ecs update-service .*backend-web.*--desired-count 2/).count).to eq(1)
     expect(command_log(tempdir).grep(/aws ecs update-service .*backend-worker.*--desired-count 1/).count).to eq(1)

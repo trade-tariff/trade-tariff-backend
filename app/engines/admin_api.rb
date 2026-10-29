@@ -16,7 +16,9 @@ AdminApi.routes.draw do
       resources :downloads, only: %i[create]
       resources :applies, only: %i[create]
       resources :footnotes, only: %i[index show update]
-      resources :search_references, only: %i[index show], constraints: { id: /\d+/ }
+      resources :search_references, only: %i[index show], constraints: { id: /\d+/ } do
+        get :export, on: :collection
+      end
       resources :search_diagnostics, only: %i[index show], param: :request_id, constraints: { request_id: /[^\/.]+/ }
       resources :search_analytics, only: [:index]
       if TradeTariffBackend.uk?
@@ -182,6 +184,9 @@ AdminApi.routes.draw do
                 get :versions
               end
             end
+          end
+          resources :synthetic_input_sets, only: %i[index show create destroy] do
+            resources :items, controller: 'synthetic_input_set_items', only: %i[index]
           end
           resources :runs, only: %i[index show create update] do
             collection do

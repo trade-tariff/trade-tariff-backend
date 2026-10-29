@@ -164,7 +164,7 @@ module Api
           # experiment_id/status above don't have this problem because they pass a plain hash to
           # .where(...) rather than a block, so no virtual row ever rebinds self there.
           def filtered_runs
-            dataset = EvaluationRun.eager(:evaluation_experiment)
+            dataset = EvaluationRun.eager(evaluation_experiment: %i[evaluation_gold_query_set evaluation_synthetic_input_set])
             dataset = dataset.where(experiment_id: params[:experiment_id]) if params[:experiment_id].present?
             dataset = dataset.where(status: params[:status]) if params[:status].present?
 

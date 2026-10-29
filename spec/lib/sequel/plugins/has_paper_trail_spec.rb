@@ -45,6 +45,31 @@ RSpec.describe Sequel::Plugins::HasPaperTrail do
     end
   end
 
+  describe 'version metadata' do
+    it 'stores the metadata set on the record and then clears it', :aggregate_failures do
+      model_with_plugin.version_metadata = { removal_reason: 'expired', successor_ids: %w[0101999000] }
+      model_with_plugin.destroy
+
+      expect(Version.last.metadata.to_h).to eq('removal_reason' => 'expired', 'successor_ids' => %w[0101999000])
+      expect(model_with_plugin.version_metadata).to be_nil
+    end
+
+    it 'stores no metadata by default' do
+      model_with_plugin.update(content: 'no metadata')
+
+      expect(Version.last.metadata).to be_nil
+    end
+
+    it 'does not write the metadata column when no metadata is set' do
+      model_with_plugin
+      allow(Version).to receive(:create).and_call_original
+
+      model_with_plugin.update(content: 'no metadata')
+
+      expect(Version).to have_received(:create).with(hash_excluding(:metadata))
+    end
+  end
+
   describe '#versions' do
     it 'returns versions for the record' do
       model_with_plugin.update(content: 'v2')
@@ -72,6 +97,50 @@ RSpec.describe Sequel::Plugins::HasPaperTrail do
 
       version = Version.last
       expect(version.whodunnit).to be_nil
+    end
+
+    it 'stores whodunnit_name from TradeTariffRequest' do
+      model_with_plugin
+
+      TradeTariffRequest.set(whodunnit: 'user-123', whodunnit_name: 'Zoë') do
+        model_with_plugin.update(content: 'named change')
+      end
+
+      expect(Version.last).to have_attributes(whodunnit: 'user-123', whodunnit_name: 'Zoë')
+    end
+
+    it 'stores nil whodunnit_name when not set' do
+      model_with_plugin
+
+      TradeTariffRequest.set(whodunnit: 'user-123', whodunnit_name: nil) do
+        model_with_plugin.update(content: 'unnamed change')
+      end
+
+      expect(Version.last.whodunnit_name).to be_nil
+    end
+  end
+
+  describe '.record_version!' do
+    it 'stores whodunnit_name from TradeTariffRequest' do
+      TradeTariffRequest.set(whodunnit: 'user-123', whodunnit_name: 'Jane Smith') do
+        described_class.record_version!(model_with_plugin, event: 'update')
+      end
+
+      expect(Version.last).to have_attributes(whodunnit: 'user-123', whodunnit_name: 'Jane Smith')
+    end
+
+    it 'does not use the request name when another whodunnit is given' do
+      TradeTariffRequest.set(whodunnit: 'user-123', whodunnit_name: 'Jane Smith') do
+        described_class.record_version!(model_with_plugin, event: 'update', whodunnit: 'other-user')
+      end
+
+      expect(Version.last).to have_attributes(whodunnit: 'other-user', whodunnit_name: nil)
+    end
+
+    it 'stores an explicit whodunnit_name' do
+      described_class.record_current_version!(model_with_plugin, whodunnit: 'other-user', whodunnit_name: 'Other User')
+
+      expect(Version.last).to have_attributes(whodunnit: 'other-user', whodunnit_name: 'Other User')
     end
   end
 

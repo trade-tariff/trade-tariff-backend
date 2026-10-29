@@ -2,7 +2,7 @@
 
 module SearchAnalytics
   class DailyResults < Data.define(:service, :period, :view, :bucket_size, :generated_at, :data_through, :payload)
-    def self.call(period:, region:, log_group_name: DailyQuery::SEARCH_LOG_GROUP_NAME, date_range: nil, now: Time.current)
+    def self.call(period:, region:, log_group_name: read_log_group_name, date_range: nil, now: Time.current)
       projected = MaterializedResult.call(period:, region:, log_group_name:, date_range:, now:)
       return projected.value if projected.available
 
@@ -17,7 +17,7 @@ module SearchAnalytics
       end
     end
 
-    def self.legacy_snapshot(period:, region:, log_group_name: DailyQuery::SEARCH_LOG_GROUP_NAME, date_range: nil, now: Time.current)
+    def self.legacy_snapshot(period:, region:, log_group_name: read_log_group_name, date_range: nil, now: Time.current)
       if date_range
         date_range = DateRange.parse(from: date_range.from.iso8601, to: date_range.to.iso8601, now:)
         period = Period.for_range(date_range:, view: period.view)
@@ -32,7 +32,7 @@ module SearchAnalytics
       records = SearchAnalyticsQueryResult.where(service:, reporting_date: dates, name: definitions.keys - %w[journey_outcomes classic_outcomes search_actions] - SelectionRates::SOURCE_NAMES).all
       compatible = records.select { |row| row.fingerprint == definitions.fetch(row.name) }
       frontend_records, backend_records = compatible.partition { |row| row.name == 'frontend_events' }
-      required = definitions.keys - %w[frontend_events journey_outcomes classic_outcomes search_actions search_results] - SelectionRates::SOURCE_NAMES
+      required = definitions.keys - %w[frontend_events journey_outcomes classic_outcomes search_actions search_results result_offers] - SelectionRates::SOURCE_NAMES
       selection_rates = SelectionRates.call(service:, dates:, definitions:)
       selection_records = selection_rates.fetch(:records)
       return if compatible.empty? && selection_records.empty?
@@ -70,6 +70,7 @@ module SearchAnalytics
       payload['availability']['journey_outcome_coverage'] = outcomes.fetch('coverage')
       payload['frontend_events'] = FrontendEvents.call(
         records: frontend_records, dates:,
+        offer_records: backend_records.select { |row| row.name == 'result_offers' },
         supported: service == 'uk' && period.view != 'classic'
       )
       payload.merge!(OutcomeRates.call(service:, dates:, view: period.view, definitions:))
@@ -85,7 +86,14 @@ module SearchAnalytics
       )
     end
 
-    private_class_method :legacy_snapshot
+    # Match production backups locally without changing the collector's log group.
+    def self.read_log_group_name
+      return DailyQuery::SEARCH_LOG_GROUP_NAME unless Rails.env.development?
+
+      ENV.fetch('SEARCH_ANALYTICS_LOG_GROUP_NAME', 'platform-logs-production')
+    end
+
+    private_class_method :legacy_snapshot, :read_log_group_name
 
     def self.coverage(dates:, collected_dates:, records:, required:)
       present = records.group_by(&:name).transform_values { |rows| rows.map(&:reporting_date).uniq.sort }

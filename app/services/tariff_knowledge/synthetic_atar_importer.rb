@@ -57,8 +57,9 @@ module TariffKnowledge
     # would become part of the first header and stop that column being matched.
     BYTE_ORDER_MARK = "\uFEFF".freeze
 
-    def initialize(csv_content:)
+    def initialize(csv_content:, source_workbook: nil)
       @csv_content = csv_content.to_s.delete_prefix(BYTE_ORDER_MARK)
+      @source_workbook = source_workbook.presence
       @summary_errors = []
       @row_errors = []
       @skipped_count = 0
@@ -150,6 +151,10 @@ module TariffKnowledge
       # Only the columns that are in the file are set, so a file without a
       # "Completed by" column cannot blank the values already stored.
       record.set(row.slice(*ATTRIBUTE_COLUMNS))
+      # Both columns only make sense together: a row number on its own, without knowing
+      # which file it is a row of, is not traceable to anything. Left nil when the caller
+      # (for example the rake task) does not know the originating file either.
+      record.set(source_workbook: @source_workbook, source_row: row[:line_number]) if @source_workbook
 
       unless record.valid?
         record.errors.each do |attribute, messages|

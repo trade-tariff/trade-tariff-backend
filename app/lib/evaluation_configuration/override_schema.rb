@@ -17,6 +17,7 @@ module EvaluationConfiguration
     # VectorRetrievalService, OpensearchRetrievalService, HybridRetrievalService#rrf_merge).
     DESCRIPTION_BY_KEY = {
       'question_model' => 'The AI model used to generate clarifying questions during the search.',
+      'reasoning_effort' => 'How hard the question model thinks before it answers. Higher levels are slower and cost more, and may give better answers. Which levels are allowed depends on the question model, and a level it does not support is rejected. If you do not set it, the live search setting is used.',
       'simulator_model' => 'The AI model that plays the role of the person answering clarifying questions, standing in for a real user during an evaluation run.',
       'candidate_limit' => "How many results OpenSearch returns before they're re-ranked and narrowed down.",
       'max_rounds' => 'The most clarifying questions the search can ask before it has to give its best answer.',
@@ -38,6 +39,8 @@ module EvaluationConfiguration
       case key
       when *AllowlistValidator::MODEL_KEYS
         { name: key, config_type: 'options', options: OpenaiClient::MODEL_CONFIGS.keys.map { |model| { key: model, label: model } }, description: }
+      when 'reasoning_effort'
+        { name: key, config_type: 'options', options: AllowlistValidator.reasoning_levels.map { |level| { key: level, label: level } }, description: }
       when *AllowlistValidator::BOOLEAN_KEYS
         { name: key, config_type: 'boolean', description: }
       else

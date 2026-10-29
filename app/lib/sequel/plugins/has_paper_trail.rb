@@ -21,12 +21,12 @@ module Sequel
           Version.where(item_type: record.model.name, item_id: version_item_id_for(record)).any?
         end
 
-        def record_current_version!(record, whodunnit: TradeTariffRequest.whodunnit, created_at: Time.current)
+        def record_current_version!(record, whodunnit: TradeTariffRequest.whodunnit, whodunnit_name: request_whodunnit_name(whodunnit), created_at: Time.current)
           event = version_exists_for?(record) ? 'update' : 'create'
-          record_version!(record, event:, whodunnit:, created_at:)
+          record_version!(record, event:, whodunnit:, whodunnit_name:, created_at:)
         end
 
-        def record_version!(record, event:, whodunnit: TradeTariffRequest.whodunnit, created_at: Time.current)
+        def record_version!(record, event:, whodunnit: TradeTariffRequest.whodunnit, whodunnit_name: request_whodunnit_name(whodunnit), created_at: Time.current)
           return false if record.nil?
 
           Version.create(
@@ -35,10 +35,17 @@ module Sequel
             event: event,
             object: Sequel.pg_jsonb_wrap(record.values.transform_keys(&:to_s)),
             whodunnit: whodunnit,
+            whodunnit_name: whodunnit_name,
             created_at: created_at,
           )
 
           true
+        end
+
+        # The request's name only belongs to the request's whodunnit. Callers that pass another
+        # whodunnit get no name, so a version never pairs one user's ID with another user's name.
+        def request_whodunnit_name(whodunnit)
+          TradeTariffRequest.whodunnit_name if whodunnit == TradeTariffRequest.whodunnit
         end
 
       private
@@ -69,6 +76,10 @@ module Sequel
       end
 
       module InstanceMethods
+        # Set before save or destroy to store deletion-time or change-time facts on the version.
+        # It is cleared after the version is written.
+        attr_accessor :version_metadata
+
         def versions
           Version.where(item_type: model.name, item_id: item_id_for_version)
                  .order(:created_at)
@@ -94,14 +105,21 @@ module Sequel
         def create_version(event)
           return if model.paper_trail_disabled?
 
-          Version.create(
+          attributes = {
             item_type: model.name,
             item_id: item_id_for_version,
             event: event,
             object: Sequel.pg_jsonb_wrap(values_for_version),
             whodunnit: TradeTariffRequest.whodunnit,
+            whodunnit_name: TradeTariffRequest.whodunnit_name,
             created_at: Time.current,
-          )
+          }
+          # Only versions with a snapshot write the metadata column, so other versioned models
+          # do not depend on it.
+          attributes[:metadata] = Sequel.pg_jsonb_wrap(version_metadata.deep_stringify_keys) if version_metadata
+
+          Version.create(attributes)
+          self.version_metadata = nil
         end
 
         def item_id_for_version

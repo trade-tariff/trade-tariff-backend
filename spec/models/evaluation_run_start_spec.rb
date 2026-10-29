@@ -104,6 +104,96 @@ RSpec.describe EvaluationRun do
       expect(run.configuration_digest).to match(/\A[0-9a-f]{16}\z/)
     end
 
+    describe 'reasoning_effort' do
+      def start(overrides = {})
+        described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: SecureRandom.uuid, run_time_overrides: overrides)
+      end
+
+      it 'records the globally configured reasoning_effort in the effective configuration' do
+        expect(start.effective_configuration['reasoning_effort']).to eq('medium')
+      end
+
+      it 'applies a run-time reasoning_effort on top of the global setting' do
+        expect(start('reasoning_effort' => 'high').effective_configuration['reasoning_effort']).to eq('high')
+      end
+
+      it 'gives runs a different digest when only reasoning_effort differs' do
+        expect(start('reasoning_effort' => 'high').configuration_digest).not_to eq(start('reasoning_effort' => 'low').configuration_digest)
+      end
+
+      it 'gives runs a different digest when the global reasoning_effort changes between them' do
+        allow(AdminConfiguration).to receive(:nested_options_value).and_call_original
+        allow(AdminConfiguration).to receive(:nested_options_value).with('search_model')
+          .and_return({ selected: 'gpt-5.4', sub_values: { 'reasoning_effort' => 'low' } }, { selected: 'gpt-5.4', sub_values: { 'reasoning_effort' => 'high' } })
+
+        expect(start.configuration_digest).not_to eq(start.configuration_digest)
+      end
+
+      it 'rejects a reasoning_effort the run\'s question_model does not support, and creates no run' do
+        expect {
+          expect { start('question_model' => 'gpt-5.2', 'reasoning_effort' => 'xhigh') }
+            .to raise_error(EvaluationConfiguration::OverrideValidationError, /gpt-5\.2/)
+        }.not_to change(described_class, :count)
+      end
+
+      # The eval app sends a run's recorded effective_configuration back as the overrides for every
+      # search it makes, so that recorded configuration has to pass the same validation again.
+      context 'when the run only changes the question model' do
+        before do
+          allow(AdminConfiguration).to receive(:nested_options_value).and_call_original
+          allow(AdminConfiguration).to receive(:nested_options_value).with('search_model')
+            .and_return(selected: 'gpt-5.4', sub_values: { 'reasoning_effort' => 'xhigh' })
+        end
+
+        it 'keeps the live effort when the new model supports it' do
+          expect(start('question_model' => 'gpt-5.5').effective_configuration['reasoning_effort']).to eq('xhigh')
+        end
+
+        it 'records the effort the search will really use when the live effort does not suit the new model' do
+          expect(start('question_model' => 'gpt-5.2').effective_configuration['reasoning_effort']).to eq('none')
+        end
+
+        it 'records no effort for a model that does not reason' do
+          expect(start('question_model' => 'gpt-4o-mini').effective_configuration).not_to have_key('reasoning_effort')
+        end
+
+        %w[gpt-5.5 gpt-5.2 gpt-4o-mini].each do |model|
+          it "records a configuration the search endpoint accepts back as overrides, for #{model}" do
+            run = start('question_model' => model)
+
+            expect(EvaluationConfiguration::AllowlistValidator.call(run.effective_configuration)).to be true
+          end
+        end
+      end
+
+      context 'when the live question model does not reason' do
+        before do
+          allow(AdminConfiguration).to receive(:nested_options_value).and_call_original
+          allow(AdminConfiguration).to receive(:nested_options_value).with('search_model')
+            .and_return(selected: 'gpt-4o-mini', sub_values: {})
+        end
+
+        it 'records no effort, and a configuration the search endpoint accepts back as overrides' do
+          run = start
+
+          expect(run.effective_configuration).not_to have_key('reasoning_effort')
+          expect(EvaluationConfiguration::AllowlistValidator.call(run.effective_configuration)).to be true
+        end
+      end
+
+      it 'records a configuration the search endpoint accepts back as overrides, with no overrides at all' do
+        expect(EvaluationConfiguration::AllowlistValidator.call(start.effective_configuration)).to be true
+      end
+
+      it 'checks a reasoning_effort override against the baseline question_model when the run does not override it' do
+        allow(EvaluationConfiguration::BaselineProvider).to receive(:call).and_wrap_original do |original|
+          original.call.merge('question_model' => 'gpt-5.2')
+        end
+
+        expect { start('reasoning_effort' => 'xhigh') }.to raise_error(EvaluationConfiguration::OverrideValidationError, /gpt-5\.2/)
+      end
+    end
+
     it 'stores a 16-character configuration_digest' do
       run = described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: SecureRandom.uuid)
       expect(run.configuration_digest).to match(/\A[0-9a-f]{16}\z/)
@@ -129,6 +219,15 @@ RSpec.describe EvaluationRun do
       run = described_class.start!(experiment: experiment_with_set, triggered_by: 'operator', idempotency_key: SecureRandom.uuid)
 
       expect(run.intended_result_count).to eq(3)
+    end
+
+    it "snapshots the experiment's synthetic input set size onto intended_result_count at the moment it starts" do
+      synthetic_input_set = create(:evaluation_synthetic_input_set, actual_size: 5)
+      experiment_with_set = create(:evaluation_experiment, name: 'experiment-with-synthetic-set', synthetic_input_set_id: synthetic_input_set.id)
+
+      run = described_class.start!(experiment: experiment_with_set, triggered_by: 'operator', idempotency_key: SecureRandom.uuid)
+
+      expect(run.intended_result_count).to eq(5)
     end
 
     it 'leaves intended_result_count nil when the experiment has no gold query set' do

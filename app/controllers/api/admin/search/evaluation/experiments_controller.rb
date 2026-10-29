@@ -21,13 +21,20 @@ module Api
             end
           end
 
+          # Locks the row before validating, the same way RunsController#update does: the
+          # source-locked check compares against whatever was loaded, so without the lock, a
+          # different source chosen by another request after this one loaded the experiment
+          # would be silently overwritten instead of rejected.
           def update
-            experiment.set(update_params)
+            EvaluationExperiment.db.transaction do
+              experiment.lock!
+              experiment.set(update_params)
 
-            if experiment.valid? && experiment.save
-              render json: serialize(experiment), status: :ok
-            else
-              render json: serialize_errors(experiment), status: :unprocessable_content
+              if experiment.valid? && experiment.save
+                render json: serialize(experiment), status: :ok
+              else
+                render json: serialize_errors(experiment), status: :unprocessable_content
+              end
             end
           end
 
@@ -55,7 +62,7 @@ module Api
           def serializer_class = Api::Admin::Search::Evaluation::ExperimentSerializer
 
           def experiments
-            @experiments ||= EvaluationExperiment.order(:name).paginate(current_page, per_page)
+            @experiments ||= EvaluationExperiment.eager(:evaluation_gold_query_set, :evaluation_synthetic_input_set).order(:name).paginate(current_page, per_page)
           end
 
           def experiment
@@ -64,14 +71,14 @@ module Api
 
           def experiment_params
             params.require(:data).require(:attributes).permit(
-              :name, :description, :enabled, :gold_query_set_id,
+              :name, :description, :enabled, :gold_query_set_id, :synthetic_input_set_id,
               configuration_overrides: {}, default_scope: {}
             ).to_h
           end
 
           def update_params
             params.require(:data).require(:attributes).permit(
-              :description, :enabled, :gold_query_set_id,
+              :description, :enabled, :gold_query_set_id, :synthetic_input_set_id,
               configuration_overrides: {}, default_scope: {}
             ).to_h
           end

@@ -365,6 +365,17 @@ RSpec.describe TradeTariffBackend::Config do
       end
     end
 
+    context 'when ENVIRONMENT is uat' do
+      before do
+        ENV['ENVIRONMENT'] = 'uat'
+        ENV.delete('REPORTING_CDN_HOST')
+      end
+
+      it 'returns the uat reporting host' do
+        expect(config.reporting_cdn_host).to eq('https://reporting.uat.trade-tariff.service.gov.uk')
+      end
+    end
+
     context 'when ENVIRONMENT is development' do
       before do
         ENV['ENVIRONMENT'] = 'development'
@@ -435,6 +446,33 @@ RSpec.describe TradeTariffBackend::Config do
             'input_per_million_tokens' => 10.0,
             'cached_input_per_million_tokens' => 1.0,
             'output_per_million_tokens' => 50.0,
+            'cache_write_input_multiplier' => 1.25,
+            'long_context_input_token_threshold' => 272_000,
+            'long_context_input_multiplier' => 2.0,
+            'long_context_output_multiplier' => 1.5,
+          },
+          'gpt-6.1-sol' => {
+            'input_per_million_tokens' => 2.0,
+            'cached_input_per_million_tokens' => 0.1,
+            'output_per_million_tokens' => 10.0,
+            'cache_write_input_multiplier' => 1.25,
+            'long_context_input_token_threshold' => 272_000,
+            'long_context_input_multiplier' => 2.0,
+            'long_context_output_multiplier' => 1.5,
+          },
+          'gpt-6.1-terra' => {
+            'input_per_million_tokens' => 1.0,
+            'cached_input_per_million_tokens' => 0.05,
+            'output_per_million_tokens' => 5.0,
+            'cache_write_input_multiplier' => 1.25,
+            'long_context_input_token_threshold' => 272_000,
+            'long_context_input_multiplier' => 2.0,
+            'long_context_output_multiplier' => 1.5,
+          },
+          'gpt-6-luna' => {
+            'input_per_million_tokens' => 0.1,
+            'cached_input_per_million_tokens' => 0.01,
+            'output_per_million_tokens' => 0.5,
             'cache_write_input_multiplier' => 1.25,
             'long_context_input_token_threshold' => 272_000,
             'long_context_input_multiplier' => 2.0,
@@ -551,6 +589,23 @@ RSpec.describe TradeTariffBackend::Config do
       it 'extracts addresses from a JSON hash (AWS Secrets Manager format)' do
         ENV['CUPID_TEAM_TO_EMAILS'] = '{"backend-cupid-team-to-emails":"cupid@example.com"}'
         expect(config.cupid_team_to_emails).to eq(['cupid@example.com'])
+      end
+    end
+
+    describe '.search_references_report_to_emails' do
+      it 'returns an empty array when the env var is not set' do
+        ENV.delete('SEARCH_REFERENCES_REPORT_TO_EMAILS')
+        expect(config.search_references_report_to_emails).to eq([])
+      end
+
+      it 'splits a comma-separated list into an array' do
+        ENV['SEARCH_REFERENCES_REPORT_TO_EMAILS'] = 'a@example.com, b@example.com'
+        expect(config.search_references_report_to_emails).to eq(['a@example.com', 'b@example.com'])
+      end
+
+      it 'extracts addresses from a JSON hash (AWS Secrets Manager format)' do
+        ENV['SEARCH_REFERENCES_REPORT_TO_EMAILS'] = '{"backend-search-references-report-to-emails":"a@example.com"}'
+        expect(config.search_references_report_to_emails).to eq(['a@example.com'])
       end
     end
   end

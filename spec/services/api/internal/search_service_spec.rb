@@ -52,6 +52,20 @@ RSpec.describe Api::Internal::SearchService do
       end
     end
 
+    it 'records offers independently of export expansion capture' do
+      allow(TradeTariffBackend.search_client).to receive(:search).and_return({ 'hits' => { 'hits' => [] } })
+      allow(Search::ResultOffers).to receive(:record)
+      described_class.new(q: 'chicken', expanded_query: 'chicken poultry', request_id: 'offers-journey').call
+      expect(Search::ResultOffers).to have_received(:record).with(response: hash_including(data: []), request_id: 'offers-journey')
+    end
+
+    it 'does not record guided offers for internal classic search' do
+      allow(TradeTariffBackend.search_client).to receive(:search).and_return({ 'hits' => { 'hits' => [] } })
+      allow(Search::ResultOffers).to receive(:record)
+      described_class.new(q: 'chicken', search_type: 'internal').call
+      expect(Search::ResultOffers).not_to have_received(:record)
+    end
+
     it 'captures the original input before processing CAS prefixes' do
       allow(TradeTariffBackend.search_client).to receive(:search).and_return({ 'hits' => { 'hits' => [] } })
       allow(SearchExport::JourneyProjection).to receive(:record)
@@ -241,6 +255,12 @@ RSpec.describe Api::Internal::SearchService do
         configuration = captured_diagnostics_configuration('question_model' => 'gpt-4o-mini')
 
         expect(configuration.fetch(:search_model)).to eq(selected: 'gpt-4o-mini', reasoning_effort: 'medium')
+      end
+
+      it 'reflects a reasoning_effort override on search_model[:reasoning_effort]' do
+        configuration = captured_diagnostics_configuration('question_model' => 'gpt-5.6-luna', 'reasoning_effort' => 'max')
+
+        expect(configuration.fetch(:search_model)).to eq(selected: 'gpt-5.6-luna', reasoning_effort: 'max')
       end
 
       it 'falls back to AdminConfiguration for search_model when no question_model override is supplied' do
@@ -1140,6 +1160,27 @@ RSpec.describe Api::Internal::SearchService do
         expect(result[:data].length).to eq(1)
         expect(result[:meta]).not_to have_key(:interactive_search)
         expect(result.dig(:meta, :search_failures)).to eq([])
+      end
+
+      it 'does not capture classifier reporting' do
+        allow(SearchExport::JourneyProjection).to receive(:record)
+        allow(Search::ResultOffers).to receive(:record)
+
+        described_class.new(q: 'handbag', skip_question: true).call
+
+        expect(SearchExport::JourneyProjection).not_to have_received(:record)
+        expect(Search::ResultOffers).not_to have_received(:record)
+      end
+
+      it 'captures zero-question guided results' do
+        allow(InteractiveSearchService).to receive(:call).and_return(nil)
+        allow(SearchExport::JourneyProjection).to receive(:record)
+        allow(Search::ResultOffers).to receive(:record)
+
+        described_class.new(q: 'handbag', skip_question: false).call
+
+        expect(SearchExport::JourneyProjection).to have_received(:record).with(hash_including(answers: []))
+        expect(Search::ResultOffers).to have_received(:record)
       end
 
       it 'runs the question round when skip_question is false' do
@@ -2576,11 +2617,22 @@ RSpec.describe Api::Internal::SearchService do
         )
       end
 
+      it 'passes reasoning_effort through to InteractiveSearchService' do
+        described_class.new(
+          q: 'horses',
+          configuration_overrides: { 'question_model' => 'gpt-5.6-luna', 'reasoning_effort' => 'max' },
+        ).call
+
+        expect(InteractiveSearchService).to have_received(:call).with(
+          hash_including(question_model: 'gpt-5.6-luna', reasoning_effort: 'max'),
+        )
+      end
+
       it "defaults every override to nil when configuration_overrides is not given, reproducing today's behaviour" do
         described_class.new(q: 'horses').call
 
         expect(InteractiveSearchService).to have_received(:call).with(
-          hash_including(max_rounds: nil, question_model: nil, search_compressed_notes_enabled: nil, search_general_rules_enabled: nil),
+          hash_including(max_rounds: nil, question_model: nil, reasoning_effort: nil, search_compressed_notes_enabled: nil, search_general_rules_enabled: nil),
         )
       end
     end

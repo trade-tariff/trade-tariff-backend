@@ -415,6 +415,9 @@ module Api
       end
 
       def finish_terminal(response)
+        return response if @skip_question
+
+        ::Search::ResultOffers.record(response:, request_id:) if @search_type == 'interactive'
         # Older clients return a query containing both expansion and answer refinements.
         # Without separate expansion data, omit the capture rather than guess.
         return response if @retrieval_expansion_terms.nil?
@@ -558,9 +561,9 @@ module Api
 
       def diagnostics_search_model
         config = model_configuration('search_model')
-        return config if @configuration_overrides['question_model'].blank?
-
-        config.merge(selected: @configuration_overrides['question_model'])
+        config = config.merge(selected: @configuration_overrides['question_model']) if @configuration_overrides['question_model'].present?
+        config = config.merge(reasoning_effort: @configuration_overrides['reasoning_effort']) if @configuration_overrides['reasoning_effort'].present?
+        config
       end
 
       def model_configuration(name)
@@ -693,6 +696,7 @@ module Api
           request_id: request_id,
           max_rounds: @configuration_overrides['max_rounds'],
           question_model: @configuration_overrides['question_model'],
+          reasoning_effort: @configuration_overrides['reasoning_effort'],
           search_compressed_notes_enabled: @configuration_overrides['search_compressed_notes_enabled'],
           search_general_rules_enabled: @configuration_overrides['search_general_rules_enabled'],
           search_type: @search_type,

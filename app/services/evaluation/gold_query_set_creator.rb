@@ -5,13 +5,13 @@ module Evaluation
   # checking the input, picking the source items at random and queueing one job. The
   # slow part, asking the model for each item, runs in Sidekiq.
   #
-  #   set = Evaluation::GoldQuerySetCreator.call(name: 'Set A', requested_size: 100, atar_percentage: 20, created_by: 'user-123')
+  #   set = Evaluation::GoldQuerySetCreator.call(name: 'Set A', requested_size: 100, created_by: 'user-123')
   #   set.errors.empty? # false when nothing was created, and the errors say why
   class GoldQuerySetCreator
     def self.call(...) = new(...).call
 
-    def initialize(name:, requested_size:, atar_percentage:, created_by:)
-      @attributes = { name:, requested_size:, atar_percentage:, created_by: }
+    def initialize(name:, requested_size:, created_by:)
+      @attributes = { name:, requested_size:, created_by: }
     end
 
     def call
@@ -20,7 +20,7 @@ module Evaluation
 
       items = sample(set)
       if items.empty?
-        set.errors.add(:requested_size, 'cannot be met, because there are no ATaR rulings or synthetic ATaRs to generate from')
+        set.errors.add(:requested_size, 'cannot be met, because there are no ATaR rulings to generate from')
         return set
       end
 
@@ -32,17 +32,10 @@ module Evaluation
 
   private
 
-    # round(size x percentage / 100) items come from the real ATaR rulings and the rest from
-    # the synthetic ATaRs. If a source has fewer items than asked for, all of them are taken
-    # and planned_count records the shortfall. The other source does not top it up.
+    # Synthetic ATaRs no longer feed gold query set generation (AI-1448) -- every item now
+    # comes from the real ATaR rulings only.
     def sample(set)
-      atar_count = (set.requested_size * set.atar_percentage / 100.0).round
-      synthetic_count = set.requested_size - atar_count
-
-      atars = random_values(TariffKnowledge::PublicAtarRuling, :ref, atar_count).map { |ref| ['atar', ref] }
-      synthetic_atars = random_values(TariffKnowledge::SyntheticAtar, :id, synthetic_count).map { |id| ['synthetic_atar', id.to_s] }
-
-      atars + synthetic_atars
+      random_values(TariffKnowledge::PublicAtarRuling, :ref, set.requested_size).map { |ref| ['atar', ref] }
     end
 
     # A random sample without replacement: each row can be picked at most once.

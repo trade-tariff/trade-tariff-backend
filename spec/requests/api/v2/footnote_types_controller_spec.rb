@@ -1,6 +1,6 @@
 RSpec.describe Api::V2::FootnoteTypesController, type: :request do
   describe '#index' do
-    let(:first_footnote_type) { create :footnote_type }
+    let(:first_footnote_type) { create :footnote_type, footnote_type_id: '01' }
     let(:pattern) do
       {
         "data": [{
@@ -29,8 +29,8 @@ RSpec.describe Api::V2::FootnoteTypesController, type: :request do
                  }],
       }
     end
-    let(:second_footnote_type) { create :footnote_type }
-    let(:third_footnote_type) { create :footnote_type }
+    let(:second_footnote_type) { create :footnote_type, footnote_type_id: '02' }
+    let(:third_footnote_type) { create :footnote_type, footnote_type_id: '03' }
 
     before do
       create :footnote_type_description, footnote_type_id: first_footnote_type.footnote_type_id

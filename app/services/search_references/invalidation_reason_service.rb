@@ -17,14 +17,8 @@ module SearchReferences
 
     private_constant :RETAINED_REASONS
 
-    FRONTEND_PATH_SEGMENTS = {
-      'Chapter' => 'chapters',
-      'Heading' => 'headings',
-      'Subheading' => 'subheadings',
-      'Commodity' => 'commodities',
-    }.freeze
-
-    private_constant :FRONTEND_PATH_SEGMENTS
+    # Reasons that lead to automatic removal, in the order the invalidation alert lists them.
+    REMOVAL_REASONS = %i[missing expired superseded unknown].freeze
 
     def self.call(search_reference)
       new(search_reference).call
@@ -73,7 +67,7 @@ module SearchReferences
     end
 
     def auto_deletion?
-      %i[missing expired superseded unknown].include?(reason)
+      REMOVAL_REASONS.include?(reason)
     end
 
     def removal_alert_required?
@@ -101,29 +95,11 @@ module SearchReferences
     # Derived from the cached referenced_class/item_id/productline_suffix on the
     # search reference itself, so it's still available even in the "missing" case.
     def goods_nomenclature_url
-      return if TradeTariffBackend.frontend_host.blank?
-
-      path_segment = FRONTEND_PATH_SEGMENTS[@search_reference.referenced_class]
-      return if path_segment.blank?
-
-      code = frontend_code
-      return if code.blank?
-
-      URI.join(TradeTariffBackend.frontend_host, "#{path_segment}/", code).to_s
-    rescue URI::InvalidURIError
-      nil
-    end
-
-    def frontend_code
-      item_id = @search_reference.goods_nomenclature_item_id
-      return if item_id.blank?
-
-      case @search_reference.referenced_class
-      when 'Chapter' then item_id.first(2)
-      when 'Heading' then item_id.first(4)
-      when 'Subheading' then "#{item_id}-#{@search_reference.productline_suffix}"
-      when 'Commodity' then item_id
-      end
+      FrontendUrl.call(
+        referenced_class: @search_reference.referenced_class,
+        goods_nomenclature_item_id: @search_reference.goods_nomenclature_item_id,
+        productline_suffix: @search_reference.productline_suffix,
+      )
     end
   end
 end

@@ -13,6 +13,8 @@ module Api
                  :goods_nomenclature_item_id,
                  :notes,
                  :completed_by,
+                 :source_workbook,
+                 :source_row,
                  :created_at,
                  :updated_at
     end

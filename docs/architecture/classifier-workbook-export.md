@@ -27,20 +27,30 @@ clients and in-flight journeys can lack this expansion data. Their uncaptured jo
 are not counted as export omissions. Existing logs are not repaired.
 
 Dates are inclusive UTC dates. For each request ID, the export uses its latest
-terminal trace within that window. Existing backend `result_selected` events
-join by request ID; classic searches without a guided terminal trace do not
-become rows. Distinct clicked codes appear in first-click order, with descriptions
-from the terminal trace. No additional frontend capture endpoint is required.
+terminal trace within that window. Successful frontend commodity `show` requests
+(HTTP 200 or 304) join through `params.request_id`; only `params.id` codes in the
+offered results appear in the workbook. Classic searches without a guided terminal
+trace do not become rows. Distinct opened codes appear in first-visit order,
+with descriptions from the terminal trace. No additional frontend capture
+endpoint is required.
 
-Click collection ends at the earlier of export generation and midnight UTC one
-day after the requested end date. Later clicks are not included. Linked failure
+The template retains the **Results clicked** column name, but the value is an
+observed successful frontend page request, not proof of a literal click or page
+view. A blank means no linked visit was observed; a visit served entirely from
+browser cache may not generate a frontend request. Backend `result_selected`
+events do not establish this value because frontend caching can bypass them.
+
+A visit counts from the journey's first exported terminal response until
+midnight UTC at the end of the following day, or until export generation if that
+is earlier. For a one-day export, this is the export's next-day cutoff. Later
+visits are not included. Linked failure
 events mark a journey as omitted. Invalid rows, including more than seven
 questions or an answer not offered, also contribute to the omission count.
 
 Only available logs can be exported. Dates before v2 trace deployment, expired
 logs and unrecorded journeys cannot be reconstructed and are not counted as
 omissions. An empty workbook does not establish that no searches took place.
-Recent exports are provisional because log ingestion and clicks can arrive later.
+Recent exports are provisional because log ingestion and visits can arrive later.
 
 ## Temporary job and download storage
 
@@ -59,8 +69,22 @@ worker caching remains disabled. Redis loss or expiry requires a new export requ
 
 ## Log retrieval
 
-The reader queries one UTC day at a time. It splits a window when results reach
-the CloudWatch limit or query statistics show more matches than returned rows.
+The reader first queries backend and worker streams one UTC day at a time. It
+then queries frontend streams for the same days, for the Result journeys that
+can have visits on each day. Search-linked frontend requests, mostly from classic
+search, far outnumber guided journeys, so the journey query does not read them.
+Visit queries filter on request ID prefixes to stay within the CloudWatch query
+length limit; the reader then matches complete request IDs.
+
+The visit pass scans each day again, so an export scans about twice as much log
+data as journey retrieval alone. One visit query covers up to 900 Result journeys.
+A day with more journeys from that day and the previous day needs another query,
+which scans the day again. Before it reads visits, the reader projects their scan
+from the journey scan of each day. It fails at once if the total would exceed
+500 GiB.
+
+Each query splits a window when results reach the CloudWatch limit or query
+statistics show more matches than returned rows.
 Half-open timestamp filters prevent overlap between split windows. A saturated
 one-second window fails the export rather than returning a partial workbook.
 

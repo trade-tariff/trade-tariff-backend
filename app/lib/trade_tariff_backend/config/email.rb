@@ -48,6 +48,13 @@ module TradeTariffBackend
         ENV['MYOTT_REPORT_EMAIL']
       end
 
+      def search_references_report_to_emails
+        raw = ENV['SEARCH_REFERENCES_REPORT_TO_EMAILS']
+        return [] if raw.blank?
+
+        parse_email_list(raw)
+      end
+
     private
 
       def parse_email_list(raw)

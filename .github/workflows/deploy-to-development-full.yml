@@ -19,6 +19,9 @@ jobs:
     if: >
       github.event_name == 'workflow_dispatch' ||
       contains(github.event.pull_request.labels.*.name, 'needs-full-deployment')
+    concurrency:
+      group: deploy-development-tariff-backend
+      cancel-in-progress: false
     uses: trade-tariff/trade-tariff-tools/.github/workflows/deploy-multi-ecs.yml@main
     with:
       environment: development

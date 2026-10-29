@@ -101,6 +101,23 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
       end
     end
 
+    it 'reads offered-only result rows through both readers without refreshing views' do
+      SearchAnalyticsQueryResult.where(name: 'frontend_events').update(rows: Sequel.pg_jsonb([
+        { 'journey_key' => key('guided'), 'outcome' => 'results', 'event_count' => '1', 'navigation_observations' => '0', 'navigation_total_ms' => '0' },
+      ]))
+      SearchAnalyticsQueryResult.where(name: 'result_offers').update(rows: Sequel.pg_jsonb([
+        { 'result_rank' => '6', 'confidence' => 'possible', 'event_count' => '4' },
+      ]))
+      expect_parity
+      result = described_class.call(**arguments).value.payload.fetch('frontend_events')
+      expect(result['selections']).to eq([
+        { 'result_rank' => 6, 'confidence' => 'possible', 'event_count' => 0, 'offered_count' => 8, 'selection_rate' => 0.0 },
+      ])
+      SearchAnalyticsQueryResult.where(name: 'result_offers', reporting_date: first_date).update(fingerprint: 'stale')
+      expect_parity
+      expect(described_class.call(**arguments).value.payload.dig('frontend_events', 'selection_coverage', 'complete')).to be(false)
+    end
+
     it 'reads regenerated search-only rates without refreshing journey views or changing other metrics' do
       previous = described_class.call(**arguments).value.payload
       untouched = SearchAnalyticsQueryResult.exclude(name: 'search_results').order(:id).all.map(&:values)

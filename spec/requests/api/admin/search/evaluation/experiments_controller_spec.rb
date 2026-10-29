@@ -160,12 +160,67 @@ RSpec.describe Api::Admin::Search::Evaluation::ExperimentsController, :admin do
       it { expect { api_response }.not_to(change { experiment.reload.gold_query_set_id }) }
     end
 
-    context 'when clearing the gold query set' do
+    context 'when trying to clear an already-chosen gold query set' do
       let(:id) { experiment.id }
       let(:experiment) { create(:evaluation_experiment, gold_query_set_id: create(:evaluation_gold_query_set).id) }
       let(:params) { { data: { type: :experiment, attributes: { gold_query_set_id: nil } } } }
 
-      it { expect { api_response }.to change { experiment.reload.gold_query_set_id }.to(nil) }
+      it { is_expected.to have_http_status :unprocessable_content }
+      it { expect { api_response }.not_to(change { experiment.reload.gold_query_set_id }) }
+    end
+
+    context 'when choosing a synthetic input set' do
+      let(:id) { experiment.id }
+      let(:params) { { data: { type: :experiment, attributes: { synthetic_input_set_id: synthetic_input_set.id } } } }
+
+      def synthetic_input_set
+        @synthetic_input_set ||= create(:evaluation_synthetic_input_set)
+      end
+
+      it { is_expected.to have_http_status :success }
+      it { expect { api_response }.to change { experiment.reload.synthetic_input_set_id }.from(nil).to(synthetic_input_set.id) }
+    end
+
+    context 'when trying to change an already-chosen synthetic input set' do
+      let(:id) { experiment.id }
+      let(:experiment) { create(:evaluation_experiment, synthetic_input_set_id: create(:evaluation_synthetic_input_set).id) }
+      let(:params) { { data: { type: :experiment, attributes: { synthetic_input_set_id: create(:evaluation_synthetic_input_set).id } } } }
+
+      it { is_expected.to have_http_status :unprocessable_content }
+      it { expect { api_response }.not_to(change { experiment.reload.synthetic_input_set_id }) }
+    end
+
+    context 'when another request chooses a different source after this one has loaded the experiment' do
+      let(:id) { experiment.id }
+      let(:params) { { data: { type: :experiment, attributes: { gold_query_set_id: gold_query_set.id } } } }
+
+      def gold_query_set
+        @gold_query_set ||= create(:evaluation_gold_query_set)
+      end
+
+      def other_set
+        @other_set ||= create(:evaluation_synthetic_input_set)
+      end
+
+      before do
+        allow(EvaluationExperiment).to receive(:with_pk!).and_wrap_original do |original, id|
+          loaded = original.call(id)
+          allow(loaded).to receive(:lock!).and_wrap_original do |lock, *args|
+            EvaluationExperiment.where(id: loaded.id).update(synthetic_input_set_id: other_set.id)
+            lock.call(*args)
+          end
+          loaded
+        end
+      end
+
+      it { is_expected.to have_http_status :unprocessable_content }
+
+      it "keeps the other request's choice rather than overwriting it" do
+        api_response
+
+        expect(experiment.reload.synthetic_input_set_id).to eq(other_set.id)
+        expect(experiment.reload.gold_query_set_id).to be_nil
+      end
     end
 
     context 'with an unknown experiment' do
@@ -224,6 +279,61 @@ RSpec.describe Api::Admin::Search::Evaluation::ExperimentsController, :admin do
       let(:make_request) { authenticated_delete api_admin_search_evaluation_experiment_path(0, format: :json) }
 
       it { is_expected.to have_http_status :not_found }
+    end
+  end
+
+  describe 'the set an experiment is scored against' do
+    let(:gold_query_set) { create(:evaluation_gold_query_set, name: 'Baseline GQS') }
+    let(:synthetic_input_set) { create(:evaluation_synthetic_input_set, name: 'Baseline SIS') }
+
+    def attributes_of(name)
+      json_response['data'].find { |row| row['attributes']['name'] == name }['attributes']
+    end
+
+    describe 'GET #index' do
+      let(:make_request) { authenticated_get api_admin_search_evaluation_experiments_path(format: :json) }
+
+      before do
+        create(:evaluation_experiment, name: 'on-gold', gold_query_set_id: gold_query_set.id)
+        create(:evaluation_experiment, name: 'on-synthetic', synthetic_input_set_id: synthetic_input_set.id)
+        create(:evaluation_experiment, name: 'on-nothing')
+      end
+
+      it 'names the set of an experiment that uses a gold query set' do
+        expect(attributes_of('on-gold')).to include('source_type' => 'gold_query_set', 'source_name' => 'Baseline GQS')
+      end
+
+      it 'names the set of an experiment that uses a synthetic input set' do
+        expect(attributes_of('on-synthetic')).to include('source_type' => 'synthetic_input_set', 'source_name' => 'Baseline SIS')
+      end
+
+      it 'has no source for an experiment that has not chosen a set yet' do
+        expect(attributes_of('on-nothing')).to include('source_type' => nil, 'source_name' => nil)
+      end
+
+      it 'looks the sets up once for the whole page, not once per experiment' do
+        create_list(:evaluation_experiment, 4) { |experiment, index| experiment.update(gold_query_set_id: create(:evaluation_gold_query_set, name: "GQS #{index}").id) }
+        log = StringIO.new
+        EvaluationExperiment.db.loggers << Logger.new(log)
+
+        begin
+          api_response
+        ensure
+          EvaluationExperiment.db.loggers.pop
+        end
+
+        expect(log.string.scan(/FROM "uk"."evaluation_gold_query_sets"/).size).to eq(1)
+        expect(log.string.scan(/FROM "uk"."evaluation_synthetic_input_sets"/).size).to eq(1)
+      end
+    end
+
+    describe 'GET #show' do
+      let(:experiment) { create(:evaluation_experiment, gold_query_set_id: gold_query_set.id) }
+      let(:make_request) { authenticated_get api_admin_search_evaluation_experiment_path(experiment.id, format: :json) }
+
+      it 'names the set' do
+        expect(json_response['data']['attributes']).to include('source_type' => 'gold_query_set', 'source_name' => 'Baseline GQS')
+      end
     end
   end
 end

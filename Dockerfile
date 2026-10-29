@@ -1,5 +1,5 @@
 # Build compilation image
-ARG RUBY_VERSION=4.0.7
+ARG RUBY_VERSION=4.0.9
 ARG ALPINE_VERSION=3.24
 
 FROM ruby:${RUBY_VERSION}-alpine${ALPINE_VERSION} AS builder
@@ -55,6 +55,7 @@ RUN apk add --no-cache \
     shared-mime-info \
     socat \
     openssl-dev \
+    util-linux-misc \
     tzdata && \
     apk upgrade --no-cache expat && \
     cp /usr/share/zoneinfo/Europe/London /etc/localtime && \

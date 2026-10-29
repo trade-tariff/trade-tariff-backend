@@ -37,14 +37,17 @@ module_function
     updates[:description] = attrs[:description] if config.description != attrs[:description]
 
     refreshed_value = refresh_options(config.value, attrs[:value])
-    updates[:value] = refreshed_value if config.value != refreshed_value
 
-    if updates.empty?
+    if updates.empty? && config.value == refreshed_value
       output "  skip: #{attrs[:name]} (already exists)"
       return 0
     end
 
-    config.update(updates)
+    if config.value != refreshed_value
+      write_option_catalogue(config, refreshed_value)
+      config.refresh
+    end
+    config.update(updates) if updates.any?
     output "  patched: #{attrs[:name]} (definition)"
     1
   end
@@ -53,9 +56,16 @@ module_function
     value = config.value.to_hash.merge('options' => attrs[:value]['options'])
     return 0 if value == config.value.to_hash
 
-    config.update(value: Sequel.pg_jsonb_wrap(value))
+    write_option_catalogue(config, Sequel.pg_jsonb_wrap(value))
     output "  patched: #{attrs[:name]} (options)"
     1
+  end
+
+  # The option catalogue comes from code, not from an operator, so refreshing it
+  # writes through the dataset and does not add a Version row. The operator's
+  # selection is kept, so version history shows only operator changes.
+  def write_option_catalogue(config, value)
+    config.this.update(value:, updated_at: Time.zone.now)
   end
 
   def refresh_options(current_value, seeded_value)

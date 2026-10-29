@@ -11,6 +11,7 @@ module TradeTariffBackend
         {
           'production' => 'https://reporting.trade-tariff.service.gov.uk',
           'staging' => 'https://reporting.staging.trade-tariff.service.gov.uk',
+          'uat' => 'https://reporting.uat.trade-tariff.service.gov.uk',
           'development' => 'https://reporting.dev.trade-tariff.service.gov.uk',
         }[environment.to_s]
       end

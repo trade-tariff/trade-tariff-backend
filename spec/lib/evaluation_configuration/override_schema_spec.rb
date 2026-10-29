@@ -45,4 +45,24 @@ RSpec.describe EvaluationConfiguration::OverrideSchema do
       expect(entry[:description]).to be_present, "#{entry[:name]} has no description"
     end
   end
+
+  it 'describes reasoning_effort as options, listing every level any model supports from least to most' do
+    entry = schema.find { |e| e[:name] == 'reasoning_effort' }
+
+    expect(entry[:config_type]).to eq('options')
+    expect(entry[:options]).to eq(%w[none minimal low medium high xhigh max].map { |level| { key: level, label: level } })
+  end
+
+  it 'lists every reasoning level any configured model supports as a reasoning_effort choice' do
+    entry = schema.find { |e| e[:name] == 'reasoning_effort' }
+    every_level = OpenaiClient::MODEL_CONFIGS.values.flat_map { |config| config[:reasoning_levels] }.uniq
+
+    expect(entry[:options].map { |option| option[:key] }).to match_array(every_level)
+  end
+
+  it 'lists reasoning_effort straight after question_model, because the launch form shows fields in this order' do
+    names = schema.map { |entry| entry[:name] }
+
+    expect(names.index('reasoning_effort')).to eq(names.index('question_model') + 1)
+  end
 end

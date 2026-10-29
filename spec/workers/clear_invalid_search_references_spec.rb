@@ -27,6 +27,13 @@ RSpec.describe ClearInvalidSearchReferences, type: :worker do
       expect(version.object['title']).to eq('foo')
     end
 
+    it 'stores the removal reason on the destroy version' do
+      do_perform
+
+      version = Version.where(item_type: 'SearchReference', event: 'destroy').first
+      expect(version.metadata.to_h).to eq('removal_reason' => 'expired', 'successor_ids' => [])
+    end
+
     it 'sends an invalidation alert email listing it under expired' do
       do_perform
 
@@ -133,6 +140,35 @@ RSpec.describe ClearInvalidSearchReferences, type: :worker do
 
     it 'deletes the superseded search reference' do
       expect { do_perform }.to change(SearchReference, :count).by(-1)
+    end
+
+    it 'stores the removal reason and successors on the destroy version' do
+      do_perform
+
+      version = Version.where(item_type: 'SearchReference', event: 'destroy').first
+      expect(version.metadata.to_h).to eq('removal_reason' => 'superseded', 'successor_ids' => %w[0101999000])
+    end
+
+    context 'when the tariff data changes after the removal' do
+      subject(:entry) do
+        do_perform
+        GoodsNomenclatureSuccessor.all.each(&:destroy)
+        commodity.update(validity_end_date: nil)
+
+        version = Version.where(item_type: 'SearchReference', event: 'destroy').first
+        SearchReferences::ChangeEntry.from_version(version)
+      end
+
+      it 'reports the reason and successors from the time of removal' do
+        expect(entry).to have_attributes(section: :superseded, successor_ids: %w[0101999000])
+      end
+
+      it 'differs from the reason derived from the current tariff data' do
+        entry
+        version = Version.where(item_type: 'SearchReference', event: 'destroy').first
+
+        expect(SearchReferences::InvalidationReasonService.call(version.reify)[:reason]).not_to eq(:superseded)
+      end
     end
 
     it 'sends an invalidation alert email listing it under superseded' do

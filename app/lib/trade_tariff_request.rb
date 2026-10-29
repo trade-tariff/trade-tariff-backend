@@ -13,6 +13,7 @@ class TradeTariffRequest < ActiveSupport::CurrentAttributes
   }.freeze
 
   attribute :whodunnit,
+            :whodunnit_name,
             :request_id,
             :request_source,
             :client_id,
