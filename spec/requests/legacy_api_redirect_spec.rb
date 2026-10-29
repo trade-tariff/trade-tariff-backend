@@ -80,6 +80,12 @@ RSpec.describe 'Legacy API path redirects', type: :request do
       )
       expect(response.headers['link']).to include(docs_link)
     end
+
+    it 'varies the forwarded response on Accept so caches do not serve it to other Accept values' do
+      get '/api/v2/sections', headers: v1_accept, env: { 'REQUEST_PATH' => '/api/v2/sections' }
+
+      expect(response.headers['vary']).to include('Accept')
+    end
   end
 
   describe 'paths that must not redirect' do

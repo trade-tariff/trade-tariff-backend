@@ -20,6 +20,7 @@ class LegacyApiRedirect
     if V1_ACCEPT_HEADER.matches?(request)
       status, headers, body = VersionedForwarder.new.call(env)
       add_deprecation_headers(headers)
+      add_vary_accept(headers)
       return [status, headers, body]
     end
 
@@ -31,15 +32,23 @@ class LegacyApiRedirect
     # example X-Path-Transformed in HandleGoodsNomenclature). A plain Hash would not.
     headers = Rack::Headers.new
     headers['location'] = "/#{TradeTariffBackend.service}#{request.original_fullpath}"
-    # The redirect depends on Accept (see above), so caches must not reuse it
-    # for a request with a different Accept header.
-    headers['vary'] = 'Accept'
+    add_vary_accept(headers)
     add_deprecation_headers(headers)
 
     [308, headers, []]
   end
 
 private
+
+  # The same URL gives a forwarded response or a redirect depending on Accept,
+  # so caches must not reuse either one for a request with a different Accept.
+  # Keep any Vary value the forwarded response already has.
+  def add_vary_accept(headers)
+    existing_values = headers['vary'].to_s.split(',').map(&:strip)
+    return if existing_values.any? { |value| value == '*' || value.casecmp?('Accept') }
+
+    headers['vary'] = (existing_values + %w[Accept]).join(', ')
+  end
 
   def add_deprecation_headers(headers)
     # Deprecation is an RFC 9745 Structured Field Date: "@" plus Unix seconds.
