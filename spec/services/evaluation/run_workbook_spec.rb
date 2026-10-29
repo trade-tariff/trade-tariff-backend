@@ -109,6 +109,30 @@ RSpec.describe Evaluation::RunWorkbook do
       expect(summary['Error summary']).to eq('1 result errored')
     end
 
+    it 'counts the results with unknown pricing, even when there are none' do
+      expect(summary['Results with unknown pricing']).to eq(0.0)
+    end
+
+    it 'has no cost warning when every result was priced' do
+      expect(summary).not_to have_key('Cost warning')
+    end
+
+    context 'when some results have unknown pricing' do
+      let(:run) { create(:evaluation_run, evaluation_experiment: experiment, result_count: 4, total_cost_usd: 0.4, unpriced_result_count: 2) }
+
+      it 'counts them' do
+        expect(summary['Results with unknown pricing']).to eq(2.0)
+      end
+
+      it 'warns that the cost figures may be understated' do
+        expect(summary['Cost warning']).to eq('2 results have unknown pricing, so the total and average cost may be understated.')
+      end
+
+      it 'keeps the cost cells as numbers' do
+        expect(summary.values_at('Total cost (USD)', 'Average cost per result (USD)')).to eq([0.4, 0.1])
+      end
+    end
+
     context 'when the run has no results yet' do
       let(:run) { create(:evaluation_run, evaluation_experiment: experiment, status: 'cancelled', result_count: 0) }
 

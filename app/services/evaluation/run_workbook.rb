@@ -81,10 +81,22 @@ module Evaluation
         ['Total cost (USD)', run.total_cost_usd&.to_f, cost],
         ['Average cost per result (USD)', average(run.total_cost_usd, run.result_count), cost],
         ['Average latency (seconds)', average(run.total_latency_seconds, run.result_count), seconds],
+        ['Results with unknown pricing', run.unpriced_result_count, nil],
+        *cost_warning_row,
         ['Started (UTC)', run.started_at&.getutc, timestamp],
         ['Completed (UTC)', run.completed_at&.getutc, timestamp],
         ['Error summary', run.error_summary, nil],
       ]
+    end
+
+    # The stored total only adds up the results that could be priced, so with any unpriced
+    # result it is understated. The run page says so; the workbook must too, as text beside
+    # the cost cells, which stay numbers.
+    def cost_warning_row
+      unpriced = run.unpriced_result_count.to_i
+      return [] unless unpriced.positive?
+
+      [['Cost warning', "#{unpriced} #{'result'.pluralize(unpriced)} #{unpriced == 1 ? 'has' : 'have'} unknown pricing, so the total and average cost may be understated.", nil]]
     end
 
     # One row per persona that has results, sorted by name -- the same table the run page shows.
