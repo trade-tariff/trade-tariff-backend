@@ -428,7 +428,8 @@
           export RAILS_ENV=test SERVICE=uk ENVIRONMENT=test
           export PGHOST=127.0.0.1 PGPORT=5432 PGUSER=postgres DB_USER=postgres
           export PGDATABASE=tariff_test PGDATA=/workspace/.review/postgres
-          export REDIS_URL=redis://127.0.0.1:6379 ELASTICSEARCH_URL=http://127.0.0.1:9200
+          export REDIS_URL=redis://127.0.0.1:6379 SIDEKIQ_REDIS_URL=redis://127.0.0.1:6379
+          export FRONTEND_REDIS_URL=redis://127.0.0.1:6379 ELASTICSEARCH_URL=http://127.0.0.1:9200
           export OPENSEARCH_HOST=127.0.0.1 OPENSEARCH_PORT=9200
           export PARALLEL_TEST_PROCESSORS=5 TEST_RETRIES=0 RUN_DRAFT_DOCS=false
           unset DATABASE_URL READER_DATABASE_URL DB_PASSWORD PGPASSWORD PGSERVICE PGSERVICEFILE
@@ -748,6 +749,8 @@
           printf '%s\n' "$status" > "$review_dir/scanner-exit-code"
           if [ "$status" = 183 ]; then
             review_record verified-secrets 1
+          elif [ "$status" != 0 ]; then
+            review_record scanner-failure "$status"
           else
             # Verification requires provider network access. A zero scanner exit in
             # an offline namespace is not evidence that verified-only scanning passed.
@@ -767,6 +770,7 @@
                   name: Terraform fmt
                   entry: review-terraform-hook fmt
                   language: system
+                  require_serial: true
                   files: \.(tf|tofu|tfvars|(tftest|tofutest|tfmock|tfquery)\.hcl)$
                   exclude: \.terraform/.*$
                 - id: terraform_validate
