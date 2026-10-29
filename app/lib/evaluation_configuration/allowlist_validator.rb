@@ -9,6 +9,7 @@ module EvaluationConfiguration
     vector_score_threshold
     vector_ef_search
     search_non_declarables
+    search_atars_enabled
     search_compressed_notes_enabled
     search_general_rules_enabled
   ].freeze
@@ -17,6 +18,7 @@ module EvaluationConfiguration
     MODEL_KEYS = %w[question_model simulator_model].freeze
     BOOLEAN_KEYS = %w[
       search_non_declarables
+      search_atars_enabled
       search_compressed_notes_enabled
       search_general_rules_enabled
     ].freeze

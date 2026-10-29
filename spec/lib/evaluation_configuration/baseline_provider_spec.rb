@@ -11,6 +11,7 @@ RSpec.describe EvaluationConfiguration::BaselineProvider do
       allow(AdminConfiguration).to receive(:integer_value).with('interactive_search_max_questions').and_return(7)
       allow(AdminConfiguration).to receive(:enabled?).and_call_original
       allow(AdminConfiguration).to receive(:enabled?).with('search_non_declarables').and_return(false)
+      allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(true)
       allow(AdminConfiguration).to receive(:enabled?).with('search_compressed_notes_enabled').and_return(false)
       allow(AdminConfiguration).to receive(:enabled?).with('search_general_rules_enabled').and_return(false)
       allow(AdminConfiguration).to receive(:nested_options_value).and_call_original
@@ -32,6 +33,10 @@ RSpec.describe EvaluationConfiguration::BaselineProvider do
 
     it 'maps search_non_declarables directly from AdminConfiguration' do
       expect(described_class.call['search_non_declarables']).to be(false)
+    end
+
+    it 'maps search_atars_enabled directly from AdminConfiguration' do
+      expect(described_class.call['search_atars_enabled']).to be(true)
     end
 
     it 'maps search_compressed_notes_enabled directly from AdminConfiguration' do
@@ -70,10 +75,10 @@ RSpec.describe EvaluationConfiguration::BaselineProvider do
       expect(result).not_to have_key('simulator_model')
     end
 
-    it 'returns exactly the 10 keys with a real backend source' do
+    it 'returns exactly the 11 keys with a real backend source' do
       expect(described_class.call.keys).to contain_exactly(
         'rrf_k', 'vector_score_threshold', 'vector_ef_search', 'search_non_declarables',
-        'search_compressed_notes_enabled', 'search_general_rules_enabled',
+        'search_atars_enabled', 'search_compressed_notes_enabled', 'search_general_rules_enabled',
         'candidate_limit', 'max_rounds', 'question_model', 'reasoning_effort'
       )
     end

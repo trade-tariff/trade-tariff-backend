@@ -305,7 +305,8 @@ module Api
           query: q, expanded_query: search_retrieval_query,
           as_of: as_of, request_id: request_id, limit: opensearch_result_limit,
           filter_prefixes: filter_prefixes,
-          search_non_declarables: @configuration_overrides['search_non_declarables']
+          search_non_declarables: @configuration_overrides['search_non_declarables'],
+          search_atars_enabled: @configuration_overrides['search_atars_enabled']
         )
         ::Search::Instrumentation.retrieval_results_returned(
           request_id: request_id,
@@ -340,7 +341,8 @@ module Api
           rrf_k: @configuration_overrides['rrf_k'],
           vector_score_threshold: @configuration_overrides['vector_score_threshold'],
           vector_ef_search: @configuration_overrides['vector_ef_search'],
-          search_non_declarables: @configuration_overrides['search_non_declarables']
+          search_non_declarables: @configuration_overrides['search_non_declarables'],
+          search_atars_enabled: @configuration_overrides['search_atars_enabled']
         )
 
         RetrievalResult.new(
@@ -550,6 +552,7 @@ module Api
         }.reject { |_key, value| value != false && value.blank? }.tap do |configuration|
           configuration[:hybrid_query_guardrail_enabled] = AdminConfiguration.enabled?('hybrid_query_guardrail_enabled')
           configuration[:search_non_declarables] = diagnostics_search_non_declarables
+          configuration[:search_atars_enabled] = diagnostics_search_atars_enabled
         end
       end
 
@@ -557,6 +560,14 @@ module Api
         return @configuration_overrides['search_non_declarables'] unless @configuration_overrides['search_non_declarables'].nil?
 
         AdminConfiguration.enabled?('search_non_declarables')
+      end
+
+      # The value this search used, not just the live setting: a run that overrides it must be able
+      # to show afterwards which way it ran.
+      def diagnostics_search_atars_enabled
+        return @configuration_overrides['search_atars_enabled'] unless @configuration_overrides['search_atars_enabled'].nil?
+
+        AdminConfiguration.enabled?('search_atars_enabled')
       end
 
       def diagnostics_search_model

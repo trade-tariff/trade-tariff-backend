@@ -17,22 +17,27 @@ RSpec.describe Api::Admin::Search::Evaluation::ConfigurationsController, :admin 
       expect(json_response).to include('baseline', 'allowed_overrides')
     end
 
-    it 'returns exactly the 10 baseline keys with a real backend source' do
+    it 'returns exactly the 11 baseline keys with a real backend source' do
       api_response
       expect(json_response['baseline'].keys).to contain_exactly(
         'rrf_k', 'vector_score_threshold', 'vector_ef_search', 'search_non_declarables',
-        'search_compressed_notes_enabled', 'search_general_rules_enabled',
+        'search_atars_enabled', 'search_compressed_notes_enabled', 'search_general_rules_enabled',
         'candidate_limit', 'max_rounds', 'question_model', 'reasoning_effort'
       )
     end
 
-    it 'returns exactly the 11 allowed override keys, each with its own type metadata' do
+    it 'returns exactly the 12 allowed override keys, each with its own type metadata' do
       api_response
       expect(json_response['allowed_overrides'].map { |o| o['name'] }).to contain_exactly(
         'question_model', 'simulator_model', 'candidate_limit', 'max_rounds', 'rrf_k',
-        'vector_score_threshold', 'vector_ef_search', 'search_non_declarables',
+        'vector_score_threshold', 'vector_ef_search', 'search_non_declarables', 'search_atars_enabled',
         'search_compressed_notes_enabled', 'search_general_rules_enabled', 'reasoning_effort'
       )
+    end
+
+    it 'describes search_atars_enabled as a yes/no override' do
+      api_response
+      expect(json_response['allowed_overrides'].find { |o| o['name'] == 'search_atars_enabled' }).to include('config_type' => 'boolean')
     end
 
     it 'describes each allowed override with its type' do

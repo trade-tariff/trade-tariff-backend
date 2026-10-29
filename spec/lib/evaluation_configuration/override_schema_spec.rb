@@ -40,6 +40,27 @@ RSpec.describe EvaluationConfiguration::OverrideSchema do
     expect(entry[:description]).to be_present
   end
 
+  it 'describes search_atars_enabled as a boolean, like the other search switches' do
+    entry = schema.find { |e| e[:name] == 'search_atars_enabled' }
+
+    expect(entry.keys).to match_array(%i[name config_type description])
+    expect(entry[:config_type]).to eq('boolean')
+  end
+
+  # The operator reads this on the launch form. Without it they would assume the override also
+  # changes the vector search, or that it can put ATaR keywords into an index built without them.
+  it 'says search_atars_enabled changes the keyword search only, and needs an index built with ATaR keywords' do
+    description = schema.find { |e| e[:name] == 'search_atars_enabled' }[:description]
+
+    expect(description).to include('keyword search').and include('not the vector search').and include('built with ATaR keywords')
+  end
+
+  it 'lists search_atars_enabled straight after search_non_declarables, so the two search switches sit together on the launch form' do
+    names = schema.map { |entry| entry[:name] }
+
+    expect(names.index('search_atars_enabled')).to eq(names.index('search_non_declarables') + 1)
+  end
+
   it 'gives every allowed override a plain-language description, not just type and range' do
     schema.each do |entry|
       expect(entry[:description]).to be_present, "#{entry[:name]} has no description"

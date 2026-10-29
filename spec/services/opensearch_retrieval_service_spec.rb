@@ -143,6 +143,50 @@ RSpec.describe OpensearchRetrievalService do
       end
     end
 
+    context 'with search_atars_enabled' do
+      let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
+      let(:searching_atar_keywords) do
+        hash_including(
+          body: hash_including(
+            query: hash_including(
+              bool: hash_including(
+                must: include(hash_including(multi_match: hash_including(fields: include('atar_keywords^2')))),
+              ),
+            ),
+          ),
+        )
+      end
+
+      before do
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+      end
+
+      it 'reads the live setting when not overridden' do
+        allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(true)
+
+        described_class.call(query: 'toys', as_of: Time.zone.today)
+
+        expect(TradeTariffBackend.search_client).to have_received(:search).with(searching_atar_keywords)
+      end
+
+      it 'searches ATaR keywords when search_atars_enabled: true is given, even though the live setting is off' do
+        allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(false)
+
+        described_class.call(query: 'toys', as_of: Time.zone.today, search_atars_enabled: true)
+
+        expect(TradeTariffBackend.search_client).to have_received(:search).with(searching_atar_keywords)
+      end
+
+      it 'does not search ATaR keywords when search_atars_enabled: false is given, even though the live setting is on' do
+        allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(true)
+
+        described_class.call(query: 'toys', as_of: Time.zone.today, search_atars_enabled: false)
+
+        expect(AdminConfiguration).not_to have_received(:enabled?).with('search_atars_enabled')
+        expect(TradeTariffBackend.search_client).to have_received(:search).with(satisfy { |query| query.to_s.exclude?('atar_keywords') })
+      end
+    end
+
     context 'with filter prefixes' do
       let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
       let(:prefix_clause) do

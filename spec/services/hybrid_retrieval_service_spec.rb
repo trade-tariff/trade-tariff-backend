@@ -398,7 +398,27 @@ RSpec.describe HybridRetrievalService do
       )
     end
 
-    it 'does not pass search_non_declarables to the opensearch leg when not overridden' do
+    # Only the keyword leg is affected: the vector leg reads embeddings that were built ahead of time,
+    # so switching ATaRs for a run cannot change what it returns.
+    [true, false].each do |value|
+      it "relays search_atars_enabled: #{value} to the opensearch leg only" do
+        as_of = Time.zone.today
+
+        described_class.call(query: 'horses', expanded_query: expanded_query, as_of: as_of, search_atars_enabled: value)
+
+        expect(OpensearchRetrievalService).to have_received(:call).with(
+          query: 'horses', expanded_query: expanded_query, as_of: as_of, request_id: nil, limit: 30,
+          search_atars_enabled: value
+        )
+        expect(VectorRetrievalService).to have_received(:call_with_diagnostics).with(
+          query: expanded_query, limit: 30, request_id: nil,
+        )
+      end
+    end
+
+    # The exact argument list matters here: a nil search_atars_enabled must not be sent at all, so the
+    # live setting applies as it does for every search that overrides nothing.
+    it 'does not pass search_non_declarables or search_atars_enabled to the opensearch leg when not overridden' do
       as_of = Time.zone.today
 
       described_class.call(query: 'horses', expanded_query: expanded_query, as_of: as_of)
