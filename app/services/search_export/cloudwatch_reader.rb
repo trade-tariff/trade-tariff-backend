@@ -8,7 +8,7 @@ module SearchExport
     Result = Data.define(:journeys, :opened_pages)
     LIMIT = 10_000
     RUNTIME_LIMIT = 40.minutes
-    SCAN_LIMIT = 500.gigabytes
+    SCAN_LIMIT = 1.terabyte
     LATE_OPEN_WINDOW = 1.day
     EVENTS = %w[evaluation_journey_recorded search_failed search_stage_failed interactive_configuration_used].freeze
     # The frontend accepts only these guided request IDs. Visit queries match
@@ -47,7 +47,7 @@ module SearchExport
       plan = visit_plan
       # Each visit query scans its whole day again.
       projected = @scanned_bytes + plan.sum { |start, _finish, batches| batches.size * @window_bytes.fetch(start, 0) }
-      raise Error, 'The export would exceed 500 GiB of scanned data. Choose a shorter date range.' if projected > SCAN_LIMIT
+      raise Error, 'The export would exceed 1 TiB of scanned data. Choose a shorter date range.' if projected > SCAN_LIMIT
 
       plan.each do |start, finish, batches|
         batches.each do |request_ids|
@@ -148,7 +148,7 @@ module SearchExport
         reported_bytes = [response.statistics&.bytes_scanned.to_f, query_bytes].max
         @scanned_bytes += reported_bytes - query_bytes
         query_bytes = reported_bytes
-        raise Error, 'The export exceeded 500 GiB of scanned data.' if @scanned_bytes > SCAN_LIMIT
+        raise Error, 'The export exceeded 1 TiB of scanned data.' if @scanned_bytes > SCAN_LIMIT
 
         check_deadline!
         return response if complete
