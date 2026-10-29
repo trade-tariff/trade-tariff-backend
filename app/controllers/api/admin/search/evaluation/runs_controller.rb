@@ -29,6 +29,15 @@ module Api
             render json: serialize(run)
           end
 
+          # The run's summary and every result as an Excel workbook (AI-1494). Built inside the
+          # request, not in a background job: a run has one row per test question, so it is small.
+          def export
+            send_data ::Evaluation::RunWorkbook.call(run),
+                      filename: "evaluation-run-#{run.id}.xlsx",
+                      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                      disposition: 'attachment'
+          end
+
           def create
             experiment = EvaluationExperiment.with_pk!(create_params[:experiment_id])
 
