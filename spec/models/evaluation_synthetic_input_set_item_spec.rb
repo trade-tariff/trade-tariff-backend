@@ -1,16 +1,17 @@
 require 'rails_helper'
 
 RSpec.describe EvaluationSyntheticInputSetItem do
-  it 'requires a set, a synthetic ATaR, a query and an expected code' do
+  it 'requires a set, a synthetic ATaR, a query, oracle text and an expected code' do
     item = build(
       :evaluation_synthetic_input_set_item,
-      evaluation_synthetic_input_set: nil, synthetic_atar_id: nil, query: nil, expected_code: nil,
+      evaluation_synthetic_input_set: nil, synthetic_atar_id: nil, query: nil, oracle_text: nil, expected_code: nil,
     )
 
     expect(item.valid?).to be false
     expect(item.errors[:set_id]).to be_present
     expect(item.errors[:synthetic_atar_id]).to be_present
     expect(item.errors[:query]).to be_present
+    expect(item.errors[:oracle_text]).to be_present
     expect(item.errors[:expected_code]).to be_present
   end
 

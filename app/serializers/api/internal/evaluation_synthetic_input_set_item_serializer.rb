@@ -5,12 +5,7 @@ module Api
 
       set_type :evaluation_synthetic_input_set_item
 
-      attributes :query, :expected_code
-
-      # The item has only one text snapshot. A gold query row carries oracle_text
-      # separately from query for the simulator to use as ground truth; here the same
-      # value serves both, rather than omitting oracle_text or inventing a second field.
-      attribute :oracle_text, &:query
+      attributes :query, :oracle_text, :expected_code
 
       attribute :source_type do
         'synthetic_atar'

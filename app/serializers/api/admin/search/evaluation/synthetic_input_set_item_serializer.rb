@@ -2,7 +2,7 @@ module Api
   module Admin
     module Search
       module Evaluation
-        # One synthetic ATaR frozen into a set. query and expected_code are the copies taken
+        # One synthetic ATaR frozen into a set. query, oracle_text and expected_code are the copies taken
         # when the set was created, not the synthetic ATaR's current values.
         class SyntheticInputSetItemSerializer
           include JSONAPI::Serializer
@@ -14,6 +14,7 @@ module Api
 
           attributes :synthetic_atar_id,
                      :query,
+                     :oracle_text,
                      :expected_code
         end
       end

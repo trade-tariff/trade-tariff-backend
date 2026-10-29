@@ -2815,7 +2815,8 @@ CREATE TABLE uk.evaluation_synthetic_input_set_items (
     synthetic_atar_id integer NOT NULL,
     query text NOT NULL,
     expected_code text NOT NULL,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    oracle_text text NOT NULL
 );
 
 
@@ -15815,3 +15816,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20261016150000_add_metadat
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261015120000_create_evaluation_synthetic_input_sets.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261019120000_default_evaluation_gold_query_sets_atar_percentage.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261019130000_add_source_workbook_and_row_to_synthetic_atars.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20261029120000_add_oracle_text_to_evaluation_synthetic_input_set_items.rb');
