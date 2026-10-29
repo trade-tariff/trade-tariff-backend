@@ -20,6 +20,7 @@ permissions:
 jobs:
   run-job:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: aws-actions/configure-aws-credentials@v6
         with:
@@ -65,10 +66,26 @@ jobs:
 
           echo "Replication task ARN: ${TASK_ARN}"
 
-          aws ecs wait tasks-stopped \
-            --cluster "${{ env.CLUSTER }}" \
-            --region "${{ env.AWS_REGION }}" \
-            --tasks "${TASK_ARN}"
+          # `aws ecs wait tasks-stopped` gives up after 10 minutes. A restore takes longer.
+          for _ in $(seq 1 180); do
+            STATUS=$(aws ecs describe-tasks \
+              --cluster "${{ env.CLUSTER }}" \
+              --region "${{ env.AWS_REGION }}" \
+              --tasks "${TASK_ARN}" \
+              --query 'tasks[0].lastStatus' \
+              --output text || echo UNKNOWN)
+
+            if [[ "${STATUS}" == "STOPPED" ]]; then
+              break
+            fi
+
+            sleep 15
+          done
+
+          if [[ "${STATUS}" != "STOPPED" ]]; then
+            echo "Replication task still running after 45 minutes: ${TASK_ARN}" >&2
+            exit 1
+          fi
 
           EXIT_CODE=$(aws ecs describe-tasks \
             --cluster "${{ env.CLUSTER }}" \
