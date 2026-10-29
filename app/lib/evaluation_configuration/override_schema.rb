@@ -25,6 +25,7 @@ module EvaluationConfiguration
       'vector_score_threshold' => 'The minimum similarity score (as a percentage) a result needs to count as a real match in the vector search.',
       'vector_ef_search' => 'How thoroughly the vector search index is searched — higher numbers check more candidates (more accurate, slower); lower numbers are faster but may miss some matches.',
       'search_non_declarables' => "Include commodity codes that can't actually be declared on their own (e.g. chapter or heading-level codes) in the results.",
+      'search_atars_enabled' => 'Also search the keywords taken from public ATaRs (Advance Tariff Rulings, HMRC rulings on how a specific product is classified) when finding candidate commodity codes. This only changes the keyword search, not the vector search, and only has an effect if the search index was built with ATaR keywords.',
       'search_compressed_notes_enabled' => 'Include AI-summarised classification notes for each candidate code as extra context for the clarifying questions.',
       'search_general_rules_enabled' => 'Include the General Rules of Interpretation (the legal rules customs classification is based on) as extra context for the clarifying questions.',
     }.freeze

@@ -15,6 +15,7 @@ RSpec.describe EvaluationConfiguration::AllowlistValidator do
       'vector_score_threshold' => 35,
       'vector_ef_search' => 100,
       'search_non_declarables' => false,
+      'search_atars_enabled' => true,
       'search_compressed_notes_enabled' => true,
       'search_general_rules_enabled' => false,
     }
@@ -203,7 +204,7 @@ RSpec.describe EvaluationConfiguration::AllowlistValidator do
   end
 
   describe 'boolean keys' do
-    %w[search_non_declarables search_compressed_notes_enabled search_general_rules_enabled].each do |key|
+    %w[search_non_declarables search_atars_enabled search_compressed_notes_enabled search_general_rules_enabled].each do |key|
       it "accepts true and false for #{key}" do
         expect(described_class.call({ key => true })).to be true
         expect(described_class.call({ key => false })).to be true

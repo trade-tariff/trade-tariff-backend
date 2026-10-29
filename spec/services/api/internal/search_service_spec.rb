@@ -203,6 +203,30 @@ RSpec.describe Api::Internal::SearchService do
         expect(configuration.fetch(:search_non_declarables)).to be(true)
       end
 
+      it 'reflects a search_atars_enabled override of false even though AdminConfiguration reports true, proving || is not used' do
+        allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(true)
+
+        configuration = captured_diagnostics_configuration('search_atars_enabled' => false)
+
+        expect(configuration.fetch(:search_atars_enabled)).to be(false)
+      end
+
+      it 'reflects a search_atars_enabled override of true even though AdminConfiguration reports false' do
+        allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(false)
+
+        configuration = captured_diagnostics_configuration('search_atars_enabled' => true)
+
+        expect(configuration.fetch(:search_atars_enabled)).to be(true)
+      end
+
+      it 'falls back to AdminConfiguration for search_atars_enabled when no override is supplied' do
+        allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(true)
+
+        configuration = captured_diagnostics_configuration({})
+
+        expect(configuration.fetch(:search_atars_enabled)).to be(true)
+      end
+
       it 'reflects a vector_score_threshold override' do
         configuration = captured_diagnostics_configuration('vector_score_threshold' => 55)
 
@@ -1936,6 +1960,16 @@ RSpec.describe Api::Internal::SearchService do
         )
       end
 
+      # Vector retrieval reads embeddings that were built ahead of time, so a run cannot switch ATaRs
+      # for it. Passing the value on would only suggest that it can.
+      it 'does not pass search_atars_enabled to VectorRetrievalService' do
+        described_class.new(q: 'horses', configuration_overrides: { 'search_atars_enabled' => true }).call
+
+        expect(VectorRetrievalService).to have_received(:call).with(
+          satisfy { |arguments| !arguments.key?(:search_atars_enabled) },
+        )
+      end
+
       it 'applies v2 synonyms to vector retrieval while preserving the semantic query' do
         allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v2')
         allow(Search::SynonymExpander).to receive(:call)
@@ -2598,6 +2632,18 @@ RSpec.describe Api::Internal::SearchService do
         expect(OpensearchRetrievalService).to have_received(:call).with(hash_including(search_non_declarables: nil))
       end
 
+      it 'passes search_atars_enabled through to OpensearchRetrievalService for retrieval_method: opensearch' do
+        described_class.new(q: 'horses', configuration_overrides: { 'search_atars_enabled' => false }).call
+
+        expect(OpensearchRetrievalService).to have_received(:call).with(hash_including(search_atars_enabled: false))
+      end
+
+      it 'defaults search_atars_enabled to nil for OpensearchRetrievalService when not given, so the live setting applies as it does today' do
+        described_class.new(q: 'horses').call
+
+        expect(OpensearchRetrievalService).to have_received(:call).with(hash_including(search_atars_enabled: nil))
+      end
+
       it 'passes max_rounds, question_model, search_compressed_notes_enabled and search_general_rules_enabled through to InteractiveSearchService' do
         described_class.new(
           q: 'horses',
@@ -2659,6 +2705,18 @@ RSpec.describe Api::Internal::SearchService do
         expect(HybridRetrievalService).to have_received(:call).with(
           hash_including(rrf_k: 30, vector_score_threshold: 40, vector_ef_search: 150, search_non_declarables: true),
         )
+      end
+
+      it 'passes search_atars_enabled through to HybridRetrievalService' do
+        described_class.new(q: 'horses', configuration_overrides: { 'search_atars_enabled' => true }).call
+
+        expect(HybridRetrievalService).to have_received(:call).with(hash_including(search_atars_enabled: true))
+      end
+
+      it 'defaults search_atars_enabled to nil for HybridRetrievalService when not given, so the live setting applies as it does today' do
+        described_class.new(q: 'horses').call
+
+        expect(HybridRetrievalService).to have_received(:call).with(hash_including(search_atars_enabled: nil))
       end
 
       it "defaults rrf_k, vector_score_threshold, vector_ef_search and search_non_declarables to nil when configuration_overrides is not given, reproducing today's behaviour" do
