@@ -463,6 +463,44 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
     end
   end
 
+  describe 'GET #export' do
+    let(:run) { create(:evaluation_run, evaluation_experiment: experiment, status: 'completed') }
+    let(:id) { run.id }
+    let(:make_request) { authenticated_get export_api_admin_search_evaluation_run_path(id) }
+
+    context 'with an existing run' do
+      before { create(:evaluation_result, evaluation_run: run) }
+
+      it { is_expected.to have_http_status :success }
+
+      it 'sends an Excel workbook, not JSON' do
+        expect(api_response.media_type).to eq('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      end
+
+      it 'names the download after the run' do
+        expect(api_response.headers['Content-Disposition']).to include("evaluation-run-#{run.id}.xlsx")
+      end
+
+      it 'sends it as an attachment' do
+        expect(api_response.headers['Content-Disposition']).to start_with('attachment')
+      end
+
+      it 'has a Summary sheet then a Results sheet' do
+        sheet_names = Nokogiri::XML(xlsx_entry(api_response.body, 'xl/workbook.xml'))
+                              .remove_namespaces!
+                              .xpath('//sheet').map { |sheet| sheet['name'] }
+
+        expect(sheet_names).to eq(%w[Summary Results])
+      end
+    end
+
+    context 'with an unknown run' do
+      let(:id) { 999_999 }
+
+      it { is_expected.to have_http_status :not_found }
+    end
+  end
+
   describe 'PATCH #update' do
     let(:run) { create(:evaluation_run, evaluation_experiment: experiment, status: 'running') }
     let(:make_request) { authenticated_patch api_admin_search_evaluation_run_path(run.id, format: :json), params: params }
