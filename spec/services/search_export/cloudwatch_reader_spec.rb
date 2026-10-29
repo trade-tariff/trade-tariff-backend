@@ -151,12 +151,12 @@ RSpec.describe SearchExport::CloudwatchReader do
     expect(visit_queries.map { |request| request[:params][:query_string].length }).to all(be <= 10_000)
   end
 
-  it 'fails before reading visits when the projected scan exceeds 500 GiB' do
+  it 'rejects projected scans above 1 TiB' do
     client.stub_responses(:get_query_results, [
-      response(trace).merge(statistics: { records_matched: 1.0, bytes_scanned: 200.gigabytes.to_f }),
-      response.merge(statistics: { records_matched: 0.0, bytes_scanned: 100.gigabytes.to_f }),
+      response(trace).merge(statistics: { records_matched: 1.0, bytes_scanned: 300.gigabytes.to_f }),
+      response.merge(statistics: { records_matched: 0.0, bytes_scanned: 250.gigabytes.to_f }),
     ])
-    expect { reader.call }.to raise_error(described_class::Error, /would exceed 500 GiB/)
+    expect { reader.call }.to raise_error(described_class::Error, /would exceed 1 TiB/)
     expect(visit_queries).to be_empty
   end
 
@@ -244,40 +244,52 @@ RSpec.describe SearchExport::CloudwatchReader do
     expect(reader.call.journeys.map(&:request_id)).to eq(%w[guided-1])
   end
 
-  it 'allows large scans below the generous scan limit' do
+  it 'allows scans above the former 500 GiB cap' do
     client.stub_responses(:get_query_results, [
-      { status: 'Running', statistics: { bytes_scanned: 11.gigabytes.to_f } },
-      response(trace).merge(statistics: { records_matched: 1.0, bytes_scanned: 12.gigabytes.to_f }),
+      { status: 'Running', statistics: { bytes_scanned: 250.gigabytes.to_f } },
+      response(trace).merge(statistics: { records_matched: 1.0, bytes_scanned: 300.gigabytes.to_f }),
       response,
     ])
     allow(reader).to receive(:sleep)
     expect(reader.call.journeys.size).to eq(1)
+  end
+
+  it 'allows exact 1 TiB scans and projections' do
+    client.stub_responses(:get_query_results, [
+      response(trace).merge(statistics: { records_matched: 1.0, bytes_scanned: 512.gigabytes.to_f }),
+      response,
+      response(frontend_page).merge(statistics: { records_matched: 1.0, bytes_scanned: 512.gigabytes.to_f }),
+      response,
+    ])
+    result = reader.call
+    expect(result.journeys.map(&:request_id)).to eq(%w[guided-1])
+    expect(result.opened_pages.fetch('guided-1').map(&:commodity_code)).to eq(%w[0207141000])
   end
 
   it 'counts cumulative query statistics once across repeated polls' do
     client.stub_responses(:get_query_results, [
-      { status: 'Running', statistics: { bytes_scanned: 150.gigabytes.to_f } },
-      { status: 'Running', statistics: { bytes_scanned: 150.gigabytes.to_f } },
-      response(trace).merge(statistics: { records_matched: 1.0, bytes_scanned: 200.gigabytes.to_f }),
-      response.merge(statistics: { records_matched: 0.0, bytes_scanned: 50.gigabytes.to_f }),
+      { status: 'Running', statistics: { bytes_scanned: 300.gigabytes.to_f } },
+      { status: 'Running', statistics: { bytes_scanned: 300.gigabytes.to_f } },
+      response(trace).merge(statistics: { records_matched: 1.0, bytes_scanned: 400.gigabytes.to_f }),
+      response.merge(statistics: { records_matched: 0.0, bytes_scanned: 100.gigabytes.to_f }),
       response,
     ])
     allow(reader).to receive(:sleep)
     expect(reader.call.journeys.size).to eq(1)
   end
 
-  it 'cancels an active query when cumulative scanning exceeds 500 GiB' do
+  it 'cancels active queries above 1 TiB' do
     client.stub_responses(:get_query_results, [
-      response(trace).merge(statistics: { records_matched: 1.0, bytes_scanned: 400.gigabytes.to_f }),
-      { status: 'Running', statistics: { bytes_scanned: 101.gigabytes.to_f } },
+      response(trace).merge(statistics: { records_matched: 1.0, bytes_scanned: 900.gigabytes.to_f }),
+      { status: 'Running', statistics: { bytes_scanned: 125.gigabytes.to_f } },
     ])
-    expect { reader.call }.to raise_error(described_class::Error, /500 GiB/)
+    expect { reader.call }.to raise_error(described_class::Error, /1 TiB/)
     expect(client.api_requests.count { |request| request[:operation_name] == :stop_query }).to eq(1)
   end
 
   it 'rejects completed results that exceed the scan limit' do
-    client.stub_responses(:get_query_results, response(trace).merge(statistics: { records_matched: 1.0, bytes_scanned: 501.gigabytes.to_f }))
-    expect { reader.call }.to raise_error(described_class::Error, /500 GiB/)
+    client.stub_responses(:get_query_results, response(trace).merge(statistics: { records_matched: 1.0, bytes_scanned: (1.terabyte + 1).to_f }))
+    expect { reader.call }.to raise_error(described_class::Error, /1 TiB/)
     expect(client.api_requests.map { |request| request[:operation_name] }).not_to include(:stop_query)
   end
 
