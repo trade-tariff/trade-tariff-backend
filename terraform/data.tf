@@ -92,3 +92,13 @@ data "aws_ecs_task_definition" "backend_job" {
   task_definition = "backend-job-${local.account_id}"
   depends_on      = [module.backend-job]
 }
+
+data "aws_secretsmanager_secret_version" "generated" {
+  for_each  = toset(flatten([for vars in values(var.generated_secrets) : values(vars)]))
+  secret_id = each.key
+}
+
+data "aws_ssm_parameter" "generated" {
+  for_each = toset(flatten([for vars in values(var.generated_parameters) : values(vars)]))
+  name     = each.key
+}

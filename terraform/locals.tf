@@ -34,8 +34,16 @@ locals {
     },
   ]
 
+  # UAT: values that the common stack generates on each start, by service.
+  generated_env_vars = {
+    for service in setunion(keys(var.generated_secrets), keys(var.generated_parameters)) : service => merge(
+      { for name, secret in lookup(var.generated_secrets, service, {}) : name => data.aws_secretsmanager_secret_version.generated[secret].secret_string },
+      { for name, parameter in lookup(var.generated_parameters, service, {}) : name => data.aws_ssm_parameter.generated[parameter].value },
+    )
+  }
+
   worker_uk_secret_value = try(data.aws_secretsmanager_secret_version.backend_uk_worker_configuration.secret_string, "{}")
-  worker_uk_secret_map   = jsondecode(local.worker_uk_secret_value)
+  worker_uk_secret_map   = merge(jsondecode(local.worker_uk_secret_value), lookup(local.generated_env_vars, "worker-uk", {}))
   worker_uk_secret_env_vars = [
     for key, value in local.worker_uk_secret_map : {
       name  = key
@@ -45,7 +53,7 @@ locals {
   worker_uk_service_env_vars = concat(local.worker_uk_secret_env_vars, local.internal_ca_env_vars)
 
   backend_uk_secret_value = try(data.aws_secretsmanager_secret_version.backend_uk_api_configuration.secret_string, "{}")
-  backend_uk_secret_map   = jsondecode(local.backend_uk_secret_value)
+  backend_uk_secret_map   = merge(jsondecode(local.backend_uk_secret_value), lookup(local.generated_env_vars, "backend-uk", {}))
   backend_uk_secret_env_vars = [
     for key, value in local.backend_uk_secret_map : {
       name  = key
@@ -57,7 +65,7 @@ locals {
   backend_uk_service_env_vars = concat(local.backend_uk_secret_env_vars, local.api_service_env_vars, local.internal_ca_env_vars)
 
   worker_xi_secret_value = try(data.aws_secretsmanager_secret_version.backend_xi_worker_configuration.secret_string, "{}")
-  worker_xi_secret_map   = jsondecode(local.worker_xi_secret_value)
+  worker_xi_secret_map   = merge(jsondecode(local.worker_xi_secret_value), lookup(local.generated_env_vars, "worker-xi", {}))
   worker_xi_secret_env_vars = [
     for key, value in local.worker_xi_secret_map : {
       name  = key
@@ -66,7 +74,7 @@ locals {
   ]
 
   backend_xi_secret_value = try(data.aws_secretsmanager_secret_version.backend_xi_api_configuration.secret_string, "{}")
-  backend_xi_secret_map   = jsondecode(local.backend_xi_secret_value)
+  backend_xi_secret_map   = merge(jsondecode(local.backend_xi_secret_value), lookup(local.generated_env_vars, "backend-xi", {}))
   backend_xi_secret_env_vars = [
     for key, value in local.backend_xi_secret_map : {
       name  = key
@@ -76,7 +84,7 @@ locals {
   backend_xi_service_env_vars = concat(local.backend_xi_secret_env_vars, local.api_service_env_vars)
 
   backend_job_secret_value = try(data.aws_secretsmanager_secret_version.backend_job_configuration.secret_string, "{}")
-  backend_job_secret_map   = jsondecode(local.backend_job_secret_value)
+  backend_job_secret_map   = merge(jsondecode(local.backend_job_secret_value), lookup(local.generated_env_vars, "backend-job", {}))
   backend_job_secret_env_vars = [
     for key, value in local.backend_job_secret_map : {
       name  = key
