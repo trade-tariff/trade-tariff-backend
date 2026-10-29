@@ -485,6 +485,15 @@ RSpec.describe 'bin/db-replicate' do
     expect(command_log(tempdir)).to include('sleep 5')
   end
 
+  it 'syncs production persistence data into the UAT bucket' do
+    install_successful_command_stubs
+
+    _stdout, stderr, status = run_replicate(tempdir, 'ENVIRONMENT' => 'uat')
+
+    expect(status).to be_success, stderr
+    expect(command_log(tempdir)).to include('aws s3 sync s3://trade-tariff-persistence-382373577178/data/exchange_rates/ s3://trade-tariff-persistence-352285845378/data/exchange_rates/')
+  end
+
   it 'removes the downloaded database dump after successful restore' do
     install_successful_command_stubs
 

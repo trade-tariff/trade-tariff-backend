@@ -33,7 +33,8 @@ data "aws_iam_policy_document" "task" {
       "logs:DescribeLogStreams",
       "logs:PutLogEvents",
       "logs:StartQuery",
-      "logs:GetQueryResults"
+      "logs:GetQueryResults",
+      "logs:StopQuery"
     ]
     resources = ["*"]
   }

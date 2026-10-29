@@ -75,7 +75,7 @@ RSpec.describe SearchAnalytics::DailyQuery do
     )
   end
 
-  it 'excludes skipped requests across midnight' do
+  it 'bins skip and failure cohorts by the reporting day' do
     base = { search_type: 'interactive', results_type: 'hybrid' }
     rows = execute(
       event('hybrid', **base, '@timestamp': Time.utc(2026, 9, 14, 0, 0, 1)),
@@ -87,7 +87,7 @@ RSpec.describe SearchAnalytics::DailyQuery do
       bounded: true,
     )
 
-    expect(rows).to eq([{ search_type: 'interactive', request_source: 'frontend', searches: 2, zero_results: 0 }])
+    expect(rows).to eq([{ search_type: 'interactive', request_source: 'frontend', searches: 3, zero_results: 0 }])
   end
 
   it 'excludes failed and degraded requests and non-frontend or non-UK events' do
