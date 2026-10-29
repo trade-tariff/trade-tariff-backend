@@ -113,7 +113,7 @@ RSpec.describe SearchAnalytics::DailyQuery do
 
   it 'uses half-open calendar bounds for metric scans and full-day failure cohorts' do
     collect
-    expect(starts.first[:params]).to include(start_time: Time.utc(2026, 9, 13).to_i, end_time: Time.utc(2026, 9, 15).to_i, query_language: 'SQL')
+    expect(starts.first[:params]).to include(start_time: Time.utc(2026, 9, 14).to_i, end_time: Time.utc(2026, 9, 15).to_i, query_language: 'SQL')
     expect(starts.first[:params][:query_string]).to include('UNIX_TIMESTAMP(`@timestamp`) >= 1789344000', 'UNIX_TIMESTAMP(`@timestamp`) < 1789430400')
     journey_sql = starts[14][:params][:query_string]
     expect(journey_sql).to include('UNIX_TIMESTAMP(`@timestamp`) >= 1789419600', "request_source = 'frontend'")
@@ -126,9 +126,9 @@ RSpec.describe SearchAnalytics::DailyQuery do
       start_at = Time.utc(2026, 9, 14) + index * 3.hours
       [start_at.to_i, (start_at + 3.hours).to_i]
     end
-    exclusion_bounds = [Time.utc(2026, 9, 13).to_i, Time.utc(2026, 9, 15).to_i]
-    expect(bounds).to eq(expected.map { |window| window + exclusion_bounds })
-    expect(starts[7, 8].map { |request| request[:params].values_at(:start_time, :end_time) }).to eq([exclusion_bounds] * 8)
+    day_bounds = [Time.utc(2026, 9, 14).to_i, Time.utc(2026, 9, 15).to_i]
+    expect(bounds).to eq(expected.map { |window| window + day_bounds })
+    expect(starts[7, 8].map { |request| request[:params].values_at(:start_time, :end_time) }).to eq([day_bounds] * 8)
   end
 
   it 'retains all model and embedding calls without token or failure-cohort filtering' do
@@ -153,14 +153,14 @@ RSpec.describe SearchAnalytics::DailyQuery do
     expect(SearchAnalyticsQueryResult.all.map { |r| r.rows.to_json }.join).not_to include('private-id')
   end
 
-  it 'keeps full-day skip lookups in aggregates' do
+  it 'keeps skip lookups in aggregates' do
     definitions = collector.query_definitions
     filtered = %w[volume latency_histogram classic_selection_trend internal_selection_trend search_term_improvements item_id_improvements search_journeys search_results selection_results result_offers]
     expect(definitions.slice(*filtered).values).to all(include("event = 'interactive_configuration_used' AND skip_question = true"))
     expect(definitions.except(*filtered).values).not_to include(a_string_including('skip_question'))
   end
 
-  it 'versions only cross-midnight cohorts' do
+  it 'versions only skip-filtered cohorts' do
     previous = collector.query_definitions.to_h do |name, sql|
       version = name == 'classic_outcomes' ? 2 : 1
       [name, Digest::SHA256.hexdigest([version, 'uk', 'eu-west-2', sql].to_json)]
@@ -224,12 +224,12 @@ RSpec.describe SearchAnalytics::DailyQuery do
     client.stub_responses(:get_query_results, [*Array.new(5) { complete }, capped, child, child, *Array.new(9) { complete }])
     result = collect.fetch('search_term_improvements')
     expect(result.map { |row| row['query'] }).to eq(%w[keep keep])
-    expect(starts[6][:params].values_at(:start_time, :end_time)).to eq([Time.utc(2026, 9, 13).to_i, Time.utc(2026, 9, 15).to_i])
+    expect(starts[6][:params].values_at(:start_time, :end_time)).to eq([Time.utc(2026, 9, 14).to_i, Time.utc(2026, 9, 15).to_i])
     child_sql = starts[6][:params][:query_string]
     expect(child_sql).to include('UNIX_TIMESTAMP(`@timestamp`) < 1789387200')
     expect(child_sql).to match(/request_id NOT IN \(.*1789344000.*1789430400/m)
     expect(child_sql.scan(/UNIX_TIMESTAMP\(`@timestamp`\) (?:>=|<) (\d+)/).flatten.map(&:to_i)).to eq([
-      1_789_344_000, 1_789_387_200, 1_789_344_000, 1_789_430_400, 1_789_257_600, 1_789_430_400
+      1_789_344_000, 1_789_387_200, 1_789_344_000, 1_789_430_400, 1_789_344_000, 1_789_430_400
     ])
   end
 
@@ -253,6 +253,15 @@ RSpec.describe SearchAnalytics::DailyQuery do
     expect { collect }.to raise_error(Aws::CloudWatchLogs::Errors::ServiceUnavailableException)
     expect(starts.size).to eq(1)
     expect(SearchAnalyticsQueryResult.count).to eq(0)
+  end
+
+  it 'waits beyond the rolling snapshot poll limit for slow nightly scans' do
+    allow(Kernel).to receive(:sleep)
+    running = { status: 'Running', results: [] }
+    client.stub_responses(:get_query_results, [*Array.new(SearchAnalytics::CloudwatchSnapshotQuery::QUERY_MAX_POLLS) { running }, complete])
+
+    expect(collect(queries: %w[volume])).to eq('volume' => [])
+    expect(client.api_requests.map { |r| r[:operation_name] }).not_to include(:stop_query)
   end
 
   it 'cancels an interrupted query without overwriting the original error' do
