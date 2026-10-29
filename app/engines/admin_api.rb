@@ -192,6 +192,9 @@ AdminApi.routes.draw do
             collection do
               delete :bulk_destroy
             end
+            member do
+              get :export
+            end
           end
           resources :results, only: %i[index show create]
           resource :configuration, only: [:show]
