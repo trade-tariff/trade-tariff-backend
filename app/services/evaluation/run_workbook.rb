@@ -5,7 +5,9 @@ module Evaluation
   # always agree. Returns the file's bytes.
   #
   # Cost and latency are written as numbers, never as text, so Excel can sort and add them up. A
-  # value that is missing is left as a blank cell (FastExcel writes no cell for nil).
+  # result's cost is written whenever it has one, even if pricing was incomplete, so the column adds
+  # up to the run's stored total. A value that is missing is left as a blank cell (FastExcel writes
+  # no cell for nil).
   class RunWorkbook
     SUMMARY_SHEET = 'Summary'.freeze
     RESULTS_SHEET = 'Results'.freeze
@@ -89,9 +91,9 @@ module Evaluation
       ]
     end
 
-    # The stored total only adds up the results that could be priced, so with any unpriced
-    # result it is understated. The run page says so; the workbook must too, as text beside
-    # the cost cells, which stay numbers.
+    # A result that could not be fully priced still adds whatever cost it did price to the stored
+    # total, so with any such result the total is understated. The run page says so; the workbook
+    # must too, as text beside the cost cells, which stay numbers.
     def cost_warning_row
       unpriced = run.unpriced_result_count.to_i
       return [] unless unpriced.positive?
@@ -145,16 +147,17 @@ module Evaluation
         result.final_code,
         result.final_rank,
         outcome(result),
-        result.pricing_known ? result.cost_usd&.to_f : nil,
+        result.cost_usd&.to_f,
         result.latency_seconds&.to_f,
         result.error,
       ]
     end
 
-    # The same three-way split as the results list's Outcome filter (ResultsController#filter_by_outcome).
+    # The same three-way split as the results list's Outcome filter (ResultsController#filter_by_outcome),
+    # where any error that is not nil counts, even an empty one.
     def outcome(result)
       return 'Pass' if result.gold_in_top5
-      return 'Error' if result.error.present?
+      return 'Error' unless result.error.nil?
 
       'Fail'
     end

@@ -205,7 +205,7 @@ RSpec.describe Evaluation::RunWorkbook do
       expect(rows[1].values_at('H', 'I')).to eq([0.0123, 4.5])
     end
 
-    it 'leaves cost blank when the pricing is unknown, instead of writing text into a number column' do
+    it 'leaves cost blank when the result has no cost, instead of writing text into a number column' do
       expect(rows[3].key?('H')).to be(false)
     end
 
@@ -221,6 +221,25 @@ RSpec.describe Evaluation::RunWorkbook do
       create(:evaluation_result, evaluation_run: create(:evaluation_run, evaluation_experiment: experiment))
 
       expect(rows.size).to eq(4)
+    end
+
+    # The run's stored total adds up every cost a result has, priced in full or not, so the
+    # column has to keep those costs too or it would not add up to the Summary's total.
+    context 'with a result that was priced only in part' do
+      before { create(:evaluation_result, evaluation_run: run, source_id: '11', cost_usd: 0.01, pricing_known: false) }
+
+      it 'still writes the cost it has' do
+        expect(rows.last['H']).to eq(0.01)
+      end
+    end
+
+    # ResultsController#filter_by_outcome counts any error that is not nil as an Error.
+    context 'with a result whose error is an empty string' do
+      before { create(:evaluation_result, evaluation_run: run, source_id: '12', error: '', gold_in_top5: false) }
+
+      it 'says Error, as the results list filter does' do
+        expect(rows.last['G']).to eq('Error')
+      end
     end
 
     context 'with more results than fit on one page of the results list' do
