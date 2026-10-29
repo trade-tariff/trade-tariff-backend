@@ -43,6 +43,28 @@ RSpec.describe OpenaiTransport do
     expect(WebMock).to have_requested(:post, responses_url).once
   end
 
+  context 'when an error follows a captured response' do
+    let(:chat) { ->(llm) { llm.chat(model: 'gpt-5.2', provider: :openai, assume_model_exists: true).ask('test') } }
+
+    it 'returns the response when RubyLLM cannot read it' do
+      stub_request(:post, responses_url).to_return(status: 200, body: '"not an object"', headers: { 'Content-Type' => 'application/json' })
+
+      response = described_class.request(&chat)
+
+      expect(response.body).to eq('not an object')
+    end
+
+    it 'raises an error from other code' do
+      stub_request(:post, responses_url)
+        .to_return(status: 200, body: response_body.to_json, headers: { 'Content-Type' => 'application/json' })
+      subscriber = ActiveSupport::Notifications.subscribe('chat.ruby_llm') { raise NoMethodError, 'subscriber bug' }
+
+      expect { described_class.request(&chat) }.to raise_error(NoMethodError, 'subscriber bug')
+    ensure
+      ActiveSupport::Notifications.unsubscribe(subscriber)
+    end
+  end
+
   context 'without an API key' do
     before do
       allow(TradeTariffBackend).to receive(:openai_api_key).and_return(nil)

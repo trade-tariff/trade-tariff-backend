@@ -9,6 +9,7 @@ module OpenaiTransport
   # Like RubyLLM's usage owner, per-request timeouts live in fiber storage.
   # This keeps one shared RubyLLM connection when a deadline changes them.
   TIMEOUTS = :openai_transport_timeouts
+  RUBY_LLM_ROOT = "#{Gem.loaded_specs.fetch('ruby_llm').full_gem_path}/".freeze
 
 module_function
 
@@ -23,13 +24,21 @@ module_function
       raise unless e.response
 
       provider_response(e.response)
-    rescue StandardError
+    rescue StandardError => e
       # RubyLLM could not read a response that the provider sent. The caller
-      # applies its own rules to it.
-      raise unless capture.response
+      # applies its own rules to it. An error from other code, such as an
+      # event subscriber, is a bug and propagates.
+      raise unless capture.response && raised_by_ruby_llm?(e)
 
       capture.response
     end
+  end
+
+  # Core methods implemented in Ruby report `<internal:...>` paths, so the
+  # first other frame identifies the code that raised.
+  def raised_by_ruby_llm?(error)
+    location = error.backtrace_locations&.find { |frame| !frame.path.to_s.start_with?('<internal:') }
+    location&.path.to_s.start_with?(RUBY_LLM_ROOT)
   end
 
   def context(instrumenter:)
