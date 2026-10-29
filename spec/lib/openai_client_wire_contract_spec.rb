@@ -32,6 +32,22 @@ RSpec.describe OpenaiClient, :ai_wire_contract do
       call: -> { described_class.call([*system_and_user, { role: 'assistant', content: '{"questions":[]}' }, { role: 'user', content: 'Try again' }]) },
       script: [responses.completed],
     },
+    'system-only transcript' => {
+      call: -> { described_class.call([{ role: 'system', content: 'You classify goods. Return JSON.' }]) },
+      script: [responses.completed],
+    },
+    'conversation ending in an assistant turn' => {
+      call: -> { described_class.call([*system_and_user, { role: 'assistant', content: '{"questions":[]}' }]) },
+      script: [responses.completed],
+    },
+    'developer role message' => {
+      call: -> { described_class.call([{ role: 'developer', content: 'Return JSON.' }, { role: 'user', content: 'Classify this' }]) },
+      script: [responses.completed],
+    },
+    'Responses API content parts' => {
+      call: -> { described_class.call([{ role: 'user', content: [{ type: 'input_text', text: 'Classify this' }] }]) },
+      script: [responses.completed],
+    },
     'unknown model with the max reasoning effort' => {
       call: -> { described_class.call('Classify this', model: 'gpt-6.1-terra', reasoning_effort: 'max', event_kind: 'label_generation') },
       script: [responses.completed],

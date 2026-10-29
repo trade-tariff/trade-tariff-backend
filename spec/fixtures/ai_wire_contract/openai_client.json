@@ -251,6 +251,84 @@
       "ai_usage": null
     }
   },
+  "Responses API content parts": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/responses",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "gpt-5.2",
+          "input": [
+            {
+              "role": "user",
+              "content": [
+                {
+                  "type": "input_text",
+                  "text": "Classify this"
+                }
+              ]
+            }
+          ],
+          "safety_identifier": "hmrc-ott",
+          "text": {
+            "format": {
+              "type": "json_object"
+            }
+          },
+          "store": false
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [
+      "DEBUG OpenaiClient call took N seconds"
+    ],
+    "events": [],
+    "unused_responses": 0,
+    "result": {
+      "class": "Hash",
+      "value": {
+        "capital": "Paris"
+      },
+      "ai_usage": {
+        "provider": "openai",
+        "model": "gpt-5.2",
+        "event_kind": null,
+        "input_tokens": 1200,
+        "cached_input_tokens": 1024,
+        "cache_write_input_tokens": null,
+        "output_tokens": 300,
+        "reasoning_tokens": 200,
+        "total_tokens": 1500,
+        "input_cost_usd": 0.0004872,
+        "cached_input_cost_usd": 0.0001792,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": 0.0042,
+        "total_cost_usd": 0.0046872,
+        "pricing_known": true,
+        "finish_reason": "completed",
+        "served_model": "gpt-5.2-2025-12-11",
+        "service_tier": "default",
+        "reasoning_effort": null,
+        "openai_request_id": "req_contract",
+        "openai_response_id": "resp_contract"
+      }
+    }
+  },
   "Retry-After longer than the remaining deadline": {
     "requests": [
       {
@@ -1900,6 +1978,87 @@
       }
     }
   },
+  "conversation ending in an assistant turn": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/responses",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "gpt-5.2",
+          "input": [
+            {
+              "role": "system",
+              "content": "You classify goods. Return JSON."
+            },
+            {
+              "role": "user",
+              "content": "{\"description\":\"Cotton T-shirt, knitted\",\"codes\":[\"6109100010\",\"6109100090\"]}"
+            },
+            {
+              "role": "assistant",
+              "content": "{\"questions\":[]}"
+            }
+          ],
+          "safety_identifier": "hmrc-ott",
+          "text": {
+            "format": {
+              "type": "json_object"
+            }
+          },
+          "store": false
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [
+      "DEBUG OpenaiClient call took N seconds"
+    ],
+    "events": [],
+    "unused_responses": 0,
+    "result": {
+      "class": "Hash",
+      "value": {
+        "capital": "Paris"
+      },
+      "ai_usage": {
+        "provider": "openai",
+        "model": "gpt-5.2",
+        "event_kind": null,
+        "input_tokens": 1200,
+        "cached_input_tokens": 1024,
+        "cache_write_input_tokens": null,
+        "output_tokens": 300,
+        "reasoning_tokens": 200,
+        "total_tokens": 1500,
+        "input_cost_usd": 0.0004872,
+        "cached_input_cost_usd": 0.0001792,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": 0.0042,
+        "total_cost_usd": 0.0046872,
+        "pricing_known": true,
+        "finish_reason": "completed",
+        "served_model": "gpt-5.2-2025-12-11",
+        "service_tier": "default",
+        "reasoning_effort": null,
+        "openai_request_id": "req_contract",
+        "openai_response_id": "resp_contract"
+      }
+    }
+  },
   "conversation with an assistant turn": {
     "requests": [
       {
@@ -2056,6 +2215,83 @@
         "served_model": "gpt-5.2-2025-12-11",
         "service_tier": "default",
         "reasoning_effort": "low",
+        "openai_request_id": "req_contract",
+        "openai_response_id": "resp_contract"
+      }
+    }
+  },
+  "developer role message": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/responses",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "gpt-5.2",
+          "input": [
+            {
+              "role": "developer",
+              "content": "Return JSON."
+            },
+            {
+              "role": "user",
+              "content": "Classify this"
+            }
+          ],
+          "safety_identifier": "hmrc-ott",
+          "text": {
+            "format": {
+              "type": "json_object"
+            }
+          },
+          "store": false
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [
+      "DEBUG OpenaiClient call took N seconds"
+    ],
+    "events": [],
+    "unused_responses": 0,
+    "result": {
+      "class": "Hash",
+      "value": {
+        "capital": "Paris"
+      },
+      "ai_usage": {
+        "provider": "openai",
+        "model": "gpt-5.2",
+        "event_kind": null,
+        "input_tokens": 1200,
+        "cached_input_tokens": 1024,
+        "cache_write_input_tokens": null,
+        "output_tokens": 300,
+        "reasoning_tokens": 200,
+        "total_tokens": 1500,
+        "input_cost_usd": 0.0004872,
+        "cached_input_cost_usd": 0.0001792,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": 0.0042,
+        "total_cost_usd": 0.0046872,
+        "pricing_known": true,
+        "finish_reason": "completed",
+        "served_model": "gpt-5.2-2025-12-11",
+        "service_tier": "default",
+        "reasoning_effort": null,
         "openai_request_id": "req_contract",
         "openai_response_id": "resp_contract"
       }
@@ -7090,6 +7326,79 @@
             {
               "role": "user",
               "content": "What is the capital of France?"
+            }
+          ],
+          "safety_identifier": "hmrc-ott",
+          "text": {
+            "format": {
+              "type": "json_object"
+            }
+          },
+          "store": false
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [
+      "DEBUG OpenaiClient call took N seconds"
+    ],
+    "events": [],
+    "unused_responses": 0,
+    "result": {
+      "class": "Hash",
+      "value": {
+        "capital": "Paris"
+      },
+      "ai_usage": {
+        "provider": "openai",
+        "model": "gpt-5.2",
+        "event_kind": null,
+        "input_tokens": 1200,
+        "cached_input_tokens": 1024,
+        "cache_write_input_tokens": null,
+        "output_tokens": 300,
+        "reasoning_tokens": 200,
+        "total_tokens": 1500,
+        "input_cost_usd": 0.0004872,
+        "cached_input_cost_usd": 0.0001792,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": 0.0042,
+        "total_cost_usd": 0.0046872,
+        "pricing_known": true,
+        "finish_reason": "completed",
+        "served_model": "gpt-5.2-2025-12-11",
+        "service_tier": "default",
+        "reasoning_effort": null,
+        "openai_request_id": "req_contract",
+        "openai_response_id": "resp_contract"
+      }
+    }
+  },
+  "system-only transcript": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/responses",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "gpt-5.2",
+          "input": [
+            {
+              "role": "system",
+              "content": "You classify goods. Return JSON."
             }
           ],
           "safety_identifier": "hmrc-ott",
