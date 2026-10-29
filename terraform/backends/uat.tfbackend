@@ -1,0 +1,5 @@
+bucket         = "terraform-state-uat-352285845378"
+key            = "tariff-backend.tfstate"
+region         = "eu-west-2"
+encrypt        = true
+use_lockfile   = true

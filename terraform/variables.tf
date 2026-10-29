@@ -107,3 +107,15 @@ variable "backend_xi_scheduled_scaling_actions" {
     error_message = "Each backend_xi_scheduled_scaling_actions entry must have non-negative min_capacity/max_capacity and min_capacity must be <= max_capacity."
   }
 }
+
+variable "generated_secrets" {
+  description = "UAT only. For each service (backend-uk, backend-xi, worker-uk, worker-xi, backend-job), environment variables mapped to the Secrets Manager secret that has the value. The common stack creates these secrets on each start. They replace the values in the configuration secret."
+  type        = map(map(string))
+  default     = {}
+}
+
+variable "generated_parameters" {
+  description = "UAT only. For each service, environment variables mapped to the SSM parameter that has the value. The common stack creates these parameters on each start. They replace the values in the configuration secret."
+  type        = map(map(string))
+  default     = {}
+}
