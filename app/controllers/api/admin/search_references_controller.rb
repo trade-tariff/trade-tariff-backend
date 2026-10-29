@@ -16,7 +16,23 @@ module Api
         ).serializable_hash
       end
 
+      def export
+        csv = Api::Admin::Csv::SearchReferenceSerializer.new(
+          SearchReference.admin_export,
+          { include_ai_labels: include_ai_labels },
+        ).serialized_csv
+
+        send_data csv,
+                  filename: "search_references_#{TradeTariffBackend.service}_#{date}.csv",
+                  type: 'text/csv',
+                  disposition: 'attachment'
+      end
+
     private
+
+      def date
+        Time.zone.today.strftime('%Y_%m_%d')
+      end
 
       def letter
         params.dig(:query, :letter) || ''
@@ -33,6 +49,10 @@ module Api
 
       def current_search_reference
         @current_search_reference ||= SearchReference.where(id: params[:id].to_i).first
+      end
+
+      def include_ai_labels
+        ActiveModel::Type::Boolean.new.cast(params[:include_ai_labels]) || false
       end
 
       # Used for historical versions and for references that no longer exist,
