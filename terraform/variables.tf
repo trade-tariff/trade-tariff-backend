@@ -23,6 +23,12 @@ variable "start_without_tasks" {
   description = "Create the backend and worker services with no tasks. The UAT start uses it before it restores the database, because the services cannot start on an empty database."
   type        = bool
   default     = false
+
+  # ECS ignores later desired count changes, so only the UAT autoscaler minimum starts the tasks again.
+  validation {
+    condition     = !var.start_without_tasks || var.environment == "uat"
+    error_message = "start_without_tasks is only for uat."
+  }
 }
 
 variable "min_capacity_uk" {
