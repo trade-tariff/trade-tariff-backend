@@ -465,13 +465,12 @@ RSpec.describe Api::Internal::SearchService do
         expect(TradeTariffBackend.search_client).not_to have_received(:search)
       end
 
-      it 'keeps the declarable-only shortlist for implicit label matching' do
-        allow(TradeTariffBackend.search_client).to receive(:search).and_return('hits' => { 'hits' => [] })
-
+      it 'returns the non-declarable match for typed text' do
         result = described_class.new(q: 'livestock').call
 
-        expect(result[:data]).to eq([])
-        expect(TradeTariffBackend.search_client).to have_received(:search)
+        expect(result[:data].length).to eq(1)
+        expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('0101000000')
+        expect(TradeTariffBackend.search_client).not_to have_received(:search)
       end
     end
 
@@ -1321,7 +1320,7 @@ RSpec.describe Api::Internal::SearchService do
       end
     end
 
-    context 'when exact match suggestion is non-declarable' do
+    context 'when a typed search reference points to a non-declarable heading' do
       let!(:heading) do
         create(:heading, :with_description,
                goods_nomenclature_item_id: '0101000000',
@@ -1339,11 +1338,13 @@ RSpec.describe Api::Internal::SearchService do
         allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
       end
 
-      it 'falls through to OpenSearch instead of returning an exact match' do
+      it 'returns the heading as an exact match' do
         result = described_class.new(q: 'horse').call
 
-        expect(result).to eq(data: [], meta: { search_failures: [] })
-        expect(TradeTariffBackend.search_client).to have_received(:search)
+        expect(result[:data].length).to eq(1)
+        expect(result[:data][0][:type]).to eq(:heading)
+        expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('0101000000')
+        expect(TradeTariffBackend.search_client).not_to have_received(:search)
       end
     end
 
