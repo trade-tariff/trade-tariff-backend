@@ -613,15 +613,13 @@ module Api
           .by_value(singular_and_plural(query.downcase))
           .where(type: exact_match_suggestion_types)
 
-        # Explicit selections can target non-declarable headings or chapters.
-        # Hidden and intercept protections still apply after resolution.
+        # Suggestions can target chapters, headings and subheadings, as in
+        # Classic search. Hidden and intercept protections still apply.
         if selected_resource_id
           sid = Integer(selected_resource_id, exception: false)
           return unless sid
 
           scope = scope.where(goods_nomenclature_sid: sid)
-        else
-          scope = scope.declarable
         end
 
         suggestion = scope.eager(:goods_nomenclature).first
