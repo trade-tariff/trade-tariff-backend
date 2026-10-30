@@ -24,7 +24,8 @@ variable "start_without_tasks" {
   type        = bool
   default     = false
 
-  # ECS ignores later desired count changes, so only the UAT autoscaler minimum starts the tasks again.
+  # The ECS module makes Terraform ignore later desired_count changes. Without an autoscaler, which development does not
+  # have, the tasks start again only when someone sets the count with aws ecs update-service.
   validation {
     condition     = !var.start_without_tasks || var.environment == "uat"
     error_message = "start_without_tasks is only for uat."
