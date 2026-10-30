@@ -104,6 +104,7 @@ Terraform to deploy the service into AWS.
 | <a name="input_scale_in_cooldown"></a> [scale\_in\_cooldown](#input\_scale\_in\_cooldown) | Prevents aggressive scale-in by enforcing a waiting period after tasks are removed. | `number` | `300` | no |
 | <a name="input_scale_out_cooldown"></a> [scale\_out\_cooldown](#input\_scale\_out\_cooldown) | Minimum time to wait after a scale-out before allowing another scale-out, giving new tasks time to start contributing capacity. | `number` | `60` | no |
 | <a name="input_service_count"></a> [service\_count](#input\_service\_count) | Number of services to use. | `number` | `1` | no |
+| <a name="input_start_without_tasks"></a> [start\_without\_tasks](#input\_start\_without\_tasks) | Create the backend and worker services with no tasks. The UAT start uses it before it restores the database, because the services cannot start on an empty database. | `bool` | `false` | no |
 
 ## Outputs
 

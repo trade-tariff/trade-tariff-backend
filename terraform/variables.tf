@@ -19,6 +19,19 @@ variable "service_count" {
   default     = 1
 }
 
+variable "start_without_tasks" {
+  description = "Create the backend and worker services with no tasks. The UAT start uses it before it restores the database, because the services cannot start on an empty database."
+  type        = bool
+  default     = false
+
+  # The ECS module makes Terraform ignore later desired_count changes. Without an autoscaler, which development does not
+  # have, the tasks start again only when someone sets the count with aws ecs update-service.
+  validation {
+    condition     = !var.start_without_tasks || var.environment == "uat"
+    error_message = "start_without_tasks is only for uat."
+  }
+}
+
 variable "min_capacity_uk" {
   description = "Smallest number of tasks the backend-uk service can scale-in to."
   type        = number
