@@ -3,6 +3,13 @@ module Api
     class SearchService
       include QueryProcessing
 
+      CLASSIC_EXACT_MATCH_TYPES = [
+        ::SearchSuggestion::TYPE_GOODS_NOMENCLATURE,
+        ::SearchSuggestion::TYPE_SEARCH_REFERENCE,
+        ::SearchSuggestion::TYPE_FULL_CHEMICAL_CAS,
+        ::SearchSuggestion::TYPE_FULL_CHEMICAL_CUS,
+      ].freeze
+
       RetrievalResult = Data.define(
         :goods_nomenclatures,
         :max_score,
@@ -510,8 +517,12 @@ module Api
         @answered_values ||= answers.filter_map { |answer| answer[:answer].presence }.uniq
       end
 
-      def allowed_suggestion_types
-        ::SearchSuggestion.allowed_types
+      # Typed text navigates on the same suggestion types as Classic search:
+      # codes, search references, CAS and CUS numbers. Generated labels only
+      # navigate when the trader selected that suggestion from autocomplete.
+      def exact_match_suggestion_types
+        types = ::SearchSuggestion.allowed_types | CLASSIC_EXACT_MATCH_TYPES
+        selected_resource_id ? types : types - ::SearchSuggestion::LABEL_TYPES
       end
 
       # Internal autocomplete exposes the goods nomenclature SID as its
@@ -600,7 +611,7 @@ module Api
       def find_by_suggestion(query)
         scope = ::SearchSuggestion
           .by_value(singular_and_plural(query.downcase))
-          .where(type: allowed_suggestion_types)
+          .where(type: exact_match_suggestion_types)
 
         # Explicit selections can target non-declarable headings or chapters.
         # Hidden and intercept protections still apply after resolution.
