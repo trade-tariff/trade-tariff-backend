@@ -6,9 +6,11 @@ module SearchAnalytics
     OUTCOMES = %w[question results no_results unknown_results blocking_guidance input_error backend_error].freeze
     ACTIONS = %w[result_selected dont_know].freeze
     RATE_OUTCOMES = %w[initial_submitted answer_accepted].freeze
+    # Collected to exclude direct redirects from guided outcome rates.
+    EXCLUDED_OUTCOMES = %w[navigation].freeze
 
     def self.call(source:, service:)
-      outcomes = (OUTCOMES + ACTIONS + RATE_OUTCOMES + %w[page_visible]).map { |value| "'#{value}'" }.join(', ')
+      outcomes = (OUTCOMES + ACTIONS + RATE_OUTCOMES + EXCLUDED_OUTCOMES + %w[page_visible]).map { |value| "'#{value}'" }.join(', ')
       event_id = "CASE WHEN event_id IS NULL OR event_id = '' THEN NULL ELSE event_id END"
       question_id = "CASE WHEN question_id IS NULL OR question_id = '' THEN NULL ELSE question_id END"
       response_source = "CASE WHEN response_source IS NULL OR response_source = '' THEN NULL ELSE response_source END"
