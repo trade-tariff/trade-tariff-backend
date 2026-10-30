@@ -3,8 +3,6 @@ RSpec.describe EmbeddingService do
 
   let(:api_base_url) { 'https://gb.api.openai.com/v1' }
 
-  before { described_class.reset_client! }
-
   describe '#embed' do
     let(:embedding) { Array.new(1536) { rand(-1.0..1.0) } }
     let(:response_body) do

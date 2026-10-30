@@ -484,7 +484,6 @@ RSpec.describe VectorRetrievalService do
     }.each do |shape, data|
       context "when a billed embedding is #{shape}" do
         before do
-          EmbeddingService.reset_client!
           allow(EmbeddingService).to receive(:new).and_call_original
           body = { data:, usage: { prompt_tokens: 12, total_tokens: 12 } }
           body.delete(:data) if data.nil?

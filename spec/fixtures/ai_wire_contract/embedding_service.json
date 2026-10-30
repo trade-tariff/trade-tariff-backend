@@ -1,0 +1,3909 @@
+{
+  "HTML body with HTTP 200": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "error": {
+      "class": "EmbeddingService::ApiError",
+      "message": "Embedding response was malformed",
+      "cause": "NoMethodError",
+      "attributes": {
+        "http_status": null
+      },
+      "ai_usage": null
+    }
+  },
+  "TLS error then completed": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Live horses"
+          ]
+        }
+      },
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Live horses"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      },
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [
+      2
+    ],
+    "logs": [],
+    "events": [
+      [
+        "embedding_api_retry.ai_usage",
+        {
+          "event_kind": "vector_search_query_embedding",
+          "batch_size": 1,
+          "model": "text-embedding-3-small",
+          "attempt": 1,
+          "delay": 2,
+          "error_class": "Faraday::SSLError",
+          "error_message": "SSL_connect returned=1 errno=0 state=error: unexpected eof while reading",
+          "request_id": "<random id>",
+          "search_degraded": false,
+          "query_expansion_failed": false,
+          "embedding_generation_failed": false,
+          "vector_retrieval_failed": false,
+          "interactive_search_failed": false,
+          "duplicate_question_validation_failed": false,
+          "opensearch_failed": false
+        }
+      ]
+    ],
+    "unused_responses": 0,
+    "result": {
+      "class": "Array",
+      "value": {
+        "vector_size": 1536,
+        "vector_sha256": "6f3dcb4283c31779a97dfbd9f8e09c36ae4d160fb451c366f7c1d48dfd58770d"
+      },
+      "ai_usage": {
+        "provider": "openai",
+        "model": "text-embedding-3-small",
+        "event_kind": "vector_search_query_embedding",
+        "input_tokens": 8,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "output_tokens": 0,
+        "reasoning_tokens": null,
+        "total_tokens": 8,
+        "input_cost_usd": 0.00000016,
+        "cached_input_cost_usd": null,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": null,
+        "total_cost_usd": 0.00000016,
+        "pricing_known": true,
+        "finish_reason": null,
+        "served_model": "text-embedding-3-small",
+        "service_tier": null,
+        "reasoning_effort": null,
+        "openai_request_id": "req_contract",
+        "openai_response_id": null
+      }
+    }
+  },
+  "bad request": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1",
+            "Commodity description 2"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "error": {
+      "class": "EmbeddingService::ClientError",
+      "message": "EmbeddingService API error: 400 - {\"error\" => {\"message\" => \"Invalid input\", \"type\" => \"invalid_request_error\", \"param\" => nil, \"code\" => \"invalid_request_error\"}}",
+      "cause": null,
+      "attributes": {
+        "http_status": 400
+      },
+      "ai_usage": {
+        "provider": "openai",
+        "model": "text-embedding-3-small",
+        "event_kind": "self_text_scoring_embedding",
+        "input_tokens": null,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "output_tokens": null,
+        "reasoning_tokens": null,
+        "total_tokens": null,
+        "input_cost_usd": null,
+        "cached_input_cost_usd": null,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": null,
+        "total_cost_usd": null,
+        "pricing_known": false,
+        "finish_reason": null,
+        "served_model": null,
+        "service_tier": null,
+        "reasoning_effort": null,
+        "openai_request_id": "req_rejected",
+        "openai_response_id": null
+      }
+    }
+  },
+  "batch larger than the request limit": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1",
+            "Commodity description 2",
+            "Commodity description 3",
+            "Commodity description 4",
+            "Commodity description 5",
+            "Commodity description 6",
+            "Commodity description 7",
+            "Commodity description 8",
+            "Commodity description 9",
+            "Commodity description 10",
+            "Commodity description 11",
+            "Commodity description 12",
+            "Commodity description 13",
+            "Commodity description 14",
+            "Commodity description 15",
+            "Commodity description 16",
+            "Commodity description 17",
+            "Commodity description 18",
+            "Commodity description 19",
+            "Commodity description 20",
+            "Commodity description 21",
+            "Commodity description 22",
+            "Commodity description 23",
+            "Commodity description 24",
+            "Commodity description 25",
+            "Commodity description 26",
+            "Commodity description 27",
+            "Commodity description 28",
+            "Commodity description 29",
+            "Commodity description 30",
+            "Commodity description 31",
+            "Commodity description 32",
+            "Commodity description 33",
+            "Commodity description 34",
+            "Commodity description 35",
+            "Commodity description 36",
+            "Commodity description 37",
+            "Commodity description 38",
+            "Commodity description 39",
+            "Commodity description 40",
+            "Commodity description 41",
+            "Commodity description 42",
+            "Commodity description 43",
+            "Commodity description 44",
+            "Commodity description 45",
+            "Commodity description 46",
+            "Commodity description 47",
+            "Commodity description 48",
+            "Commodity description 49",
+            "Commodity description 50",
+            "Commodity description 51",
+            "Commodity description 52",
+            "Commodity description 53",
+            "Commodity description 54",
+            "Commodity description 55",
+            "Commodity description 56",
+            "Commodity description 57",
+            "Commodity description 58",
+            "Commodity description 59",
+            "Commodity description 60",
+            "Commodity description 61",
+            "Commodity description 62",
+            "Commodity description 63",
+            "Commodity description 64",
+            "Commodity description 65",
+            "Commodity description 66",
+            "Commodity description 67",
+            "Commodity description 68",
+            "Commodity description 69",
+            "Commodity description 70",
+            "Commodity description 71",
+            "Commodity description 72",
+            "Commodity description 73",
+            "Commodity description 74",
+            "Commodity description 75",
+            "Commodity description 76",
+            "Commodity description 77",
+            "Commodity description 78",
+            "Commodity description 79",
+            "Commodity description 80",
+            "Commodity description 81",
+            "Commodity description 82",
+            "Commodity description 83",
+            "Commodity description 84",
+            "Commodity description 85",
+            "Commodity description 86",
+            "Commodity description 87",
+            "Commodity description 88",
+            "Commodity description 89",
+            "Commodity description 90",
+            "Commodity description 91",
+            "Commodity description 92",
+            "Commodity description 93",
+            "Commodity description 94",
+            "Commodity description 95",
+            "Commodity description 96",
+            "Commodity description 97",
+            "Commodity description 98",
+            "Commodity description 99",
+            "Commodity description 100"
+          ]
+        }
+      },
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 101",
+            "Commodity description 102",
+            "Commodity description 103",
+            "Commodity description 104",
+            "Commodity description 105",
+            "Commodity description 106",
+            "Commodity description 107",
+            "Commodity description 108",
+            "Commodity description 109",
+            "Commodity description 110",
+            "Commodity description 111",
+            "Commodity description 112",
+            "Commodity description 113",
+            "Commodity description 114",
+            "Commodity description 115",
+            "Commodity description 116",
+            "Commodity description 117",
+            "Commodity description 118",
+            "Commodity description 119",
+            "Commodity description 120",
+            "Commodity description 121",
+            "Commodity description 122",
+            "Commodity description 123",
+            "Commodity description 124",
+            "Commodity description 125",
+            "Commodity description 126",
+            "Commodity description 127",
+            "Commodity description 128",
+            "Commodity description 129",
+            "Commodity description 130",
+            "Commodity description 131",
+            "Commodity description 132",
+            "Commodity description 133",
+            "Commodity description 134",
+            "Commodity description 135",
+            "Commodity description 136",
+            "Commodity description 137",
+            "Commodity description 138",
+            "Commodity description 139",
+            "Commodity description 140",
+            "Commodity description 141",
+            "Commodity description 142",
+            "Commodity description 143",
+            "Commodity description 144",
+            "Commodity description 145",
+            "Commodity description 146",
+            "Commodity description 147",
+            "Commodity description 148",
+            "Commodity description 149",
+            "Commodity description 150",
+            "Commodity description 151",
+            "Commodity description 152",
+            "Commodity description 153",
+            "Commodity description 154",
+            "Commodity description 155",
+            "Commodity description 156",
+            "Commodity description 157",
+            "Commodity description 158",
+            "Commodity description 159",
+            "Commodity description 160",
+            "Commodity description 161",
+            "Commodity description 162",
+            "Commodity description 163",
+            "Commodity description 164",
+            "Commodity description 165",
+            "Commodity description 166",
+            "Commodity description 167",
+            "Commodity description 168",
+            "Commodity description 169",
+            "Commodity description 170",
+            "Commodity description 171",
+            "Commodity description 172",
+            "Commodity description 173",
+            "Commodity description 174",
+            "Commodity description 175",
+            "Commodity description 176",
+            "Commodity description 177",
+            "Commodity description 178",
+            "Commodity description 179",
+            "Commodity description 180",
+            "Commodity description 181",
+            "Commodity description 182",
+            "Commodity description 183",
+            "Commodity description 184",
+            "Commodity description 185",
+            "Commodity description 186",
+            "Commodity description 187",
+            "Commodity description 188",
+            "Commodity description 189",
+            "Commodity description 190",
+            "Commodity description 191",
+            "Commodity description 192",
+            "Commodity description 193",
+            "Commodity description 194",
+            "Commodity description 195",
+            "Commodity description 196",
+            "Commodity description 197",
+            "Commodity description 198",
+            "Commodity description 199",
+            "Commodity description 200"
+          ]
+        }
+      },
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 201",
+            "Commodity description 202",
+            "Commodity description 203",
+            "Commodity description 204",
+            "Commodity description 205",
+            "Commodity description 206",
+            "Commodity description 207",
+            "Commodity description 208",
+            "Commodity description 209",
+            "Commodity description 210",
+            "Commodity description 211",
+            "Commodity description 212",
+            "Commodity description 213",
+            "Commodity description 214",
+            "Commodity description 215",
+            "Commodity description 216",
+            "Commodity description 217",
+            "Commodity description 218",
+            "Commodity description 219",
+            "Commodity description 220",
+            "Commodity description 221",
+            "Commodity description 222",
+            "Commodity description 223",
+            "Commodity description 224",
+            "Commodity description 225",
+            "Commodity description 226",
+            "Commodity description 227",
+            "Commodity description 228",
+            "Commodity description 229",
+            "Commodity description 230",
+            "Commodity description 231",
+            "Commodity description 232",
+            "Commodity description 233",
+            "Commodity description 234",
+            "Commodity description 235",
+            "Commodity description 236",
+            "Commodity description 237",
+            "Commodity description 238",
+            "Commodity description 239",
+            "Commodity description 240",
+            "Commodity description 241",
+            "Commodity description 242",
+            "Commodity description 243",
+            "Commodity description 244",
+            "Commodity description 245",
+            "Commodity description 246",
+            "Commodity description 247",
+            "Commodity description 248",
+            "Commodity description 249",
+            "Commodity description 250"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      },
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      },
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "result": {
+      "class": "Array",
+      "value": [
+        {
+          "vector_size": 1536,
+          "vector_sha256": "6f3dcb4283c31779a97dfbd9f8e09c36ae4d160fb451c366f7c1d48dfd58770d"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "37ec3b69fecdaeb997114e2f28e3ad4e36d82a7198a5157dc0511565461c1772"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "b0df487586e5d2d31502782e2ddae38eae0c715c2f487940cdd1f1873145cce4"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "d14fa6389099b71204cddc13e115ee38e1798c00831ce35af72fd63d65f67e5f"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "0c8becb8a609811e3800a0d85c6f010b5049234939a54d7c2de9dde78d36ad98"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "929b777b8441d9317acc30d0ff38ac4dd6236436984afb6dbbb1688fbbfc5af6"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "14b9f9d128804eecb7f2cc61359b433a36ee1d55ef0c02f9d751c1062c49b13b"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "480028ee2dc928d924e5ba69e5680b72b07a6e1e928242764226d739f6c5b7d5"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "60e63f28d72c2b8e4b76382041d393b8ed1291e7b0b42b7d87692328725c373e"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "3bde77692c9e6d8e93d18dc2472fb224ec226dfac993786672d76727fa29a3e0"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "f4ea34e156dcf2d05d087508883e6f3669352f6c657a2ff2d8d40f335b491fad"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "e47be8960d23984b373752b338b3a374dd60e58cad030c6d8c0f43026fcaf4ce"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "c576b652af63669598fecdfacf47dca86c980983b941c285c8a44155cf865c1b"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "002a8733c82f53b2c30469f663528fd37a0e28b089192ca00b8ad7a1782029c4"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "9f8ce6921365e89c946f7fea94f6cbe41cd81b02d015ac08774bf006451b7c91"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "e1df833edb4054f1863e2852f414eb30e041ccb404188ea19fd9f58f8df8152a"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "0f98a07e952ca268c4203308c406b9dc9f64d205c2097f7b9af3757602dac186"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "da3653cc436b8e93078f0334d4ee8e402848007ad4460313c035e2776f8951f5"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "f90dea3122f1965cfaab21e7737b9f2f133503c487393ed268ef37d63b8cb933"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "100262f8048b2eabf205854fbd304b6a63823ee849bb113495ac8d05341655dd"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "723ef2e57e6ee99fa3b4ed3b1279483777c192d6ab64d23c439fd6554f823845"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "b4a478528eef433bf417ecc3190c007ce67c332e04ff5e182c2615680e882bc2"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "a2e3df787f0a12fc8af8462e859f97b3cc32c5d8ad01ef0dcc1a9cecca966280"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "93ec50c8e8f79daef077db5735d8288452c78e3d7cb0c173e8a50be6a2cd958a"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "12396b286413a1b39026ab71d9ce87d28ea049b1dabc17def9119a0682f929ea"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "ace299a8e9b33653b7f53cfd03f62ec5a7ddcf43f0570076467b3d4416ea6c33"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "24e8e429adbcf5db630414ba97c098876da7820616bae3ffc8d27361ed90058a"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "29f33f26b73c91f6b10ddcdb40559b6b91c68f5382c7513d86d0230142dd0c29"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "4c5460d6512f566228333a0d151f99c8b279c512a2e1628f11c4a73faa99ee58"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "e1e95ab48ca7aebfac6725451bbc7f336a24435615d52497c61fc2fa942d6652"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "52343056d2a45200547f4074dcd903ef8b7086b3f128463438e81076755f0f7c"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "ba26878bbf0d1fbd8aaa01b6985212691f265bd626fd6f4f02fa5a0c20f4a6c8"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "20fb23a4c1ddf2503b50eec264b5448b833cc6fc1d70191f90d9115c59a6771d"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "371bc36f4c76d18cd224f755aee65e57be5678c309c7ee9640c924b9620b2ae8"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "04deaa9efd77fcda7c476ea94d18c0c47f16cf4b44f881f058a4654c3041e287"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "c1727983c74326428752cb17bdf3eea53cc44c09a47061bb44d3ad8e744a4e2b"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "7aacffe0425a35d086981ddfa1ab20c94bdfcd9f3a9cd0fad99039484c527f79"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "8883cbb4f9420893ba03bd3070bc446a62abade7dd22c789b8cb0d9e8c28b418"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "50c7a8fcded8a5af5911522386f988bd78d63cca67266fd909eca7bb595d0503"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "5eeb38b177234b2dfe5a24e08731376133ed7674d50a5fe5432371ef549c33ce"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "ca24edc52a9af6536e1a58af49b1ffa488b040a4b00d9eb03c0c45a5365f57fd"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "59346e00ea4c192013c3104fd51d379270b4b6ae7011c3a711d7df13fa370b15"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "f666d9c587c6bc2d1a024fa504c927e838a8907640df2678376fbf88f1ed5371"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "94cde799ca1cf76413923bd490d0431ce64f87cf98aba5beb8799f3c76821266"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "bd4441adfee69d380bf3b7e32cb4f589372f433e2450143d27f970f54e98cdc0"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "3f7361791314bd64b5c695a06a5f47cb56c231227679e484eb361870d576c71d"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "8f7022d3286841b90d0ed417e1a2d51de84587973b23799df7d0268227fdd830"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "90c2e425c1c69d5dc7821d30e0d0a77d8d96f03efd22df506669e37e852837e8"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "dd973fa54634a055b0a4bf165527ed6f5814df66f06bed946ddfc3e216e61132"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "210d443dde96459e2dd5402b42b331918aa15dec53524629dab150b90e2f7ab5"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "f8bb4be599f6df4d81af457db9952f87b196e529da18ffa040edc27aa9dee00d"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "04a7d62f43c4468b86c9bd3a120d77efcb8477b8df2426c14d8ba4ed94c6a52f"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "3645c57a2dc79098e09fce8c0226375031e9a764ce7e7de08a0a53713d474526"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "a4a116bfa47c1fd31712dd68e66efc8dcccd14ab7a2206eec55b15d5c0101d0c"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "19c1d48b0cbff99e974f53bdff7406e2abdf8218a1e4c4869ca29789c3c1efa4"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "585ec39adbfcbe550df58cf49e40a6c9bdd618acc1425507ed383713add4ce2e"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "e7683906762d54f822d6d5ed0a0abca43176e29e55c5402bdbcfaf5d590cbc6c"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "10fafc8885a560fb1962fc4073160818653aa73be309993eca3c893b877cd6ee"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "e4595793bc74c9965e347e81e069e6b4143bd72ada4f2635c5eafa277d646352"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "178cedfad93f4f2213419c4f682717a025dab61345f1281695185faf5633aafd"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "32cb98dc5c7bcb3f995791a2ff4dbd9f994493524f3675daf4662e76a66fc5d2"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "7be0c16a0d4a22065a60886bab4179ee7115f876dac5257052dc896de2b101d4"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "db305227b304777f6d26bcc46febda5591f2c5401c26742dda546e84c9a9f6af"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "8daa1c7da168e9b1f4fcca1065acb7e29487843d0e7b27607e3beb81e3a392dd"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "1df750dfb879c6da2ff3adb1237d246f7b266696e2188bc11870b398b3e433da"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "a62eedf4c3f63645253df59d510a8614631f9cef01c4033246d8b10d40582805"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "6d0fb351e126ed0908b06a8fb350602ced09b89589a989587d5e17ffca8701d6"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "a1b316ff4f78ba8ca774566e0b827db641077c017107619f87ac69b53187ac90"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "383025ea67d9bb24649b23c54f25ab5c98e7f29490360ad95a341b990b247cb4"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "d1605e56fad5fa7e9f889758710ccc2ece76b0ebd3cfdfe2246e552470086189"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "dfd9477ed824ec62c099c5ceb7dd33086b6f3b9c2e310384e574d4a8e293c912"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "e4d3376a66aafc50e36a11383f743d46540c39bfe075d4ead2e28a2c3c4a2107"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "31adc2c22c2ec7c2700d5bc96e962381c92c41c0ebe682bd40536c9225eedc00"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "58c01d3644b1ceaea2a594780983b63e0de822d4eb8f1e38d1e7e2a60bf8d829"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "ad7a9535458112594aa14b399d49dadc17e08e6accfae386f6528a22faeee561"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "626360c26602361e9f5704b929736ef4a43a8af93b73071b9199dfd782df1dd2"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "b9cefa90460d26130ecbcb8540deb5f2388f228be91ca4b9884980c0c40f5329"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "f2faa503a59e35114bb0fde7ab03f2920b2a6216de47bb070fa14a25069c832c"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "ad46e93b2a7176960d63b9d778b74a6f9353954a35897144aea79e1ef88dec56"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "2363c82553810b5601b50d97cd7c2fa88986c091f832729e128809c50c07e069"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "72691842e49356000bf8063bddcc03fa1f1c34ae79cfe7fc1a28bcd0baa3d2d2"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "bd9b61e92ec8c40699402face2aa40b56bd4642dc00b7a44c9fc68bb1399f071"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "24383c79fe889d1107514bc2932dceba5c85cd4d06894a41b4d621eb833b8dc3"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "b8612a4a04cb9b00ed2e360947958e0d98c118d434c47521a5de26bd18761ad1"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "d8a136f5a2963b2f212d216cf845a12619eaa1a16154fa3e7ae60b60485e1384"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "1336e87ec1881c78b7ada4b9bc0c7aafbc859812f4370fa0f7df9ff38e7deff0"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "da9946874d536ded6a9e42879e06352406df4247870e88553c975990321c359e"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "f42e97ce4ad32313f13afd57425f4dcd61dd8fd50c6ab6d29731cb76f8d65cd1"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "d593a978272571a7ae16c7ef439956015439558a01f9dfa63e49788dfd9fc941"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "8f7e9ae6c46937fdc54c19786f8c1c7d8ce29420bfa7d0d85d4d24d69724a59d"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "65d6924c12c7f065f19f192fb5a5eedf9940810dd21bd45512f4b1a66098424b"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "8da1d20615fbd101b5dc6674605e4c00e8d98a5ef88200b22239504378dbb1ba"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "a65f2f9285b1e7dda2ffd8504429f0f31d9604af6943c4265ba57e0822eb6420"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "b092a29cbddb732b764ebba6bd2b14d7455d503f61ddc82225010d48fe55e611"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "bdff7d8cf17c1f163905a9ea8c62c53ba3e5c9f147150603ac833771cccd23d0"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "c8c1218b1b1155cb66a2cb5d4f97dc93d56b2d1b45fc2e7c70711009901c2980"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "f6d5cbef3edc05262c3c2d79ff56879a6efc37b8068b214ff6dceb980fdf6846"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "8ecad2709e3aeb199e84744c49ac44a4d4a607e1edcd6c69fcf3ead070e9c61f"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "483b4e5078e7b2fe85bf44c554db5e414fc1b3be38cfdd9c1f225debb61c8bf4"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "fc214de92e49b7e8f9763c7b1b1b0d0794f92a2bb7ec34e0d4a3826dd7b8c609"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "6f3dcb4283c31779a97dfbd9f8e09c36ae4d160fb451c366f7c1d48dfd58770d"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "37ec3b69fecdaeb997114e2f28e3ad4e36d82a7198a5157dc0511565461c1772"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "b0df487586e5d2d31502782e2ddae38eae0c715c2f487940cdd1f1873145cce4"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "d14fa6389099b71204cddc13e115ee38e1798c00831ce35af72fd63d65f67e5f"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "0c8becb8a609811e3800a0d85c6f010b5049234939a54d7c2de9dde78d36ad98"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "929b777b8441d9317acc30d0ff38ac4dd6236436984afb6dbbb1688fbbfc5af6"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "14b9f9d128804eecb7f2cc61359b433a36ee1d55ef0c02f9d751c1062c49b13b"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "480028ee2dc928d924e5ba69e5680b72b07a6e1e928242764226d739f6c5b7d5"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "60e63f28d72c2b8e4b76382041d393b8ed1291e7b0b42b7d87692328725c373e"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "3bde77692c9e6d8e93d18dc2472fb224ec226dfac993786672d76727fa29a3e0"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "f4ea34e156dcf2d05d087508883e6f3669352f6c657a2ff2d8d40f335b491fad"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "e47be8960d23984b373752b338b3a374dd60e58cad030c6d8c0f43026fcaf4ce"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "c576b652af63669598fecdfacf47dca86c980983b941c285c8a44155cf865c1b"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "002a8733c82f53b2c30469f663528fd37a0e28b089192ca00b8ad7a1782029c4"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "9f8ce6921365e89c946f7fea94f6cbe41cd81b02d015ac08774bf006451b7c91"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "e1df833edb4054f1863e2852f414eb30e041ccb404188ea19fd9f58f8df8152a"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "0f98a07e952ca268c4203308c406b9dc9f64d205c2097f7b9af3757602dac186"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "da3653cc436b8e93078f0334d4ee8e402848007ad4460313c035e2776f8951f5"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "f90dea3122f1965cfaab21e7737b9f2f133503c487393ed268ef37d63b8cb933"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "100262f8048b2eabf205854fbd304b6a63823ee849bb113495ac8d05341655dd"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "723ef2e57e6ee99fa3b4ed3b1279483777c192d6ab64d23c439fd6554f823845"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "b4a478528eef433bf417ecc3190c007ce67c332e04ff5e182c2615680e882bc2"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "a2e3df787f0a12fc8af8462e859f97b3cc32c5d8ad01ef0dcc1a9cecca966280"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "93ec50c8e8f79daef077db5735d8288452c78e3d7cb0c173e8a50be6a2cd958a"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "12396b286413a1b39026ab71d9ce87d28ea049b1dabc17def9119a0682f929ea"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "ace299a8e9b33653b7f53cfd03f62ec5a7ddcf43f0570076467b3d4416ea6c33"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "24e8e429adbcf5db630414ba97c098876da7820616bae3ffc8d27361ed90058a"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "29f33f26b73c91f6b10ddcdb40559b6b91c68f5382c7513d86d0230142dd0c29"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "4c5460d6512f566228333a0d151f99c8b279c512a2e1628f11c4a73faa99ee58"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "e1e95ab48ca7aebfac6725451bbc7f336a24435615d52497c61fc2fa942d6652"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "52343056d2a45200547f4074dcd903ef8b7086b3f128463438e81076755f0f7c"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "ba26878bbf0d1fbd8aaa01b6985212691f265bd626fd6f4f02fa5a0c20f4a6c8"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "20fb23a4c1ddf2503b50eec264b5448b833cc6fc1d70191f90d9115c59a6771d"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "371bc36f4c76d18cd224f755aee65e57be5678c309c7ee9640c924b9620b2ae8"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "04deaa9efd77fcda7c476ea94d18c0c47f16cf4b44f881f058a4654c3041e287"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "c1727983c74326428752cb17bdf3eea53cc44c09a47061bb44d3ad8e744a4e2b"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "7aacffe0425a35d086981ddfa1ab20c94bdfcd9f3a9cd0fad99039484c527f79"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "8883cbb4f9420893ba03bd3070bc446a62abade7dd22c789b8cb0d9e8c28b418"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "50c7a8fcded8a5af5911522386f988bd78d63cca67266fd909eca7bb595d0503"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "5eeb38b177234b2dfe5a24e08731376133ed7674d50a5fe5432371ef549c33ce"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "ca24edc52a9af6536e1a58af49b1ffa488b040a4b00d9eb03c0c45a5365f57fd"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "59346e00ea4c192013c3104fd51d379270b4b6ae7011c3a711d7df13fa370b15"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "f666d9c587c6bc2d1a024fa504c927e838a8907640df2678376fbf88f1ed5371"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "94cde799ca1cf76413923bd490d0431ce64f87cf98aba5beb8799f3c76821266"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "bd4441adfee69d380bf3b7e32cb4f589372f433e2450143d27f970f54e98cdc0"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "3f7361791314bd64b5c695a06a5f47cb56c231227679e484eb361870d576c71d"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "8f7022d3286841b90d0ed417e1a2d51de84587973b23799df7d0268227fdd830"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "90c2e425c1c69d5dc7821d30e0d0a77d8d96f03efd22df506669e37e852837e8"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "dd973fa54634a055b0a4bf165527ed6f5814df66f06bed946ddfc3e216e61132"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "210d443dde96459e2dd5402b42b331918aa15dec53524629dab150b90e2f7ab5"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "f8bb4be599f6df4d81af457db9952f87b196e529da18ffa040edc27aa9dee00d"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "04a7d62f43c4468b86c9bd3a120d77efcb8477b8df2426c14d8ba4ed94c6a52f"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "3645c57a2dc79098e09fce8c0226375031e9a764ce7e7de08a0a53713d474526"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "a4a116bfa47c1fd31712dd68e66efc8dcccd14ab7a2206eec55b15d5c0101d0c"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "19c1d48b0cbff99e974f53bdff7406e2abdf8218a1e4c4869ca29789c3c1efa4"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "585ec39adbfcbe550df58cf49e40a6c9bdd618acc1425507ed383713add4ce2e"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "e7683906762d54f822d6d5ed0a0abca43176e29e55c5402bdbcfaf5d590cbc6c"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "10fafc8885a560fb1962fc4073160818653aa73be309993eca3c893b877cd6ee"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "e4595793bc74c9965e347e81e069e6b4143bd72ada4f2635c5eafa277d646352"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "178cedfad93f4f2213419c4f682717a025dab61345f1281695185faf5633aafd"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "32cb98dc5c7bcb3f995791a2ff4dbd9f994493524f3675daf4662e76a66fc5d2"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "7be0c16a0d4a22065a60886bab4179ee7115f876dac5257052dc896de2b101d4"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "db305227b304777f6d26bcc46febda5591f2c5401c26742dda546e84c9a9f6af"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "8daa1c7da168e9b1f4fcca1065acb7e29487843d0e7b27607e3beb81e3a392dd"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "1df750dfb879c6da2ff3adb1237d246f7b266696e2188bc11870b398b3e433da"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "a62eedf4c3f63645253df59d510a8614631f9cef01c4033246d8b10d40582805"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "6d0fb351e126ed0908b06a8fb350602ced09b89589a989587d5e17ffca8701d6"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "a1b316ff4f78ba8ca774566e0b827db641077c017107619f87ac69b53187ac90"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "383025ea67d9bb24649b23c54f25ab5c98e7f29490360ad95a341b990b247cb4"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "d1605e56fad5fa7e9f889758710ccc2ece76b0ebd3cfdfe2246e552470086189"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "dfd9477ed824ec62c099c5ceb7dd33086b6f3b9c2e310384e574d4a8e293c912"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "e4d3376a66aafc50e36a11383f743d46540c39bfe075d4ead2e28a2c3c4a2107"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "31adc2c22c2ec7c2700d5bc96e962381c92c41c0ebe682bd40536c9225eedc00"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "58c01d3644b1ceaea2a594780983b63e0de822d4eb8f1e38d1e7e2a60bf8d829"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "ad7a9535458112594aa14b399d49dadc17e08e6accfae386f6528a22faeee561"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "626360c26602361e9f5704b929736ef4a43a8af93b73071b9199dfd782df1dd2"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "b9cefa90460d26130ecbcb8540deb5f2388f228be91ca4b9884980c0c40f5329"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "f2faa503a59e35114bb0fde7ab03f2920b2a6216de47bb070fa14a25069c832c"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "ad46e93b2a7176960d63b9d778b74a6f9353954a35897144aea79e1ef88dec56"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "2363c82553810b5601b50d97cd7c2fa88986c091f832729e128809c50c07e069"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "72691842e49356000bf8063bddcc03fa1f1c34ae79cfe7fc1a28bcd0baa3d2d2"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "bd9b61e92ec8c40699402face2aa40b56bd4642dc00b7a44c9fc68bb1399f071"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "24383c79fe889d1107514bc2932dceba5c85cd4d06894a41b4d621eb833b8dc3"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "b8612a4a04cb9b00ed2e360947958e0d98c118d434c47521a5de26bd18761ad1"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "d8a136f5a2963b2f212d216cf845a12619eaa1a16154fa3e7ae60b60485e1384"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "1336e87ec1881c78b7ada4b9bc0c7aafbc859812f4370fa0f7df9ff38e7deff0"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "da9946874d536ded6a9e42879e06352406df4247870e88553c975990321c359e"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "f42e97ce4ad32313f13afd57425f4dcd61dd8fd50c6ab6d29731cb76f8d65cd1"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "d593a978272571a7ae16c7ef439956015439558a01f9dfa63e49788dfd9fc941"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "8f7e9ae6c46937fdc54c19786f8c1c7d8ce29420bfa7d0d85d4d24d69724a59d"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "65d6924c12c7f065f19f192fb5a5eedf9940810dd21bd45512f4b1a66098424b"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "8da1d20615fbd101b5dc6674605e4c00e8d98a5ef88200b22239504378dbb1ba"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "a65f2f9285b1e7dda2ffd8504429f0f31d9604af6943c4265ba57e0822eb6420"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "b092a29cbddb732b764ebba6bd2b14d7455d503f61ddc82225010d48fe55e611"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "bdff7d8cf17c1f163905a9ea8c62c53ba3e5c9f147150603ac833771cccd23d0"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "c8c1218b1b1155cb66a2cb5d4f97dc93d56b2d1b45fc2e7c70711009901c2980"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "f6d5cbef3edc05262c3c2d79ff56879a6efc37b8068b214ff6dceb980fdf6846"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "8ecad2709e3aeb199e84744c49ac44a4d4a607e1edcd6c69fcf3ead070e9c61f"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "483b4e5078e7b2fe85bf44c554db5e414fc1b3be38cfdd9c1f225debb61c8bf4"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "fc214de92e49b7e8f9763c7b1b1b0d0794f92a2bb7ec34e0d4a3826dd7b8c609"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "6f3dcb4283c31779a97dfbd9f8e09c36ae4d160fb451c366f7c1d48dfd58770d"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "37ec3b69fecdaeb997114e2f28e3ad4e36d82a7198a5157dc0511565461c1772"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "b0df487586e5d2d31502782e2ddae38eae0c715c2f487940cdd1f1873145cce4"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "d14fa6389099b71204cddc13e115ee38e1798c00831ce35af72fd63d65f67e5f"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "0c8becb8a609811e3800a0d85c6f010b5049234939a54d7c2de9dde78d36ad98"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "929b777b8441d9317acc30d0ff38ac4dd6236436984afb6dbbb1688fbbfc5af6"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "14b9f9d128804eecb7f2cc61359b433a36ee1d55ef0c02f9d751c1062c49b13b"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "480028ee2dc928d924e5ba69e5680b72b07a6e1e928242764226d739f6c5b7d5"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "60e63f28d72c2b8e4b76382041d393b8ed1291e7b0b42b7d87692328725c373e"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "3bde77692c9e6d8e93d18dc2472fb224ec226dfac993786672d76727fa29a3e0"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "f4ea34e156dcf2d05d087508883e6f3669352f6c657a2ff2d8d40f335b491fad"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "e47be8960d23984b373752b338b3a374dd60e58cad030c6d8c0f43026fcaf4ce"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "c576b652af63669598fecdfacf47dca86c980983b941c285c8a44155cf865c1b"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "002a8733c82f53b2c30469f663528fd37a0e28b089192ca00b8ad7a1782029c4"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "9f8ce6921365e89c946f7fea94f6cbe41cd81b02d015ac08774bf006451b7c91"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "e1df833edb4054f1863e2852f414eb30e041ccb404188ea19fd9f58f8df8152a"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "0f98a07e952ca268c4203308c406b9dc9f64d205c2097f7b9af3757602dac186"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "da3653cc436b8e93078f0334d4ee8e402848007ad4460313c035e2776f8951f5"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "f90dea3122f1965cfaab21e7737b9f2f133503c487393ed268ef37d63b8cb933"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "100262f8048b2eabf205854fbd304b6a63823ee849bb113495ac8d05341655dd"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "723ef2e57e6ee99fa3b4ed3b1279483777c192d6ab64d23c439fd6554f823845"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "b4a478528eef433bf417ecc3190c007ce67c332e04ff5e182c2615680e882bc2"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "a2e3df787f0a12fc8af8462e859f97b3cc32c5d8ad01ef0dcc1a9cecca966280"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "93ec50c8e8f79daef077db5735d8288452c78e3d7cb0c173e8a50be6a2cd958a"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "12396b286413a1b39026ab71d9ce87d28ea049b1dabc17def9119a0682f929ea"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "ace299a8e9b33653b7f53cfd03f62ec5a7ddcf43f0570076467b3d4416ea6c33"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "24e8e429adbcf5db630414ba97c098876da7820616bae3ffc8d27361ed90058a"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "29f33f26b73c91f6b10ddcdb40559b6b91c68f5382c7513d86d0230142dd0c29"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "4c5460d6512f566228333a0d151f99c8b279c512a2e1628f11c4a73faa99ee58"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "e1e95ab48ca7aebfac6725451bbc7f336a24435615d52497c61fc2fa942d6652"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "52343056d2a45200547f4074dcd903ef8b7086b3f128463438e81076755f0f7c"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "ba26878bbf0d1fbd8aaa01b6985212691f265bd626fd6f4f02fa5a0c20f4a6c8"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "20fb23a4c1ddf2503b50eec264b5448b833cc6fc1d70191f90d9115c59a6771d"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "371bc36f4c76d18cd224f755aee65e57be5678c309c7ee9640c924b9620b2ae8"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "04deaa9efd77fcda7c476ea94d18c0c47f16cf4b44f881f058a4654c3041e287"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "c1727983c74326428752cb17bdf3eea53cc44c09a47061bb44d3ad8e744a4e2b"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "7aacffe0425a35d086981ddfa1ab20c94bdfcd9f3a9cd0fad99039484c527f79"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "8883cbb4f9420893ba03bd3070bc446a62abade7dd22c789b8cb0d9e8c28b418"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "50c7a8fcded8a5af5911522386f988bd78d63cca67266fd909eca7bb595d0503"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "5eeb38b177234b2dfe5a24e08731376133ed7674d50a5fe5432371ef549c33ce"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "ca24edc52a9af6536e1a58af49b1ffa488b040a4b00d9eb03c0c45a5365f57fd"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "59346e00ea4c192013c3104fd51d379270b4b6ae7011c3a711d7df13fa370b15"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "f666d9c587c6bc2d1a024fa504c927e838a8907640df2678376fbf88f1ed5371"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "94cde799ca1cf76413923bd490d0431ce64f87cf98aba5beb8799f3c76821266"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "bd4441adfee69d380bf3b7e32cb4f589372f433e2450143d27f970f54e98cdc0"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "3f7361791314bd64b5c695a06a5f47cb56c231227679e484eb361870d576c71d"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "8f7022d3286841b90d0ed417e1a2d51de84587973b23799df7d0268227fdd830"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "90c2e425c1c69d5dc7821d30e0d0a77d8d96f03efd22df506669e37e852837e8"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "dd973fa54634a055b0a4bf165527ed6f5814df66f06bed946ddfc3e216e61132"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "210d443dde96459e2dd5402b42b331918aa15dec53524629dab150b90e2f7ab5"
+        }
+      ],
+      "ai_usage": {
+        "provider": "openai",
+        "model": "text-embedding-3-small",
+        "event_kind": "composite_search_embedding",
+        "input_tokens": 2000,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "output_tokens": 0,
+        "reasoning_tokens": null,
+        "total_tokens": 2000,
+        "input_cost_usd": 0.000039999999999999996,
+        "cached_input_cost_usd": null,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": null,
+        "total_cost_usd": 0.000039999999999999996,
+        "pricing_known": true,
+        "finish_reason": null,
+        "served_model": "text-embedding-3-small",
+        "service_tier": null,
+        "reasoning_effort": null,
+        "openai_request_id": "req_contract",
+        "openai_response_id": null
+      }
+    }
+  },
+  "batch of only blank texts": {
+    "requests": [],
+    "connections": [],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "result": {
+      "class": "Array",
+      "value": [
+        null,
+        null,
+        null
+      ],
+      "ai_usage": null
+    }
+  },
+  "batch with blank and missing texts": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Horses",
+            "Cattle",
+            "Sheep"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "result": {
+      "class": "Array",
+      "value": [
+        {
+          "vector_size": 1536,
+          "vector_sha256": "6f3dcb4283c31779a97dfbd9f8e09c36ae4d160fb451c366f7c1d48dfd58770d"
+        },
+        null,
+        null,
+        {
+          "vector_size": 1536,
+          "vector_sha256": "37ec3b69fecdaeb997114e2f28e3ad4e36d82a7198a5157dc0511565461c1772"
+        },
+        null,
+        {
+          "vector_size": 1536,
+          "vector_sha256": "b0df487586e5d2d31502782e2ddae38eae0c715c2f487940cdd1f1873145cce4"
+        }
+      ],
+      "ai_usage": {
+        "provider": "openai",
+        "model": "text-embedding-3-small",
+        "event_kind": "self_text_scoring_embedding",
+        "input_tokens": 24,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "output_tokens": 0,
+        "reasoning_tokens": null,
+        "total_tokens": 24,
+        "input_cost_usd": 0.00000048,
+        "cached_input_cost_usd": null,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": null,
+        "total_cost_usd": 0.00000048,
+        "pricing_known": true,
+        "finish_reason": null,
+        "served_model": "text-embedding-3-small",
+        "service_tier": null,
+        "reasoning_effort": null,
+        "openai_request_id": "req_contract",
+        "openai_response_id": null
+      }
+    }
+  },
+  "duplicate response index": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1",
+            "Commodity description 2"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "error": {
+      "class": "EmbeddingService::ApiError",
+      "message": "Embedding response was malformed",
+      "cause": "TypeError",
+      "attributes": {
+        "http_status": null
+      },
+      "ai_usage": {
+        "provider": "openai",
+        "model": "text-embedding-3-small",
+        "event_kind": "label_scoring_embedding",
+        "input_tokens": 16,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "output_tokens": 0,
+        "reasoning_tokens": null,
+        "total_tokens": 16,
+        "input_cost_usd": 0.00000032,
+        "cached_input_cost_usd": null,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": null,
+        "total_cost_usd": 0.00000032,
+        "pricing_known": true,
+        "finish_reason": null,
+        "served_model": "text-embedding-3-small",
+        "service_tier": null,
+        "reasoning_effort": null,
+        "openai_request_id": "req_contract",
+        "openai_response_id": null
+      }
+    }
+  },
+  "empty JSON body with HTTP 200": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "error": {
+      "class": "EmbeddingService::ApiError",
+      "message": "Embedding response was malformed",
+      "cause": "NoMethodError",
+      "attributes": {
+        "http_status": null
+      },
+      "ai_usage": null
+    }
+  },
+  "empty batch": {
+    "requests": [],
+    "connections": [],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "result": {
+      "class": "Array",
+      "value": [],
+      "ai_usage": null
+    }
+  },
+  "integer vector values": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "result": {
+      "class": "Array",
+      "value": [
+        {
+          "vector_size": 1536,
+          "vector_sha256": "c653bb667df072d7bde763982108283b4cf329300b4441189e3011774f57b4c8"
+        }
+      ],
+      "ai_usage": {
+        "provider": "openai",
+        "model": "text-embedding-3-small",
+        "event_kind": "label_scoring_embedding",
+        "input_tokens": null,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "output_tokens": null,
+        "reasoning_tokens": null,
+        "total_tokens": null,
+        "input_cost_usd": null,
+        "cached_input_cost_usd": null,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": null,
+        "total_cost_usd": null,
+        "pricing_known": false,
+        "finish_reason": null,
+        "served_model": "text-embedding-3-small",
+        "service_tier": null,
+        "reasoning_effort": null,
+        "openai_request_id": null,
+        "openai_response_id": null
+      }
+    }
+  },
+  "invalid JSON body with HTTP 200": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "error": {
+      "class": "Faraday::ParsingError",
+      "message": "unexpected end of input at line 1 column 9",
+      "cause": "JSON::ParserError",
+      "attributes": {
+        "response_status": 200
+      },
+      "ai_usage": null
+    }
+  },
+  "missing response index": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1",
+            "Commodity description 2",
+            "Commodity description 3"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "error": {
+      "class": "EmbeddingService::ApiError",
+      "message": "Embedding response was malformed",
+      "cause": "TypeError",
+      "attributes": {
+        "http_status": null
+      },
+      "ai_usage": {
+        "provider": "openai",
+        "model": "text-embedding-3-small",
+        "event_kind": "label_scoring_embedding",
+        "input_tokens": 16,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "output_tokens": 0,
+        "reasoning_tokens": null,
+        "total_tokens": 16,
+        "input_cost_usd": 0.00000032,
+        "cached_input_cost_usd": null,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": null,
+        "total_cost_usd": 0.00000032,
+        "pricing_known": true,
+        "finish_reason": null,
+        "served_model": "text-embedding-3-small",
+        "service_tier": null,
+        "reasoning_effort": null,
+        "openai_request_id": "req_contract",
+        "openai_response_id": null
+      }
+    }
+  },
+  "non-numeric vector value": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "error": {
+      "class": "EmbeddingService::ApiError",
+      "message": "Embedding response was malformed",
+      "cause": "TypeError",
+      "attributes": {
+        "http_status": null
+      },
+      "ai_usage": {
+        "provider": "openai",
+        "model": "text-embedding-3-small",
+        "event_kind": "label_scoring_embedding",
+        "input_tokens": null,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "output_tokens": null,
+        "reasoning_tokens": null,
+        "total_tokens": null,
+        "input_cost_usd": null,
+        "cached_input_cost_usd": null,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": null,
+        "total_cost_usd": null,
+        "pricing_known": false,
+        "finish_reason": null,
+        "served_model": "text-embedding-3-small",
+        "service_tier": null,
+        "reasoning_effort": null,
+        "openai_request_id": null,
+        "openai_response_id": null
+      }
+    }
+  },
+  "open timeout then connection refused then completed": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1",
+            "Commodity description 2"
+          ]
+        }
+      },
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1",
+            "Commodity description 2"
+          ]
+        }
+      },
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1",
+            "Commodity description 2"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      },
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      },
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [
+      2,
+      4
+    ],
+    "logs": [],
+    "events": [
+      [
+        "embedding_api_retry.ai_usage",
+        {
+          "event_kind": "composite_search_embedding",
+          "batch_size": 2,
+          "model": "text-embedding-3-small",
+          "attempt": 1,
+          "delay": 2,
+          "error_class": "Faraday::ConnectionFailed",
+          "error_message": "Net::OpenTimeout"
+        }
+      ],
+      [
+        "embedding_api_retry.ai_usage",
+        {
+          "event_kind": "composite_search_embedding",
+          "batch_size": 2,
+          "model": "text-embedding-3-small",
+          "attempt": 2,
+          "delay": 4,
+          "error_class": "Faraday::ConnectionFailed",
+          "error_message": "Connection refused"
+        }
+      ]
+    ],
+    "unused_responses": 0,
+    "result": {
+      "class": "Array",
+      "value": [
+        {
+          "vector_size": 1536,
+          "vector_sha256": "6f3dcb4283c31779a97dfbd9f8e09c36ae4d160fb451c366f7c1d48dfd58770d"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "37ec3b69fecdaeb997114e2f28e3ad4e36d82a7198a5157dc0511565461c1772"
+        }
+      ],
+      "ai_usage": {
+        "provider": "openai",
+        "model": "text-embedding-3-small",
+        "event_kind": "composite_search_embedding",
+        "input_tokens": 16,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "output_tokens": 0,
+        "reasoning_tokens": null,
+        "total_tokens": 16,
+        "input_cost_usd": 0.00000032,
+        "cached_input_cost_usd": null,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": null,
+        "total_cost_usd": 0.00000032,
+        "pricing_known": true,
+        "finish_reason": null,
+        "served_model": "text-embedding-3-small",
+        "service_tier": null,
+        "reasoning_effort": null,
+        "openai_request_id": "req_contract",
+        "openai_response_id": null
+      }
+    }
+  },
+  "payload too large": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "error": {
+      "class": "EmbeddingService::ClientError",
+      "message": "EmbeddingService API error: 413 - {\"error\" => {\"message\" => \"Too many tokens\", \"type\" => \"request_too_large\", \"param\" => nil, \"code\" => \"request_too_large\"}}",
+      "cause": null,
+      "attributes": {
+        "http_status": 413
+      },
+      "ai_usage": null
+    }
+  },
+  "rate limited then completed": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Live horses"
+          ]
+        }
+      },
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Live horses"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      },
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [
+      2
+    ],
+    "logs": [],
+    "events": [
+      [
+        "embedding_api_retry.ai_usage",
+        {
+          "event_kind": "vector_search_query_embedding",
+          "batch_size": 1,
+          "model": "text-embedding-3-small",
+          "attempt": 1,
+          "delay": 2,
+          "error_class": "EmbeddingService::ServerError",
+          "error_message": "EmbeddingService API error: 429",
+          "request_id": "<random id>",
+          "search_degraded": false,
+          "query_expansion_failed": false,
+          "embedding_generation_failed": false,
+          "vector_retrieval_failed": false,
+          "interactive_search_failed": false,
+          "duplicate_question_validation_failed": false,
+          "opensearch_failed": false
+        }
+      ]
+    ],
+    "unused_responses": 0,
+    "result": {
+      "class": "Array",
+      "value": {
+        "vector_size": 1536,
+        "vector_sha256": "6f3dcb4283c31779a97dfbd9f8e09c36ae4d160fb451c366f7c1d48dfd58770d"
+      },
+      "ai_usage": {
+        "provider": "openai",
+        "model": "text-embedding-3-small",
+        "event_kind": "vector_search_query_embedding",
+        "input_tokens": 8,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "output_tokens": 0,
+        "reasoning_tokens": null,
+        "total_tokens": 8,
+        "input_cost_usd": 0.00000016,
+        "cached_input_cost_usd": null,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": null,
+        "total_cost_usd": 0.00000016,
+        "pricing_known": true,
+        "finish_reason": null,
+        "served_model": "text-embedding-3-small",
+        "service_tier": null,
+        "reasoning_effort": null,
+        "openai_request_id": "req_contract",
+        "openai_response_id": null
+      }
+    }
+  },
+  "read timeout on every attempt": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Live horses"
+          ]
+        }
+      },
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Live horses"
+          ]
+        }
+      },
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Live horses"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      },
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      },
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [
+      2,
+      4
+    ],
+    "logs": [],
+    "events": [
+      [
+        "embedding_api_retry.ai_usage",
+        {
+          "event_kind": "vector_search_query_embedding",
+          "batch_size": 1,
+          "model": "text-embedding-3-small",
+          "attempt": 1,
+          "delay": 2,
+          "error_class": "Faraday::TimeoutError",
+          "error_message": "Net::ReadTimeout",
+          "request_id": "<random id>",
+          "search_degraded": false,
+          "query_expansion_failed": false,
+          "embedding_generation_failed": false,
+          "vector_retrieval_failed": false,
+          "interactive_search_failed": false,
+          "duplicate_question_validation_failed": false,
+          "opensearch_failed": false
+        }
+      ],
+      [
+        "embedding_api_retry.ai_usage",
+        {
+          "event_kind": "vector_search_query_embedding",
+          "batch_size": 1,
+          "model": "text-embedding-3-small",
+          "attempt": 2,
+          "delay": 4,
+          "error_class": "Faraday::TimeoutError",
+          "error_message": "Net::ReadTimeout",
+          "request_id": "<random id>",
+          "search_degraded": false,
+          "query_expansion_failed": false,
+          "embedding_generation_failed": false,
+          "vector_retrieval_failed": false,
+          "interactive_search_failed": false,
+          "duplicate_question_validation_failed": false,
+          "opensearch_failed": false
+        }
+      ]
+    ],
+    "unused_responses": 0,
+    "error": {
+      "class": "Faraday::TimeoutError",
+      "message": "Net::ReadTimeout",
+      "cause": "Net::ReadTimeout",
+      "attributes": {
+        "response_status": null
+      },
+      "ai_usage": null
+    }
+  },
+  "response data that is not a list": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "error": {
+      "class": "EmbeddingService::ApiError",
+      "message": "Embedding response was malformed",
+      "cause": "TypeError",
+      "attributes": {
+        "http_status": null
+      },
+      "ai_usage": null
+    }
+  },
+  "response indices out of order": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1",
+            "Commodity description 2",
+            "Commodity description 3"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "result": {
+      "class": "Array",
+      "value": [
+        {
+          "vector_size": 1536,
+          "vector_sha256": "6f3dcb4283c31779a97dfbd9f8e09c36ae4d160fb451c366f7c1d48dfd58770d"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "37ec3b69fecdaeb997114e2f28e3ad4e36d82a7198a5157dc0511565461c1772"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "b0df487586e5d2d31502782e2ddae38eae0c715c2f487940cdd1f1873145cce4"
+        }
+      ],
+      "ai_usage": {
+        "provider": "openai",
+        "model": "text-embedding-3-small",
+        "event_kind": "label_scoring_embedding",
+        "input_tokens": 24,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "output_tokens": 0,
+        "reasoning_tokens": null,
+        "total_tokens": 24,
+        "input_cost_usd": 0.00000048,
+        "cached_input_cost_usd": null,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": null,
+        "total_cost_usd": 0.00000048,
+        "pricing_known": true,
+        "finish_reason": null,
+        "served_model": "text-embedding-3-small",
+        "service_tier": null,
+        "reasoning_effort": null,
+        "openai_request_id": "req_contract",
+        "openai_response_id": null
+      }
+    }
+  },
+  "response with openai-request-id and a response id": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1",
+            "Commodity description 2"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "result": {
+      "class": "Array",
+      "value": [
+        {
+          "vector_size": 1536,
+          "vector_sha256": "6f3dcb4283c31779a97dfbd9f8e09c36ae4d160fb451c366f7c1d48dfd58770d"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "37ec3b69fecdaeb997114e2f28e3ad4e36d82a7198a5157dc0511565461c1772"
+        }
+      ],
+      "ai_usage": {
+        "provider": "openai",
+        "model": "text-embedding-3-small",
+        "event_kind": "label_scoring_embedding",
+        "input_tokens": 16,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "output_tokens": 0,
+        "reasoning_tokens": null,
+        "total_tokens": 16,
+        "input_cost_usd": 0.00000032,
+        "cached_input_cost_usd": null,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": null,
+        "total_cost_usd": 0.00000032,
+        "pricing_known": true,
+        "finish_reason": null,
+        "served_model": "text-embedding-3-small",
+        "service_tier": null,
+        "reasoning_effort": null,
+        "openai_request_id": "req_alternative",
+        "openai_response_id": "emb_contract"
+      }
+    }
+  },
+  "response without data": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "error": {
+      "class": "EmbeddingService::ApiError",
+      "message": "Embedding response was malformed",
+      "cause": "KeyError",
+      "attributes": {
+        "http_status": null
+      },
+      "ai_usage": {
+        "provider": "openai",
+        "model": "text-embedding-3-small",
+        "event_kind": "label_scoring_embedding",
+        "input_tokens": 4,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "output_tokens": 0,
+        "reasoning_tokens": null,
+        "total_tokens": 4,
+        "input_cost_usd": 0.00000008,
+        "cached_input_cost_usd": null,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": null,
+        "total_cost_usd": 0.00000008,
+        "pricing_known": true,
+        "finish_reason": null,
+        "served_model": "text-embedding-3-small",
+        "service_tier": null,
+        "reasoning_effort": null,
+        "openai_request_id": null,
+        "openai_response_id": null
+      }
+    }
+  },
+  "response without usage or metadata": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1",
+            "Commodity description 2"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "result": {
+      "class": "Array",
+      "value": [
+        {
+          "vector_size": 1536,
+          "vector_sha256": "6f3dcb4283c31779a97dfbd9f8e09c36ae4d160fb451c366f7c1d48dfd58770d"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "37ec3b69fecdaeb997114e2f28e3ad4e36d82a7198a5157dc0511565461c1772"
+        }
+      ],
+      "ai_usage": null
+    }
+  },
+  "second request malformed after the first succeeded": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1",
+            "Commodity description 2",
+            "Commodity description 3",
+            "Commodity description 4",
+            "Commodity description 5",
+            "Commodity description 6",
+            "Commodity description 7",
+            "Commodity description 8",
+            "Commodity description 9",
+            "Commodity description 10",
+            "Commodity description 11",
+            "Commodity description 12",
+            "Commodity description 13",
+            "Commodity description 14",
+            "Commodity description 15",
+            "Commodity description 16",
+            "Commodity description 17",
+            "Commodity description 18",
+            "Commodity description 19",
+            "Commodity description 20",
+            "Commodity description 21",
+            "Commodity description 22",
+            "Commodity description 23",
+            "Commodity description 24",
+            "Commodity description 25",
+            "Commodity description 26",
+            "Commodity description 27",
+            "Commodity description 28",
+            "Commodity description 29",
+            "Commodity description 30",
+            "Commodity description 31",
+            "Commodity description 32",
+            "Commodity description 33",
+            "Commodity description 34",
+            "Commodity description 35",
+            "Commodity description 36",
+            "Commodity description 37",
+            "Commodity description 38",
+            "Commodity description 39",
+            "Commodity description 40",
+            "Commodity description 41",
+            "Commodity description 42",
+            "Commodity description 43",
+            "Commodity description 44",
+            "Commodity description 45",
+            "Commodity description 46",
+            "Commodity description 47",
+            "Commodity description 48",
+            "Commodity description 49",
+            "Commodity description 50",
+            "Commodity description 51",
+            "Commodity description 52",
+            "Commodity description 53",
+            "Commodity description 54",
+            "Commodity description 55",
+            "Commodity description 56",
+            "Commodity description 57",
+            "Commodity description 58",
+            "Commodity description 59",
+            "Commodity description 60",
+            "Commodity description 61",
+            "Commodity description 62",
+            "Commodity description 63",
+            "Commodity description 64",
+            "Commodity description 65",
+            "Commodity description 66",
+            "Commodity description 67",
+            "Commodity description 68",
+            "Commodity description 69",
+            "Commodity description 70",
+            "Commodity description 71",
+            "Commodity description 72",
+            "Commodity description 73",
+            "Commodity description 74",
+            "Commodity description 75",
+            "Commodity description 76",
+            "Commodity description 77",
+            "Commodity description 78",
+            "Commodity description 79",
+            "Commodity description 80",
+            "Commodity description 81",
+            "Commodity description 82",
+            "Commodity description 83",
+            "Commodity description 84",
+            "Commodity description 85",
+            "Commodity description 86",
+            "Commodity description 87",
+            "Commodity description 88",
+            "Commodity description 89",
+            "Commodity description 90",
+            "Commodity description 91",
+            "Commodity description 92",
+            "Commodity description 93",
+            "Commodity description 94",
+            "Commodity description 95",
+            "Commodity description 96",
+            "Commodity description 97",
+            "Commodity description 98",
+            "Commodity description 99",
+            "Commodity description 100"
+          ]
+        }
+      },
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 101",
+            "Commodity description 102",
+            "Commodity description 103",
+            "Commodity description 104",
+            "Commodity description 105",
+            "Commodity description 106",
+            "Commodity description 107",
+            "Commodity description 108",
+            "Commodity description 109",
+            "Commodity description 110",
+            "Commodity description 111",
+            "Commodity description 112",
+            "Commodity description 113",
+            "Commodity description 114",
+            "Commodity description 115",
+            "Commodity description 116",
+            "Commodity description 117",
+            "Commodity description 118",
+            "Commodity description 119",
+            "Commodity description 120",
+            "Commodity description 121",
+            "Commodity description 122",
+            "Commodity description 123",
+            "Commodity description 124",
+            "Commodity description 125",
+            "Commodity description 126",
+            "Commodity description 127",
+            "Commodity description 128",
+            "Commodity description 129",
+            "Commodity description 130",
+            "Commodity description 131",
+            "Commodity description 132",
+            "Commodity description 133",
+            "Commodity description 134",
+            "Commodity description 135",
+            "Commodity description 136",
+            "Commodity description 137",
+            "Commodity description 138",
+            "Commodity description 139",
+            "Commodity description 140",
+            "Commodity description 141",
+            "Commodity description 142",
+            "Commodity description 143",
+            "Commodity description 144",
+            "Commodity description 145",
+            "Commodity description 146",
+            "Commodity description 147",
+            "Commodity description 148",
+            "Commodity description 149",
+            "Commodity description 150"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      },
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "error": {
+      "class": "EmbeddingService::ApiError",
+      "message": "Embedding response was malformed",
+      "cause": "TypeError",
+      "attributes": {
+        "http_status": null
+      },
+      "ai_usage": {
+        "provider": "openai",
+        "model": "text-embedding-3-small",
+        "event_kind": "composite_search_embedding",
+        "input_tokens": 1192,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "output_tokens": 0,
+        "reasoning_tokens": null,
+        "total_tokens": 1192,
+        "input_cost_usd": 0.00002384,
+        "cached_input_cost_usd": null,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": null,
+        "total_cost_usd": 0.00002384,
+        "pricing_known": true,
+        "finish_reason": null,
+        "served_model": "text-embedding-3-small",
+        "service_tier": null,
+        "reasoning_effort": null,
+        "openai_request_id": "req_contract",
+        "openai_response_id": null
+      }
+    }
+  },
+  "second request rejected after the first succeeded": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1",
+            "Commodity description 2",
+            "Commodity description 3",
+            "Commodity description 4",
+            "Commodity description 5",
+            "Commodity description 6",
+            "Commodity description 7",
+            "Commodity description 8",
+            "Commodity description 9",
+            "Commodity description 10",
+            "Commodity description 11",
+            "Commodity description 12",
+            "Commodity description 13",
+            "Commodity description 14",
+            "Commodity description 15",
+            "Commodity description 16",
+            "Commodity description 17",
+            "Commodity description 18",
+            "Commodity description 19",
+            "Commodity description 20",
+            "Commodity description 21",
+            "Commodity description 22",
+            "Commodity description 23",
+            "Commodity description 24",
+            "Commodity description 25",
+            "Commodity description 26",
+            "Commodity description 27",
+            "Commodity description 28",
+            "Commodity description 29",
+            "Commodity description 30",
+            "Commodity description 31",
+            "Commodity description 32",
+            "Commodity description 33",
+            "Commodity description 34",
+            "Commodity description 35",
+            "Commodity description 36",
+            "Commodity description 37",
+            "Commodity description 38",
+            "Commodity description 39",
+            "Commodity description 40",
+            "Commodity description 41",
+            "Commodity description 42",
+            "Commodity description 43",
+            "Commodity description 44",
+            "Commodity description 45",
+            "Commodity description 46",
+            "Commodity description 47",
+            "Commodity description 48",
+            "Commodity description 49",
+            "Commodity description 50",
+            "Commodity description 51",
+            "Commodity description 52",
+            "Commodity description 53",
+            "Commodity description 54",
+            "Commodity description 55",
+            "Commodity description 56",
+            "Commodity description 57",
+            "Commodity description 58",
+            "Commodity description 59",
+            "Commodity description 60",
+            "Commodity description 61",
+            "Commodity description 62",
+            "Commodity description 63",
+            "Commodity description 64",
+            "Commodity description 65",
+            "Commodity description 66",
+            "Commodity description 67",
+            "Commodity description 68",
+            "Commodity description 69",
+            "Commodity description 70",
+            "Commodity description 71",
+            "Commodity description 72",
+            "Commodity description 73",
+            "Commodity description 74",
+            "Commodity description 75",
+            "Commodity description 76",
+            "Commodity description 77",
+            "Commodity description 78",
+            "Commodity description 79",
+            "Commodity description 80",
+            "Commodity description 81",
+            "Commodity description 82",
+            "Commodity description 83",
+            "Commodity description 84",
+            "Commodity description 85",
+            "Commodity description 86",
+            "Commodity description 87",
+            "Commodity description 88",
+            "Commodity description 89",
+            "Commodity description 90",
+            "Commodity description 91",
+            "Commodity description 92",
+            "Commodity description 93",
+            "Commodity description 94",
+            "Commodity description 95",
+            "Commodity description 96",
+            "Commodity description 97",
+            "Commodity description 98",
+            "Commodity description 99",
+            "Commodity description 100"
+          ]
+        }
+      },
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 101",
+            "Commodity description 102",
+            "Commodity description 103",
+            "Commodity description 104",
+            "Commodity description 105",
+            "Commodity description 106",
+            "Commodity description 107",
+            "Commodity description 108",
+            "Commodity description 109",
+            "Commodity description 110",
+            "Commodity description 111",
+            "Commodity description 112",
+            "Commodity description 113",
+            "Commodity description 114",
+            "Commodity description 115",
+            "Commodity description 116",
+            "Commodity description 117",
+            "Commodity description 118",
+            "Commodity description 119",
+            "Commodity description 120",
+            "Commodity description 121",
+            "Commodity description 122",
+            "Commodity description 123",
+            "Commodity description 124",
+            "Commodity description 125",
+            "Commodity description 126",
+            "Commodity description 127",
+            "Commodity description 128",
+            "Commodity description 129",
+            "Commodity description 130",
+            "Commodity description 131",
+            "Commodity description 132",
+            "Commodity description 133",
+            "Commodity description 134",
+            "Commodity description 135",
+            "Commodity description 136",
+            "Commodity description 137",
+            "Commodity description 138",
+            "Commodity description 139",
+            "Commodity description 140",
+            "Commodity description 141",
+            "Commodity description 142",
+            "Commodity description 143",
+            "Commodity description 144",
+            "Commodity description 145",
+            "Commodity description 146",
+            "Commodity description 147",
+            "Commodity description 148",
+            "Commodity description 149",
+            "Commodity description 150"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      },
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "error": {
+      "class": "EmbeddingService::ClientError",
+      "message": "EmbeddingService API error: 400 - {\"error\" => {\"message\" => \"Invalid input\", \"type\" => \"invalid_request_error\", \"param\" => nil, \"code\" => \"invalid_request_error\"}}",
+      "cause": null,
+      "attributes": {
+        "http_status": 400
+      },
+      "ai_usage": null
+    }
+  },
+  "server error with an invalid JSON body": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "error": {
+      "class": "Faraday::ParsingError",
+      "message": "unexpected end of input at line 1 column 10",
+      "cause": "JSON::ParserError",
+      "attributes": {
+        "response_status": 500
+      },
+      "ai_usage": null
+    }
+  },
+  "server errors then completed": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1",
+            "Commodity description 2"
+          ]
+        }
+      },
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1",
+            "Commodity description 2"
+          ]
+        }
+      },
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1",
+            "Commodity description 2"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      },
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      },
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [
+      2,
+      4
+    ],
+    "logs": [],
+    "events": [
+      [
+        "embedding_api_retry.ai_usage",
+        {
+          "event_kind": "self_text_scoring_embedding",
+          "batch_size": 2,
+          "model": "text-embedding-3-small",
+          "attempt": 1,
+          "delay": 2,
+          "error_class": "EmbeddingService::ServerError",
+          "error_message": "EmbeddingService API error: 500"
+        }
+      ],
+      [
+        "embedding_api_retry.ai_usage",
+        {
+          "event_kind": "self_text_scoring_embedding",
+          "batch_size": 2,
+          "model": "text-embedding-3-small",
+          "attempt": 2,
+          "delay": 4,
+          "error_class": "EmbeddingService::ServerError",
+          "error_message": "EmbeddingService API error: 502"
+        }
+      ]
+    ],
+    "unused_responses": 0,
+    "result": {
+      "class": "Array",
+      "value": [
+        {
+          "vector_size": 1536,
+          "vector_sha256": "6f3dcb4283c31779a97dfbd9f8e09c36ae4d160fb451c366f7c1d48dfd58770d"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "37ec3b69fecdaeb997114e2f28e3ad4e36d82a7198a5157dc0511565461c1772"
+        }
+      ],
+      "ai_usage": {
+        "provider": "openai",
+        "model": "text-embedding-3-small",
+        "event_kind": "self_text_scoring_embedding",
+        "input_tokens": 16,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "output_tokens": 0,
+        "reasoning_tokens": null,
+        "total_tokens": 16,
+        "input_cost_usd": 0.00000032,
+        "cached_input_cost_usd": null,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": null,
+        "total_cost_usd": 0.00000032,
+        "pricing_known": true,
+        "finish_reason": null,
+        "served_model": "text-embedding-3-small",
+        "service_tier": null,
+        "reasoning_effort": null,
+        "openai_request_id": "req_contract",
+        "openai_response_id": null
+      }
+    }
+  },
+  "single blank text": {
+    "requests": [],
+    "connections": [],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "result": {
+      "class": "NilClass",
+      "value": null,
+      "ai_usage": null
+    }
+  },
+  "single text": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Live horses for breeding"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "result": {
+      "class": "Array",
+      "value": {
+        "vector_size": 1536,
+        "vector_sha256": "6f3dcb4283c31779a97dfbd9f8e09c36ae4d160fb451c366f7c1d48dfd58770d"
+      },
+      "ai_usage": {
+        "provider": "openai",
+        "model": "text-embedding-3-small",
+        "event_kind": "vector_search_query_embedding",
+        "input_tokens": 8,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "output_tokens": 0,
+        "reasoning_tokens": null,
+        "total_tokens": 8,
+        "input_cost_usd": 0.00000016,
+        "cached_input_cost_usd": null,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": null,
+        "total_cost_usd": 0.00000016,
+        "pricing_known": true,
+        "finish_reason": null,
+        "served_model": "text-embedding-3-small",
+        "service_tier": null,
+        "reasoning_effort": null,
+        "openai_request_id": "req_contract",
+        "openai_response_id": null
+      }
+    }
+  },
+  "single text with characters that JSON encoders escape differently": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "<b>Café & \"naive\"</b> 🚢 line"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "result": {
+      "class": "Array",
+      "value": {
+        "vector_size": 1536,
+        "vector_sha256": "6f3dcb4283c31779a97dfbd9f8e09c36ae4d160fb451c366f7c1d48dfd58770d"
+      },
+      "ai_usage": {
+        "provider": "openai",
+        "model": "text-embedding-3-small",
+        "event_kind": "vector_search_query_embedding",
+        "input_tokens": 8,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "output_tokens": 0,
+        "reasoning_tokens": null,
+        "total_tokens": 8,
+        "input_cost_usd": 0.00000016,
+        "cached_input_cost_usd": null,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": null,
+        "total_cost_usd": 0.00000016,
+        "pricing_known": true,
+        "finish_reason": null,
+        "served_model": "text-embedding-3-small",
+        "service_tier": null,
+        "reasoning_effort": null,
+        "openai_request_id": "req_contract",
+        "openai_response_id": null
+      }
+    }
+  },
+  "single text without an event kind": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Live horses for breeding"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "result": {
+      "class": "Array",
+      "value": {
+        "vector_size": 1536,
+        "vector_sha256": "6f3dcb4283c31779a97dfbd9f8e09c36ae4d160fb451c366f7c1d48dfd58770d"
+      },
+      "ai_usage": {
+        "provider": "openai",
+        "model": "text-embedding-3-small",
+        "event_kind": null,
+        "input_tokens": 8,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "output_tokens": 0,
+        "reasoning_tokens": null,
+        "total_tokens": 8,
+        "input_cost_usd": 0.00000016,
+        "cached_input_cost_usd": null,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": null,
+        "total_cost_usd": 0.00000016,
+        "pricing_known": true,
+        "finish_reason": null,
+        "served_model": "text-embedding-3-small",
+        "service_tier": null,
+        "reasoning_effort": null,
+        "openai_request_id": "req_contract",
+        "openai_response_id": null
+      }
+    }
+  },
+  "small batch": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1",
+            "Commodity description 2",
+            "Commodity description 3"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "result": {
+      "class": "Array",
+      "value": [
+        {
+          "vector_size": 1536,
+          "vector_sha256": "6f3dcb4283c31779a97dfbd9f8e09c36ae4d160fb451c366f7c1d48dfd58770d"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "37ec3b69fecdaeb997114e2f28e3ad4e36d82a7198a5157dc0511565461c1772"
+        },
+        {
+          "vector_size": 1536,
+          "vector_sha256": "b0df487586e5d2d31502782e2ddae38eae0c715c2f487940cdd1f1873145cce4"
+        }
+      ],
+      "ai_usage": {
+        "provider": "openai",
+        "model": "text-embedding-3-small",
+        "event_kind": "label_scoring_embedding",
+        "input_tokens": 24,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "output_tokens": 0,
+        "reasoning_tokens": null,
+        "total_tokens": 24,
+        "input_cost_usd": 0.00000048,
+        "cached_input_cost_usd": null,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": null,
+        "total_cost_usd": 0.00000048,
+        "pricing_known": true,
+        "finish_reason": null,
+        "served_model": "text-embedding-3-small",
+        "service_tier": null,
+        "reasoning_effort": null,
+        "openai_request_id": "req_contract",
+        "openai_response_id": null
+      }
+    }
+  },
+  "too many vectors": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "error": {
+      "class": "EmbeddingService::ApiError",
+      "message": "Embedding response was malformed",
+      "cause": "TypeError",
+      "attributes": {
+        "http_status": null
+      },
+      "ai_usage": {
+        "provider": "openai",
+        "model": "text-embedding-3-small",
+        "event_kind": "label_scoring_embedding",
+        "input_tokens": 16,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "output_tokens": 0,
+        "reasoning_tokens": null,
+        "total_tokens": 16,
+        "input_cost_usd": 0.00000032,
+        "cached_input_cost_usd": null,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": null,
+        "total_cost_usd": 0.00000032,
+        "pricing_known": true,
+        "finish_reason": null,
+        "served_model": "text-embedding-3-small",
+        "service_tier": null,
+        "reasoning_effort": null,
+        "openai_request_id": "req_contract",
+        "openai_response_id": null
+      }
+    }
+  },
+  "unauthorised with a plain text body": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "error": {
+      "class": "EmbeddingService::ClientError",
+      "message": "EmbeddingService API error: 401 - Unauthorized",
+      "cause": null,
+      "attributes": {
+        "http_status": 401
+      },
+      "ai_usage": null
+    }
+  },
+  "unavailable on every attempt": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1",
+            "Commodity description 2"
+          ]
+        }
+      },
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1",
+            "Commodity description 2"
+          ]
+        }
+      },
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1",
+            "Commodity description 2"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      },
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      },
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [
+      2,
+      4
+    ],
+    "logs": [],
+    "events": [
+      [
+        "embedding_api_retry.ai_usage",
+        {
+          "event_kind": "self_text_scoring_embedding",
+          "batch_size": 2,
+          "model": "text-embedding-3-small",
+          "attempt": 1,
+          "delay": 2,
+          "error_class": "EmbeddingService::ServerError",
+          "error_message": "EmbeddingService API error: 503"
+        }
+      ],
+      [
+        "embedding_api_retry.ai_usage",
+        {
+          "event_kind": "self_text_scoring_embedding",
+          "batch_size": 2,
+          "model": "text-embedding-3-small",
+          "attempt": 2,
+          "delay": 4,
+          "error_class": "EmbeddingService::ServerError",
+          "error_message": "EmbeddingService API error: 504"
+        }
+      ]
+    ],
+    "unused_responses": 0,
+    "error": {
+      "class": "EmbeddingService::ServerError",
+      "message": "EmbeddingService API error: 503",
+      "cause": null,
+      "attributes": {
+        "http_status": 503
+      },
+      "ai_usage": null
+    }
+  },
+  "wrong vector dimensions": {
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://gb.api.openai.com:443/v1/embeddings",
+        "headers": {
+          "accept": "application/json",
+          "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+          "authorization": "Bearer test-api-key",
+          "content-type": "application/json",
+          "user-agent": "TradeTariffBackend/"
+        },
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": [
+            "Commodity description 1",
+            "Commodity description 2"
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "open": 60.0,
+        "read": 180.0,
+        "write": 180.0
+      }
+    ],
+    "sleeps": [],
+    "logs": [],
+    "events": [],
+    "unused_responses": 0,
+    "error": {
+      "class": "EmbeddingService::ApiError",
+      "message": "Embedding response was malformed",
+      "cause": "TypeError",
+      "attributes": {
+        "http_status": null
+      },
+      "ai_usage": {
+        "provider": "openai",
+        "model": "text-embedding-3-small",
+        "event_kind": "label_scoring_embedding",
+        "input_tokens": 16,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "output_tokens": 0,
+        "reasoning_tokens": null,
+        "total_tokens": 16,
+        "input_cost_usd": 0.00000032,
+        "cached_input_cost_usd": null,
+        "cache_write_input_cost_usd": null,
+        "output_cost_usd": null,
+        "total_cost_usd": 0.00000032,
+        "pricing_known": true,
+        "finish_reason": null,
+        "served_model": "text-embedding-3-small",
+        "service_tier": null,
+        "reasoning_effort": null,
+        "openai_request_id": "req_contract",
+        "openai_response_id": null
+      }
+    }
+  }
+}
