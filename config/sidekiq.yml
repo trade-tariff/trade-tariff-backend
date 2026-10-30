@@ -1,19 +1,32 @@
+<%
+  total_concurrency = Integer(ENV.fetch('SIDEKIQ_CONCURRENCY', 10))
+  raise ArgumentError, 'SIDEKIQ_CONCURRENCY must be at least 9 for the configured capsules' if total_concurrency < 9
+%>
 :verbose: false
-:concurrency: <%= ENV.fetch('SIDEKIQ_CONCURRENCY', 10) %>
+:concurrency: <%= total_concurrency - 8 %>
 :queues:
-  - sync
   - default
-  - within_1_hour
-  - within_1_day
-  # Evaluation searches have their own queue (AI-1438), kept separate from a real trader's
-  # search by name and by Redis list. This queue is still served by the single :concurrency
-  # pool below, alongside every other queue on this process, so it does not yet give either
-  # side an independently sized share of capacity: a burst of evaluation searches can still
-  # occupy every worker thread and delay a real trader's search queued at the same time, and
-  # vice versa. Full isolation needs a separate Sidekiq deployment for this queue (AI-1438
-  # review) -- left as a follow-up, since this queue already gets evaluation search off the
-  # Puma thread pool, which was the problem this ticket set out to fix.
-  - evaluation
+:capsules:
+  sync:
+    :concurrency: 1
+    :queues:
+      - sync
+  within_1_minute:
+    :concurrency: 3
+    :queues:
+      - within_1_minute
+  within_1_hour:
+    :concurrency: 2
+    :queues:
+      - within_1_hour
+  within_1_day:
+    :concurrency: 1
+    :queues:
+      - within_1_day
+  evaluation:
+    :concurrency: 1
+    :queues:
+      - evaluation
 :scheduler:
   :schedule:
     #
@@ -31,28 +44,34 @@
     #
     CdsUpdatesSynchronizerWorker:
       cron: <%= ENV.fetch('CDS_SYNC_SCHEDULE', '0 5 * * *')%>
+      queue: sync
       description: "Runs ETL of CDS files and populates indexes"
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
     TaricUpdatesSynchronizerWorker:
       cron: "0 0 * * *"
+      queue: sync
       description: "Runs ETL of Taric files and populates indexes"
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'xi' %>
     GoodsNomenclatureReconciliationWorker:
       cron: "0 11 * * *"
+      queue: sync
       description: "Detects goods nomenclature changes and regenerates self-texts, labels, and search embeddings"
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
     GoodsNomenclatureReconciliationWorkerXI:
       cron: "0 2 * * *"
+      queue: sync
       class: GoodsNomenclatureReconciliationWorker
       description: "Detects goods nomenclature changes and regenerates self-texts, labels, and search embeddings"
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'xi' %>
     RefreshAppendix5aGuidanceWorker:
       # Runs workdays at 22:00
       cron: "00 22 * * 1,2,3,4,5"
+      queue: within_1_hour
       description: "Hot refreshes CDS Guidance"
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
     PopulateSearchSuggestionsWorker:
       cron: "0 18 * * *"
+      queue: within_1_hour
       description: "Populates search suggestions which are used in the frontend"
     SearchAnalyticsQueryWorker:
       cron: "0 4 * * *"
@@ -60,58 +79,67 @@
       description: "Queues missing daily search analytics queries for yesterday"
       # Reads CloudWatch Logs; there are no AWS credentials locally. ERB runs before Rails boots, so check RAILS_ENV.
       enabled: <%= ENV.fetch('RAILS_ENV', 'development') != 'development' %>
-    ReportWorker:
-      cron: "30 10 * * *"
-      enabled: false
-      description: "Generates reports and persists them to S3 — triggered by CDS/TARIC sync completion via TariffUpdateEventListener"
     OneWeekTreeIntegrityCheck:
       cron: '05 8 * * 1'
+      queue: within_1_day
       class: TreeIntegrityCheckWorker
       description: Check integrity of Goods Nomenclature hierarchy 1-4 weeks in future
     MonthlyExchangeRatesWorker:
       cron: '0 21 * * 3'
+      queue: within_1_day
       description: Update monthly rates data from XE API and Upload files to S3 every penultimate wednesday of the month at 9pm
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
     SpotExchangeRatesWorker:
       cron: '0 21 31 3,12 *' # Runs on end of March and December
+      queue: within_1_day
       description: Update spot rates data from XE API and Upload files to S3
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
     AverageExchangeRatesWorker:
       cron: '0 21 31 3,12 *' # Runs on end of March and December
+      queue: within_1_day
       description: Creates average rates from downloaded data and uploads file to S3
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
     SynchronizerCheckWorker:
       cron: "*/30 * * * *"
+      queue: within_1_minute
       description: Sends sync age to CloudWatch (TradeTariff/TariffSync AgeMinutes) every 30 minutes and records a heartbeat; CloudWatch alarms post to production-alerts when the age exceeds the threshold
     CheckDifferencesReportHasRun:
       cron: "0 1 * * 2"  # 1am every Tuesday
+      queue: within_1_hour
       description: "Checks if the differences report has run"
       class: DifferencesReportCheckWorker
     FAQFeedbackReportWorker:
       cron: "0 9 * * 2"  # 9am every Tuesday
+      queue: within_1_hour
       description: "Sends FAQ Feedback Report"
       class: FaqFeedbackReportWorker
     RemoveFailedSubscribersWorker:
       cron: "0 3 * * 0"  # 3am every Sunday
+      queue: within_1_day
       description: "Removes failed myott subscribers"
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
     ActionLogReportWorker:
       cron: "0 23 * * 0" # 11pm UTC every Sunday
+      queue: within_1_day
       description: Generates and emails a CSV report of the previous day's user action logs
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
     SearchReferenceChangesReportWorker:
       cron: "30 10 * * mon#1 Europe/London" # 10:30 UK time on the first Monday of each month
+      queue: within_1_day
       description: Generates and emails a CSV report of the previous calendar month's search reference changes
     ImportCustomsTariffDocumentWorker:
       cron: "0 9 * * *"
+      queue: within_1_day
       description: "Checks GOV.UK for a new Customs Tariff document version and imports it"
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
     ImportXiCnDocumentWorker:
       cron: "0 9 * * *"
+      queue: within_1_hour
       description: "Checks the EU Publications Office for new CN editions and imports section/chapter/GRI notes into the XI schema"
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'xi' %>
     RefreshTariffKnowledgeCompressedNotesWorker:
       cron: "0 3 * * *"
+      queue: sync
       description: "Refreshes tariff knowledge graph and compressed notes for current declarable goods"
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
     ImportPublicAtarRulingsWorker:
@@ -121,4 +149,5 @@
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
     SidekiqQueueMetricsWorker:
       cron: "*/5 * * * *"
+      queue: within_1_minute
       description: "Emits Sidekiq queue depth and latency as CloudWatch custom metrics every 5 minutes"

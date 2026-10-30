@@ -2,6 +2,10 @@ RSpec.describe NotificationsWorker, type: :worker do
   subject(:worker) { described_class.new }
 
   describe 'sidekiq options' do
+    it 'uses the urgent notification queue' do
+      expect(described_class.sidekiq_options['queue']).to eq(:within_1_minute)
+    end
+
     it 'caps retries below Sidekiq default' do
       expect(described_class.sidekiq_options['retry']).to eq(3)
     end

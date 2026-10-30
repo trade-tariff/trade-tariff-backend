@@ -4,7 +4,7 @@ class ActionLogReportWorker
   include Sidekiq::Worker
 
   # Report jobs: one delayed retry, avoid Sidekiq default (25).
-  sidekiq_options retry: 1, retry_in: 1.hour
+  sidekiq_options queue: :within_1_day, retry: 1, retry_in: 1.hour
 
   def perform
     return unless TradeTariffBackend.uk?

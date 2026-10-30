@@ -4,7 +4,7 @@ require_relative '../lib/label_generator/logger'
 class RelabelGoodsNomenclatureWorker
   include Sidekiq::Worker
 
-  sidekiq_options queue: :sync, retry: false, slack_alerts: false
+  sidekiq_options queue: :within_1_minute, retry: false, slack_alerts: false
 
   def perform
     sids = TimeMachine.now do
