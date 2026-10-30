@@ -19,6 +19,12 @@ variable "service_count" {
   default     = 1
 }
 
+variable "start_without_tasks" {
+  description = "Create the backend and worker services with no tasks. The UAT start uses it before it restores the database, because the services cannot start on an empty database."
+  type        = bool
+  default     = false
+}
+
 variable "min_capacity_uk" {
   description = "Smallest number of tasks the backend-uk service can scale-in to."
   type        = number

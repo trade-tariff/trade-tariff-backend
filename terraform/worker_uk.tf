@@ -9,7 +9,7 @@ module "worker_uk" {
   security_groups           = [data.aws_security_group.this.id]
   cloudwatch_log_group_name = "platform-logs-${var.environment}"
 
-  service_count = 1
+  service_count = var.start_without_tasks ? 0 : 1
 
   docker_image = local.ecr_repo
   docker_tag   = var.docker_tag
@@ -34,7 +34,7 @@ module "worker_uk" {
   service_environment_config = local.worker_uk_service_env_vars
 
   has_autoscaler     = local.has_autoscaler
-  min_capacity       = 1
+  min_capacity       = var.start_without_tasks ? 0 : 1
   max_capacity       = var.max_capacity
   scale_in_cooldown  = var.scale_in_cooldown
   scale_out_cooldown = var.scale_out_cooldown
