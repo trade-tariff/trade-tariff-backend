@@ -1237,14 +1237,61 @@ RSpec.describe Api::Internal::SearchService do
 
         allow(AdminConfiguration).to receive(:enabled?).and_call_original
         allow(AdminConfiguration).to receive(:enabled?).with('suggest_synonyms').and_return(true)
-        allow(TradeTariffBackend.search_client).to receive(:search)
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return({ 'hits' => { 'hits' => [] } })
       end
 
-      it 'returns the exact match without querying OpenSearch' do
-        result = described_class.new(q: 'rice').call
+      it 'returns the exact match when the trader selected the suggestion' do
+        result = described_class.new(q: 'rice', resource_id: heading.goods_nomenclature_sid).call
 
         expect(result[:data].length).to eq(1)
         expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('1006000000')
+        expect(TradeTariffBackend.search_client).not_to have_received(:search)
+      end
+
+      it 'falls through to retrieval for typed text' do
+        described_class.new(q: 'rice').call
+
+        expect(TradeTariffBackend.search_client).to have_received(:search)
+      end
+    end
+
+    context 'when typed text is a CAS or CUS number with chemical suggestions disabled' do
+      let!(:commodity) do
+        create(:commodity, :with_description,
+               goods_nomenclature_item_id: '2903190000',
+               description: 'saturated chlorinated derivatives')
+      end
+
+      before do
+        create(:search_suggestion, :full_chemical_cas,
+               goods_nomenclature: commodity,
+               value: '103-90-2',
+               declarable: true)
+        create(:search_suggestion, :full_chemical_cus,
+               goods_nomenclature: commodity,
+               id: '0021314-9',
+               value: '0021314-9',
+               declarable: true)
+
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('suggest_chemical_cas').and_return(false)
+        allow(AdminConfiguration).to receive(:enabled?).with('suggest_chemical_cus').and_return(false)
+        allow(TradeTariffBackend.search_client).to receive(:search)
+      end
+
+      it 'returns the exact match for a CAS number' do
+        result = described_class.new(q: 'cas 103-90-2').call
+
+        expect(result[:data].length).to eq(1)
+        expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('2903190000')
+        expect(TradeTariffBackend.search_client).not_to have_received(:search)
+      end
+
+      it 'returns the exact match for a CUS number' do
+        result = described_class.new(q: '0021314-9').call
+
+        expect(result[:data].length).to eq(1)
+        expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('2903190000')
         expect(TradeTariffBackend.search_client).not_to have_received(:search)
       end
     end

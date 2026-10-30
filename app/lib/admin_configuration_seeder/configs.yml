@@ -184,11 +184,11 @@
   string_default: suggest_results_limit
 - name: suggest_chemical_cas
   config_type: boolean
-  description: Allow CAS Registry Number records in internal suggestions and guided-search exact matching.
+  description: Allow CAS Registry Number records in internal suggestions. Guided-search exact matching always uses CAS numbers.
   default: suggest_chemical_cas
 - name: suggest_chemical_cus
   config_type: boolean
-  description: Allow CUS identifier records in internal suggestions and guided-search exact matching.
+  description: Allow CUS identifier records in internal suggestions. Guided-search exact matching always uses CUS identifiers.
   default: suggest_chemical_cus
 - name: suggest_chemical_names
   config_type: boolean
@@ -196,13 +196,13 @@
   default: suggest_chemical_names
 - name: suggest_colloquial_terms
   config_type: boolean
-  description: Allow generated colloquial-term labels in internal suggestions and guided-search exact matching.
+  description: Allow generated colloquial-term labels in internal suggestions and in guided-search exact matching after a trader selects the suggestion.
   default: suggest_colloquial_terms
 - name: suggest_known_brands
   config_type: boolean
-  description: Allow generated known-brand labels in internal suggestions and guided-search exact matching.
+  description: Allow generated known-brand labels in internal suggestions and in guided-search exact matching after a trader selects the suggestion.
   default: suggest_known_brands
 - name: suggest_synonyms
   config_type: boolean
-  description: Allow generated synonym labels in internal suggestions and guided-search exact matching.
+  description: Allow generated synonym labels in internal suggestions and in guided-search exact matching after a trader selects the suggestion.
   default: suggest_synonyms
