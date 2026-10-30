@@ -30,6 +30,12 @@ Rails.application.routes.draw do
   mount V2Api => '/uk/api', as: 'uk_v2_versioned_api', constraints: VersionedAcceptHeader.new(version: 2.0) if TradeTariffBackend.uk?
   mount V2Api => '/xi/api', as: 'xi_v2_versioned_api', constraints: VersionedAcceptHeader.new(version: 2.0) if TradeTariffBackend.xi?
 
+  # Legacy routes - paths without a service prefix redirect to the prefixed path
+  match '/api/v:version(/*path)',
+        via: :all,
+        to: LegacyApiRedirect.new,
+        constraints: { version: /\d+/ }
+
   match '(/:service)/api/v:version(/*path)',
         via: :all,
         to: VersionedForwarder.new,
