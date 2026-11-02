@@ -99,7 +99,7 @@ RSpec.describe Api::V2::SectionsController do
   end
 
   describe '#index' do
-    before { create :section_note, section_id: first_section.id }
+    before { create :customs_tariff_section_note, section_id: first_section.id }
 
     let!(:first_section) { create(:chapter, :with_section).section }
     let!(:second_section) { create(:chapter, :with_section).section }

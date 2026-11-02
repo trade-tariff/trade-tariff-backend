@@ -23,8 +23,8 @@ RSpec.describe 'Section and chapter note cutover', :v2 do
   end
 
   before do
-    create(:chapter_note, chapter_id: chapter.short_code, content: 'Legacy chapter')
-    create(:section_note, section_id: section.id, content: 'Legacy section')
+    Sequel::Model.db[:chapter_notes].insert(chapter_id: chapter.short_code, content: 'Legacy chapter')
+    Sequel::Model.db[:section_notes].insert(section_id: section.id, content: 'Legacy section')
     create(:customs_tariff_chapter_note,
            customs_tariff_update: current_update, chapter_id: chapter.short_code, content: 'Extracted chapter')
     create(:customs_tariff_section_note,
@@ -100,8 +100,8 @@ RSpec.describe 'Section and chapter note cutover', :v2 do
     migration.apply(Sequel::Model.db, :up)
     chapters = CustomsTariffChapterNote.order(:id).all.map(&:values)
     sections = CustomsTariffSectionNote.order(:id).all.map(&:values)
-    ChapterNote.first.update(content: 'Later legacy edit')
-    SectionNote.first.update(content: 'Later legacy edit')
+    Sequel::Model.db[:chapter_notes].update(content: 'Later legacy edit')
+    Sequel::Model.db[:section_notes].update(content: 'Later legacy edit')
 
     migration.apply(Sequel::Model.db, :up)
 

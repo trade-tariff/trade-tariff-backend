@@ -22,7 +22,6 @@ class Chapter < GoodsNomenclature
     ds.with_actual(Heading).non_hidden
   end
 
-  one_to_one :chapter_note, primary_key: :chapter_short_code
   one_to_one :customs_tariff_chapter_note, key: :chapter_id, primary_key: :chapter_short_code do |ds|
     ds.actual
       .where(customs_tariff_update_version: CustomsTariffUpdate.imported.actual.select(:version))
@@ -34,11 +33,7 @@ class Chapter < GoodsNomenclature
   end
 
   def public_chapter_note
-    if TradeTariffBackend.promote_customs_tariff_notes?
-      customs_tariff_chapter_note
-    else
-      chapter_note
-    end
+    customs_tariff_chapter_note
   end
 
   def section_id

@@ -50,11 +50,11 @@ module HeadingService
         :measure_partial_temporary_stops,
       ].freeze
       def self.chapter_note_eager_load
-        TradeTariffBackend.promote_customs_tariff_notes? ? :customs_tariff_chapter_note : :chapter_note
+        :customs_tariff_chapter_note
       end
 
       def self.section_note_eager_load
-        TradeTariffBackend.promote_customs_tariff_notes? ? :customs_tariff_section_note : :section_note
+        :customs_tariff_section_note
       end
 
       BASE_HEADING_EAGER = [

@@ -7,7 +7,7 @@ RSpec.describe DataMigrator do
 
   let(:migrations_dir) { Rails.root.join(file_fixture_path).join('data_migrations') }
   let(:note_attrs) { { section_id: '9999', content: 'Data migration test' } }
-  let(:section_note) { SectionNote.where(note_attrs) }
+  let(:section_note) { Sequel::Model.db[:section_notes].where(note_attrs) }
 
   let :test_migration do
     Sequel::Model.db[:data_migrations]
