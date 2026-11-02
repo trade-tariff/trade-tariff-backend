@@ -4341,7 +4341,7 @@
         "tags": [
           "Headings"
         ],
-        "description": "Returns a single heading. The response uses either HeadingSerializer (non-declarable) or DeclarableHeadingSerializer (declarable) depending on the heading type.",
+        "description": "Returns a single heading. The response uses either HeadingSerializer (non-declarable) or DeclarableHeadingSerializer (declarable) depending on the heading type. Included chapter and section notes use the requested as_of date.",
         "operationId": "getHeading",
         "responses": {
           "200": {
