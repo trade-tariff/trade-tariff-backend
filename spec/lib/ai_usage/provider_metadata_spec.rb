@@ -95,8 +95,6 @@ RSpec.describe 'AI provider metadata' do
     let(:error_class) { EmbeddingService::ApiError }
     let(:call_provider) { -> { EmbeddingService.new.embed('test', event_kind: 'metadata_test') } }
 
-    before { EmbeddingService.reset_client! }
-
     include_examples 'provider metadata without usage',
                      zero_usage: { 'prompt_tokens' => 0, 'completion_tokens' => 0, 'total_tokens' => 0 }
   end

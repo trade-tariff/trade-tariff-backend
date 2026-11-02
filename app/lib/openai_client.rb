@@ -79,16 +79,6 @@ class OpenaiClient
 
     model ||= TradeTariffBackend.ai_model
 
-    body = {
-      model: model,
-      input: messages,
-      safety_identifier: TradeTariffBackend.openai_user,
-      text: { format: { type: 'json_object' } },
-      store: false,
-    }
-    body[:reasoning] = { effort: reasoning_effort } if reasoning_effort.present?
-    body = body.to_json
-
     # Usage from earlier attempts that the provider billed (for example a
     # `failed` response that consumed input tokens). It is added to the usage
     # of the final result or error.
@@ -117,7 +107,7 @@ class OpenaiClient
       remaining = remaining_time(deadline)
       raise_deadline!(timeout:, started_at:, ai_usage: prior_usage) if deadline && remaining <= 0
 
-      response = post(body, remaining:)
+      response = complete(messages, model:, reasoning_effort:, remaining:)
       attempt_usage = usage_metadata(response, model:, event_kind:, reasoning_effort:)
       raise_on_error!(response, ai_usage: usage_so_far.call) unless response.success?
       raise_on_unfinished_response!(response, ai_usage: usage_so_far.call)
@@ -136,23 +126,43 @@ class OpenaiClient
 
 private
 
-  def post(body, remaining:)
-    return self.class.client.post('responses', body) unless remaining
-
+  # Sends one attempt through RubyLLM. Retries, deadlines, usage and errors
+  # stay in #call, so the attempt returns the provider's response unchanged.
+  #
+  # The chat holds no messages. RubyLLM accepts fewer roles and content shapes
+  # than the Responses API, and #complete sends nothing when the transcript
+  # does not end with a user message. #generate always sends one request, and
+  # #keep_request_format adds the caller's messages to it unchanged.
+  def complete(messages, model:, reasoning_effort:, remaining:)
     timeout, open_timeout = transport_timeouts(remaining)
 
-    self.class.client.post('responses', body) do |request|
-      request.options.timeout = timeout
-      request.options.open_timeout = open_timeout
+    OpenaiTransport.request(timeout:, open_timeout:) do |llm|
+      chat = llm.chat(model:, provider: :openai, assume_model_exists: true)
+      chat.with_thinking(effort: reasoning_effort) if reasoning_effort.present?
+      chat.with_end_user(TradeTariffBackend.openai_user)
+          .with_provider_options(text: { format: { type: 'json_object' } })
+          .before_request { |payload| keep_request_format(payload, messages) }
+          .generate
     end
   end
 
-  def transport_timeouts(remaining)
-    timeout = TradeTariffBackend.openai_api_timeout.to_f
-    open_timeout = TradeTariffBackend.openai_api_open_timeout.to_f
-    scale = [remaining / (timeout + open_timeout), 1.0].min
+  # RubyLLM sends system messages as instructions and asks for encrypted
+  # reasoning. Keep the request that the models have always received,
+  # including the opt-out from provider storage.
+  def keep_request_format(payload, messages)
+    payload.except!(:instructions, :stream, :include)
+    payload[:input] = messages
+    payload[:store] = false
+  end
 
-    [timeout * scale, open_timeout * scale]
+  def transport_timeouts(remaining)
+    timeout = TradeTariffBackend.openai_api_timeout
+    open_timeout = TradeTariffBackend.openai_api_open_timeout
+    return [timeout, open_timeout] unless remaining
+
+    scale = [remaining / (timeout.to_f + open_timeout.to_f), 1.0].min
+
+    [timeout.to_f * scale, open_timeout.to_f * scale]
   end
 
   def raise_on_error!(response, ai_usage:)
@@ -286,19 +296,6 @@ private
       end_time = Time.zone.now
       duration = end_time - start_time
       Rails.logger.debug "OpenaiClient call took #{duration.round(2)} seconds"
-    end
-
-    def client
-      @client ||= Faraday.new(url: TradeTariffBackend.openai_api_base_url) do |faraday|
-        faraday.adapter Faraday.default_adapter
-        faraday.headers['Accept'] = 'application/json'
-        faraday.headers['Content-Type'] = 'application/json'
-        faraday.headers['Authorization'] = "Bearer #{TradeTariffBackend.openai_api_key}"
-        faraday.headers['User-Agent'] = TradeTariffBackend.user_agent
-        faraday.response :json, content_type: /\bjson$/
-        faraday.options.timeout = TradeTariffBackend.openai_api_timeout
-        faraday.options.open_timeout = TradeTariffBackend.openai_api_open_timeout
-      end
     end
   end
 
