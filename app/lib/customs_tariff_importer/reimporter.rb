@@ -4,9 +4,11 @@ module CustomsTariffImporter
     def call(version: nil)
       if version
         update = CustomsTariffUpdate.first(version:)
-        reimport(update) if update # no-op if the version does not exist
+        reimport(update) if update&.s3_path.present?
       else
         CustomsTariffUpdate.imported.each do |update|
+          next if update.s3_path.blank? # Legacy snapshots have no source document.
+
           reimport(update)
         end
       end
@@ -15,6 +17,9 @@ module CustomsTariffImporter
   private
 
     def reimport(update)
+      note_validity = update.note_reimport_validity
+      return unless note_validity
+
       content = TariffSynchronizer::FileService.get(update.s3_path).read
       extracted = NotesExtractor.new(update.version, content).call
 
@@ -32,34 +37,34 @@ module CustomsTariffImporter
         CustomsTariffChapterNote.where(customs_tariff_update_version: update.version).delete
         CustomsTariffGeneralRule.where(customs_tariff_update_version: update.version).delete
 
-        create_notes(update, extracted)
+        create_notes(update, extracted, note_validity)
       end
     end
 
-    def create_notes(update, extracted)
-      create_section_notes(update, extracted.sections)
-      create_chapter_notes(update, extracted.chapters)
+    def create_notes(update, extracted, note_validity)
+      create_section_notes(update, extracted.sections, note_validity)
+      create_chapter_notes(update, extracted.chapters, note_validity)
       create_general_rules(update, extracted.general_rules)
     end
 
-    def create_section_notes(update, sections)
+    def create_section_notes(update, sections, note_validity)
       sections.each do |section_id, note_content|
         CustomsTariffSectionNote.create(
           customs_tariff_update_version: update.version,
           section_id:,
           content: note_content,
-          validity_start_date: update.validity_start_date,
+          **note_validity,
         )
       end
     end
 
-    def create_chapter_notes(update, chapters)
+    def create_chapter_notes(update, chapters, note_validity)
       chapters.each do |chapter_id, note_content|
         CustomsTariffChapterNote.create(
           customs_tariff_update_version: update.version,
           chapter_id:,
           content: note_content,
-          validity_start_date: update.validity_start_date,
+          **note_validity,
         )
       end
     end

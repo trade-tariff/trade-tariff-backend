@@ -19,6 +19,8 @@ FactoryBot.define do
     association :customs_tariff_update
     sequence(:chapter_id) { |n| sprintf('%02d', n % 99 + 1) }
     content { 'This chapter covers all live animals.' }
+    validity_start_date { customs_tariff_update.validity_start_date }
+    validity_end_date { customs_tariff_update.validity_end_date }
 
     after(:build) do |note|
       note.customs_tariff_update_version = note.customs_tariff_update.version
@@ -33,6 +35,8 @@ FactoryBot.define do
     association :customs_tariff_update
     sequence(:section_id) { |n| (n % 21) + 1 }
     content { 'Any reference in this section to a particular genus or species of an animal includes a reference to the young of that genus or species.' }
+    validity_start_date { customs_tariff_update.validity_start_date }
+    validity_end_date { customs_tariff_update.validity_end_date }
 
     after(:build) do |note|
       note.customs_tariff_update_version = note.customs_tariff_update.version
