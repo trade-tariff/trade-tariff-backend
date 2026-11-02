@@ -36,7 +36,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REF: ${{ inputs.sha }}
         run: |
-          sha=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${REF}" --jq .sha)
+          ref=$(jq -rn --arg ref "$REF" '$ref | @uri')
+          sha=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${ref}" --jq .sha)
+
+          if [[ ! $sha =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::${REF} is not a commit or branch of ${GITHUB_REPOSITORY}."
+            exit 1
+          fi
+
           echo "sha=${sha}" >> "$GITHUB_OUTPUT"
 
       - id: environment-config
