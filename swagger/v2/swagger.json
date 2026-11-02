@@ -1806,7 +1806,8 @@
                             },
                             "chapter_note": {
                               "type": "string",
-                              "nullable": true
+                              "nullable": true,
+                              "description": "Legal note text for the requested as_of date, present when a note exists"
                             },
                             "forum_url": {
                               "type": "string",
@@ -7354,7 +7355,7 @@
                             "section_note": {
                               "type": "string",
                               "nullable": true,
-                              "description": "Legal note text, present when a note exists"
+                              "description": "Legal note text for the requested as_of date, present when a note exists"
                             }
                           }
                         },
