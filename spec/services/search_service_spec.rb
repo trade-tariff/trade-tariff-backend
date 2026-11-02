@@ -17,6 +17,28 @@ RSpec.describe SearchService do
     end
   end
 
+  describe '#q=' do
+    {
+      'hs 8716109800' => '8716109800',
+      'HS 8708.50.20' => '87085020',
+      'HS:8419500090' => '8419500090',
+      'HS:940340' => '940340',
+      'HS:9403400090' => '9403400090',
+      'HS9504400000' => '9504400000',
+      'hS-9504.40.00.00' => '9504400000',
+      'HS 8716-109800' => '8716109800',
+      'HS' => 'HS',
+      'HS code 940340' => 'HS code 940340',
+      'HS 940340 furniture' => 'HS 940340 furniture',
+      'HSN940340' => 'HSN940340',
+      'hose' => 'hose',
+    }.each do |query, expected|
+      it "processes #{query.inspect}" do
+        expect(described_class.new(data_serializer, q: query).q).to eq(expected)
+      end
+    end
+  end
+
   # Searching in search suggestions or find historic goods nomenclature
   describe 'exact search' do
     subject(:result) do

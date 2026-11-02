@@ -16,6 +16,8 @@ Public search routes are defined in `app/engines/v2_api.rb`:
 
 `app/services/search_service.rb` is the main entrypoint for public search. It normalises the query, tries an exact search for numeric identifiers, falls back to fuzzy search, and returns a null search result for empty or blocked queries.
 
+Classic V2 code-only queries accept an initial `HS` prefix in any case, with spaces, a colon or a hyphen before the code. For example, `HS 8708.50.20` uses the same lookup as `8708.50.20`. Historic codes keep the existing lookup. Missing codes fall back to fuzzy search. Descriptions that contain letters after the prefix remain text queries.
+
 ## Classic interface with internal retrieval
 
 `POST /uk/internal/search` (or `/xi/internal/search`) accepts these optional fields:
