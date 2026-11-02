@@ -1,0 +1,63 @@
+name: Deploy to UAT
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: 'Git SHA or branch to deploy. Run the workflow from main.'
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      # The UAT deploy role trusts only main. The sha input selects the commit.
+      - run: |
+          if [[ $GITHUB_REF != "refs/heads/main" ]]; then
+            echo "::error::Run this workflow from main. Put the commit or branch in sha."
+            exit 1
+          fi
+
+      - id: environment-config
+        uses: trade-tariff/trade-tariff-tools/.github/actions/configure-environment@main
+        with:
+          app-name: tariff-backend
+          environment: uat
+
+      - uses: aws-actions/configure-aws-credentials@v6.3.0
+        with:
+          role-to-assume: ${{ steps.environment-config.outputs.deploy-role-arn }}
+          aws-region: eu-west-2
+
+      # UAT Stop destroys only the components that UAT Start deployed, so do not create backend here.
+      - env:
+          CLUSTER: ${{ steps.environment-config.outputs.cluster }}
+        run: |
+          if ! status=$(aws ecs describe-services --cluster "$CLUSTER" --services backend-uk --query 'services[0].status' --output text 2>&1); then
+            [[ $status == *ClusterNotFoundException* ]] || { echo "$status" >&2; exit 1; }
+          fi
+
+          if [[ $status != "ACTIVE" ]]; then
+            echo "::error::Backend does not run in UAT. Run UAT Start with backend first."
+            exit 1
+          fi
+
+  deploy:
+    needs: check
+    concurrency:
+      group: deploy-uat-tariff-backend
+      cancel-in-progress: false
+    uses: trade-tariff/trade-tariff-tools/.github/workflows/deploy-ecs.yml@main
+    with:
+      app-name: tariff-backend
+      environment: uat
+      test-flavour: none
+      migrate: true
+      checkout-ref: ${{ inputs.sha }}
+    secrets:
+      slack-webhook: ${{ secrets.SLACK_WEBHOOK }}
