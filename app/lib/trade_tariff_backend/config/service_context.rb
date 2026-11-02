@@ -22,7 +22,7 @@ module TradeTariffBackend
       end
 
       def promote_customs_tariff_notes?
-        !environment.production?
+        true
       end
 
       def currency
