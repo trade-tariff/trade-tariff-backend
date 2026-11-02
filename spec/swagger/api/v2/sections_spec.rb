@@ -88,7 +88,7 @@ RSpec.describe 'Sections', swagger_doc: 'v2/swagger.json', type: :request do
                          chapter_from: { type: :string, nullable: true },
                          chapter_to: { type: :string, nullable: true },
                          description_plain: { type: :string, nullable: true },
-                         section_note: { type: :string, nullable: true, description: 'Legal note text, present when a note exists' },
+                         section_note: { type: :string, nullable: true, description: 'Legal note text for the requested as_of date, present when a note exists' },
                        },
                      },
                      relationships: {

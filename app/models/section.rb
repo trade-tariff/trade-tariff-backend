@@ -30,7 +30,9 @@ class Section < Sequel::Model
   end
 
   one_to_one :customs_tariff_section_note, key: :section_id, primary_key: :id do |ds|
-    ds.where(customs_tariff_update_version: CustomsTariffUpdate.latest.select(:version).limit(1))
+    ds.actual
+      .where(customs_tariff_update_version: CustomsTariffUpdate.imported.actual.select(:version))
+      .order(Sequel.desc(:validity_start_date), Sequel.desc(:id))
   end
 
   def public_section_note

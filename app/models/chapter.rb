@@ -24,9 +24,9 @@ class Chapter < GoodsNomenclature
 
   one_to_one :chapter_note, primary_key: :chapter_short_code
   one_to_one :customs_tariff_chapter_note, key: :chapter_id, primary_key: :chapter_short_code do |ds|
-    ds.where(
-      customs_tariff_update_version: CustomsTariffUpdate.latest.select(:version).limit(1),
-    )
+    ds.actual
+      .where(customs_tariff_update_version: CustomsTariffUpdate.imported.actual.select(:version))
+      .order(Sequel.desc(:validity_start_date), Sequel.desc(:id))
   end
 
   def guide_ids

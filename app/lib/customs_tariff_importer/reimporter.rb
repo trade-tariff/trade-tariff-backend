@@ -4,9 +4,11 @@ module CustomsTariffImporter
     def call(version: nil)
       if version
         update = CustomsTariffUpdate.first(version:)
-        reimport(update) if update # no-op if the version does not exist
+        reimport(update) if update&.s3_path.present?
       else
         CustomsTariffUpdate.imported.each do |update|
+          next if update.s3_path.blank? # Legacy snapshots have no source document.
+
           reimport(update)
         end
       end
