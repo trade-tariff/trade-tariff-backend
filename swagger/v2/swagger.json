@@ -6416,7 +6416,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Search term, such as a goods description, commodity code, chapter or heading code, CAS number, CUS number, or search reference."
+            "description": "Search term, such as a goods description, commodity code, chapter or heading code, CAS number, CUS number, or search reference. Code-only queries accept an HS prefix in any case, for example HS:940340 or HS 8708.50.20."
           },
           {
             "$ref": "#/components/parameters/AsOfDate"
@@ -7027,7 +7027,7 @@
                 "properties": {
                   "q": {
                     "type": "string",
-                    "description": "Search term, such as a goods description, commodity code, chapter or heading code, CAS number, CUS number, or search reference."
+                    "description": "Search term, such as a goods description, commodity code, chapter or heading code, CAS number, CUS number, or search reference. Code-only queries accept an HS prefix in any case, for example HS:940340 or HS 8708.50.20."
                   },
                   "as_of": {
                     "type": "string",
