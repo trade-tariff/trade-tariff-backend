@@ -613,6 +613,53 @@ RSpec.describe TradeTariffBackend::Config do
     end
   end
 
+  describe 'distribution list recipients' do
+    let(:recipients) { instance_double(DistributionListRecipients) }
+    let(:members) { %w[a@example.com b@example.com] }
+
+    before do
+      allow(DistributionListRecipients).to receive(:new).and_return(recipients)
+      allow(recipients).to receive(:emails).and_return(nil)
+    end
+
+    {
+      differences_report_to_emails: ['dl-differences-report', %w[a@example.com b@example.com]],
+      cds_updates_to_email: ['dl-cds-updates', 'a@example.com,b@example.com'],
+      cupid_team_to_emails: ['dl-cupid-team', %w[a@example.com b@example.com]],
+      myott_report_email: ['dl-myott-report', %w[a@example.com b@example.com]],
+      search_references_report_to_emails: ['dl-search-references-report', %w[a@example.com b@example.com]],
+      green_lanes_update_email: ['dl-green-lanes-updates', %w[a@example.com b@example.com]],
+    }.each do |method, (group, expected)|
+      it "#{method} uses the members of #{group}" do
+        allow(recipients).to receive(:emails).with(group).and_return(members)
+
+        expect(config.public_send(method)).to eq(expected)
+      end
+    end
+
+    {
+      differences_report_to_emails: ['DIFFERENCES_TO_EMAILS', 'old@example.com'],
+      cds_updates_to_email: ['CDS_UPDATES_TO_EMAILS', 'old@example.com'],
+      cupid_team_to_emails: ['CUPID_TEAM_TO_EMAILS', ['old@example.com']],
+      myott_report_email: ['MYOTT_REPORT_EMAIL', 'old@example.com'],
+      search_references_report_to_emails: ['SEARCH_REFERENCES_REPORT_TO_EMAILS', ['old@example.com']],
+      green_lanes_update_email: ['GREEN_LANES_UPDATE_EMAIL', 'old@example.com'],
+    }.each do |method, (env_var, expected)|
+      it "#{method} falls back to #{env_var} when the list is empty or unavailable" do
+        ENV[env_var] = 'old@example.com'
+
+        expect(config.public_send(method)).to eq(expected)
+      end
+    end
+
+    it 'does not need CDS_UPDATES_TO_EMAILS when the list has members' do
+      ENV.delete('CDS_UPDATES_TO_EMAILS')
+      allow(recipients).to receive(:emails).with('dl-cds-updates').and_return(members)
+
+      expect(config.cds_updates_to_email).to eq('a@example.com,b@example.com')
+    end
+  end
+
   describe 'Redis config' do
     describe '.redis_config' do
       it 'uses REDIS_URL and test redis db in test' do

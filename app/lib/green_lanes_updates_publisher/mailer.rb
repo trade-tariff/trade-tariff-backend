@@ -5,7 +5,7 @@ module GreenLanesUpdatesPublisher
     include MailerEnvironment
 
     default from: TradeTariffBackend.from_email,
-            to: TradeTariffBackend.green_lanes_update_email
+            to: -> { TradeTariffBackend.green_lanes_update_email }
 
     def update(updates, date)
       @updated_date = date.to_fs(:govuk)
