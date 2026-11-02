@@ -226,9 +226,12 @@ RSpec.describe TradeTariffBackend::Config do
         expect(config.promote_customs_tariff_notes?).to be true
       end
 
-      it 'returns false in production' do
-        ENV['ENVIRONMENT'] = 'production'
-        expect(config.promote_customs_tariff_notes?).to be false
+      %w[uk xi].each do |service|
+        it "returns true in production for #{service}" do
+          ENV['ENVIRONMENT'] = 'production'
+          ENV['SERVICE'] = service
+          expect(config.promote_customs_tariff_notes?).to be true
+        end
       end
 
       it 'returns true locally' do

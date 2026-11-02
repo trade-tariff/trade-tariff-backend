@@ -10,6 +10,14 @@ RSpec.describe 'Section and chapter note cutover', :v2 do
   let(:section) { chapter.section }
   let!(:current_update) { create(:customs_tariff_update, validity_start_date: Date.new(2026, 10, 1)) }
 
+  around do |example|
+    original_environment = ENV['ENVIRONMENT']
+    ENV['ENVIRONMENT'] = 'production'
+    example.run
+  ensure
+    ENV['ENVIRONMENT'] = original_environment
+  end
+
   before do
     create(:chapter_note, chapter_id: chapter.short_code, content: 'Legacy chapter')
     create(:section_note, section_id: section.id, content: 'Legacy section')
@@ -17,7 +25,6 @@ RSpec.describe 'Section and chapter note cutover', :v2 do
            customs_tariff_update: current_update, chapter_id: chapter.short_code, content: 'Extracted chapter')
     create(:customs_tariff_section_note,
            customs_tariff_update: current_update, section_id: section.id, content: 'Extracted section')
-    allow(TradeTariffBackend).to receive(:promote_customs_tariff_notes?).and_return(true)
   end
 
   [
