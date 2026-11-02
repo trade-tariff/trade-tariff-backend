@@ -8,6 +8,10 @@ RSpec.describe 'Section and chapter note cutover', :v2 do
                                     validity_start_date: Date.new(1972, 1, 1))
   end
   let(:section) { chapter.section }
+  let!(:heading) do
+    create(:heading, :declarable, :with_indent, goods_nomenclature_item_id: '0101000000',
+                                                validity_start_date: Date.new(1972, 1, 1))
+  end
   let!(:current_update) { create(:customs_tariff_update, validity_start_date: Date.new(2026, 10, 1)) }
 
   around do |example|
@@ -49,6 +53,15 @@ RSpec.describe 'Section and chapter note cutover', :v2 do
       expect(response).to have_http_status(:ok)
       section_body = JSON.parse(response.body)
       expect(section_body.dig('data', 'attributes', 'section_note')).to eq("#{source} section")
+
+      api_get "/#{TradeTariffBackend.service}/api/headings/#{heading.short_code}", params: { as_of: date }
+
+      expect(response).to have_http_status(:ok)
+      heading_body = JSON.parse(response.body)
+      expect(heading_body.fetch('included').find { |item| item['type'] == 'chapter' }
+                         .dig('attributes', 'chapter_note')).to eq("#{source} chapter")
+      expect(heading_body.fetch('included').find { |item| item['type'] == 'section' }
+                         .dig('attributes', 'section_note')).to eq("#{source} section")
     end
   end
 
