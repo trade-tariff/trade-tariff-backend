@@ -29,6 +29,8 @@ The structured `search_started` event includes the submitted `resource_id`, or n
 - `resource_id`: the goods nomenclature SID returned as the resource ID by internal autocomplete. It disambiguates matching labels and permits an explicitly selected non-declarable destination. Public V2 autocomplete uses suggestion-row IDs instead; consumers must not pass those IDs to this endpoint. Hidden-code and description-intercept filters still apply.
 - `include: "heading,chapter"`: attaches parent heading and chapter context after ranking. Either ancestor name enables the paired context. Other names are ignored.
 
+Code-only queries can start with `HS` or `hs`, with spaces, a colon or a hyphen before the code. For example, `HS 8708.50.20` uses the same lookup as `8708.50.20`. Existing historic-code lookup and unmatched-code retrieval still apply. Descriptions that contain letters after the prefix remain text queries.
+
 Ancestor descriptions use the requested date. Unique ancestor codes and descriptions are loaded in a batch. The response does not change result order or scores. Relationships can target primary `data` or `included`; each resource identity appears only once. Consumers must resolve linkage from both collections. Ancestors contain display fields, not declarability or scores.
 
 Blank, excluded and empty-result searches do not load ancestors. Exact matches still bypass retrieval. Requests without ancestor inclusion keep their existing response shape. No reindex or database migration is required.

@@ -35,7 +35,8 @@ module Api
           @sanitiser_errors = sanitiser_result
           @q = ''
         else
-          @q = process_query(sanitiser_result[:query])
+          query = sanitiser_result[:query].sub(/\A[[:space:]]*hs[[:space:]:-]*(?=\d[\d[:space:].-]*\z)/i, '')
+          @q = process_query(query)
         end
 
         @as_of = parse_date(params[:as_of])
