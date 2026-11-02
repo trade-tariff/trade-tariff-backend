@@ -24,6 +24,9 @@ module XiCnImporter
   private
 
     def reimport(update)
+      note_validity = update.note_reimport_validity
+      return unless note_validity
+
       html_s3_path = "#{S3_KEY_PREFIX}/CN_#{update.version}.xhtml"
       html_content = TariffSynchronizer::FileService.get(html_s3_path).read
       extracted    = NotesExtractor.new(update.version, html_content).call
@@ -37,14 +40,14 @@ module XiCnImporter
         CustomsTariffChapterNote.where(customs_tariff_update_version: update.version).delete
         CustomsTariffGeneralRule.where(customs_tariff_update_version: update.version).delete
 
-        create_section_notes(update, extracted.sections)
+        create_section_notes(update, extracted.sections, note_validity)
 
         extracted.chapters.each do |chapter_id, note_content|
           CustomsTariffChapterNote.create(
             customs_tariff_update_version: update.version,
             chapter_id:,
             content: note_content,
-            validity_start_date: update.validity_start_date,
+            **note_validity,
           )
         end
 
@@ -59,13 +62,13 @@ module XiCnImporter
       end
     end
 
-    def create_section_notes(update, sections)
+    def create_section_notes(update, sections, note_validity)
       sections.each do |section_id, note_content|
         CustomsTariffSectionNote.create(
           customs_tariff_update_version: update.version,
           section_id:,
           content: note_content,
-          validity_start_date: update.validity_start_date,
+          **note_validity,
         )
       end
     end

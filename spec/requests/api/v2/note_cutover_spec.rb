@@ -89,6 +89,67 @@ RSpec.describe 'Section and chapter note cutover', :v2 do
     expect(CustomsTariffSectionNote.order(:id).all.map(&:values)).to eq(sections)
   end
 
+  [CustomsTariffImporter, XiCnImporter].each do |importer|
+    service = importer == CustomsTariffImporter ? 'uk' : 'xi'
+
+    context "when #{importer} reimports after migration" do
+      before do
+        current_update.update(
+          s3_path: "data/customs_tariff_documents/#{service}/current",
+          validity_end_date: Date.new(2026, 12, 31),
+        )
+        extracted = importer::NotesExtractor::Result.new(
+          chapters: { chapter.short_code => 'Reimported chapter' },
+          sections: { section.id => 'Reimported section' },
+          general_rules: {},
+        )
+        allow(TariffSynchronizer::FileService).to receive(:get).and_return(StringIO.new('source document'))
+        allow(importer::NotesExtractor).to receive(:new)
+          .and_return(instance_double(importer::NotesExtractor, call: extracted))
+      end
+
+      %i[single bulk].each do |mode|
+        it "preserves note windows during #{mode} reimport" do
+          older = create(:customs_tariff_update,
+                         validity_start_date: Date.new(2026, 1, 1),
+                         s3_path: "data/customs_tariff_documents/#{service}/older")
+          create(:customs_tariff_chapter_note, customs_tariff_update: older, chapter_id: chapter.short_code)
+          create(:customs_tariff_section_note, customs_tariff_update: older, section_id: section.id)
+          future = create(:customs_tariff_update,
+                          validity_start_date: Date.new(2027, 1, 1),
+                          validity_end_date: Date.new(2027, 12, 31),
+                          s3_path: "data/customs_tariff_documents/#{service}/future")
+
+          migration.apply(Sequel::Model.db, :up)
+
+          reimporter = importer::Reimporter.new
+          if mode == :single
+            [older, current_update, future].each { |update| reimporter.call(version: update.version) }
+          else
+            reimporter.call
+          end
+
+          expect(TariffSynchronizer::FileService).to have_received(:get).twice
+          [CustomsTariffChapterNote, CustomsTariffSectionNote].each do |model|
+            expect(model.where(customs_tariff_update_version: older.version)).to be_empty
+            expect(model.where(customs_tariff_update_version: current_update.version).first.values)
+              .to include(validity_start_date: Date.new(2026, 11, 4), validity_end_date: Date.new(2026, 12, 31))
+            expect(model.where(customs_tariff_update_version: future.version).first.values)
+              .to include(validity_start_date: Date.new(2027, 1, 1), validity_end_date: Date.new(2027, 12, 31))
+          end
+          TimeMachine.at('2026-11-03 23:59:59') do
+            expect(chapter.refresh.public_chapter_note.content).to eq('Legacy chapter')
+            expect(section.refresh.public_section_note.content).to eq('Legacy section')
+          end
+          TimeMachine.at('2026-11-04') do
+            expect(chapter.refresh.public_chapter_note.content).to eq('Reimported chapter')
+            expect(section.refresh.public_section_note.content).to eq('Reimported section')
+          end
+        end
+      end
+    end
+  end
+
   it 'migrates XI independently of UK' do
     db = Sequel::Model.db
     tables = %i[customs_tariff_updates customs_tariff_chapter_notes customs_tariff_section_notes chapter_notes section_notes]
