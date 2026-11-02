@@ -66,7 +66,7 @@ module Api
           configuration: diagnostics_configuration,
         )
 
-        ::Search::Instrumentation.search(request_id:, query: q, search_type: @search_type) do
+        ::Search::Instrumentation.search(request_id:, query: q, search_type: @search_type, resource_id: @resource_id) do
           search_result
         end
       end

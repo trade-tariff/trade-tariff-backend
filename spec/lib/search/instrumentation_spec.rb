@@ -40,6 +40,7 @@ RSpec.describe Search::Instrumentation do
         request_id: 'req-1',
         query: 'horses',
         search_type: 'interactive',
+        resource_id: nil,
         **Search::FailureCodes.logging_fields([]),
       )
     end
@@ -55,6 +56,7 @@ RSpec.describe Search::Instrumentation do
         request_id: 'current-request-id',
         query: 'horses',
         search_type: 'interactive',
+        resource_id: nil,
         **Search::FailureCodes.logging_fields([]),
       )
     end
@@ -71,6 +73,7 @@ RSpec.describe Search::Instrumentation do
         query: 'horses',
         search_type: 'interactive',
         request_source: 'frontend',
+        resource_id: nil,
         **Search::FailureCodes.logging_fields([]),
       )
     end
@@ -90,6 +93,7 @@ RSpec.describe Search::Instrumentation do
         request_id: 'req-1',
         query: 'horses',
         search_type: 'interactive',
+        resource_id: nil,
         **Search::FailureCodes.logging_fields([]),
       )
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
@@ -106,6 +110,18 @@ RSpec.describe Search::Instrumentation do
           total_duration_ms: a_kind_of(Float),
         ),
       )
+    end
+
+    it 'exposes the submitted resource ID on search_started' do
+      events = []
+
+      ActiveSupport::Notifications.subscribed(->(event) { events << event }, 'search_started.search') do
+        described_class.search(request_id: 'req-1', query: 'horses', search_type: 'classic', resource_id: 'suggestion-row') do
+          ['result', { result_count: 1 }]
+        end
+      end
+
+      expect(events.first.payload).to include(resource_id: 'suggestion-row', search_type: 'classic')
     end
 
     it 'emits search_failed and re-raises on error' do
