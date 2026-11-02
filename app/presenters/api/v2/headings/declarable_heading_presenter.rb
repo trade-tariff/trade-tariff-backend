@@ -42,6 +42,14 @@ module Api
           heading.chapter.goods_nomenclature_sid
         end
 
+        def chapter
+          @chapter ||= ChapterPresenter.new(heading.chapter)
+        end
+
+        def section
+          SectionPresenter.new(heading.section)
+        end
+
         def meursing_code?
           import_measures.any?(&:meursing?)
         end
