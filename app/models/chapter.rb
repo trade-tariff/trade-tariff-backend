@@ -32,10 +32,6 @@ class Chapter < GoodsNomenclature
     guides.pluck(:id)
   end
 
-  def public_chapter_note
-    customs_tariff_chapter_note
-  end
-
   def section_id
     section&.id
   end

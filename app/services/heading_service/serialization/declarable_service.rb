@@ -49,13 +49,6 @@ module HeadingService
         :full_temporary_stop_regulations,
         :measure_partial_temporary_stops,
       ].freeze
-      def self.chapter_note_eager_load
-        :customs_tariff_chapter_note
-      end
-
-      def self.section_note_eager_load
-        :customs_tariff_section_note
-      end
 
       BASE_HEADING_EAGER = [
         {
@@ -114,7 +107,7 @@ module HeadingService
         return [] unless heading_chapter_data_requested?
 
         chapter_eager_load = []
-        chapter_eager_load << self.class.chapter_note_eager_load if jsonapi_field_requested?(:chapter, :chapter_note)
+        chapter_eager_load << :customs_tariff_chapter_note if jsonapi_field_requested?(:chapter, :chapter_note)
         chapter_eager_load << :guides if chapter_guides_requested?
         chapter_eager_load << section_eager_load if heading_section_data_requested?
 
@@ -140,7 +133,7 @@ module HeadingService
       def section_eager_load
         return :sections unless jsonapi_field_requested?(:section, :section_note)
 
-        { sections: [self.class.section_note_eager_load] }
+        { sections: [:customs_tariff_section_note] }
       end
     end
   end

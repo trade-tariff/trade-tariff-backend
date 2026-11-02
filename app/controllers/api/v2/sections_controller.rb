@@ -47,18 +47,10 @@ module Api
 
     private
 
-      def chapter_note_eager_load
-        :customs_tariff_chapter_note
-      end
-
-      def section_note_eager_load
-        :customs_tariff_section_note
-      end
-
       def sections_dataset
         eager_loads = []
-        eager_loads << { chapters: [chapter_note_eager_load] } if section_chapter_fields_requested?
-        eager_loads << section_note_eager_load if jsonapi_field_requested?(:section, :section_note)
+        eager_loads << { chapters: [:customs_tariff_chapter_note] } if section_chapter_fields_requested?
+        eager_loads << :customs_tariff_section_note if jsonapi_field_requested?(:section, :section_note)
 
         return Section if eager_loads.empty?
 

@@ -53,21 +53,6 @@ RSpec.describe Section do
     end
   end
 
-  describe '#public_section_note' do
-    let!(:section) { create(:section) }
-    let!(:customs_tariff_update) { create(:customs_tariff_update, :approved) }
-    let!(:customs_tariff_note) do
-      create(:customs_tariff_section_note, :approved,
-             customs_tariff_update:,
-             section_id: section.id,
-             content: 'Imported section note')
-    end
-
-    it 'returns the customs tariff note' do
-      expect(section.public_section_note).to eq(customs_tariff_note)
-    end
-  end
-
   describe 'first and last chapter' do
     let(:section) { create(:section) }
 

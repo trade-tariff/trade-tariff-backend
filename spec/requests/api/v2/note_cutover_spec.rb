@@ -75,8 +75,8 @@ RSpec.describe 'Section and chapter note cutover', :v2 do
     migration.apply(Sequel::Model.db, :up)
 
     TimeMachine.at('2027-01-01') do
-      expect(chapter.refresh.public_chapter_note.content).to eq('Future chapter')
-      expect(section.refresh.public_section_note.content).to eq('Future section')
+      expect(chapter.refresh.customs_tariff_chapter_note.content).to eq('Future chapter')
+      expect(section.refresh.customs_tariff_section_note.content).to eq('Future section')
     end
   end
 
@@ -158,12 +158,12 @@ RSpec.describe 'Section and chapter note cutover', :v2 do
               .to include(validity_start_date: Date.new(2027, 1, 1), validity_end_date: Date.new(2027, 12, 31))
           end
           TimeMachine.at('2026-11-03 23:59:59') do
-            expect(chapter.refresh.public_chapter_note.content).to eq('Legacy chapter')
-            expect(section.refresh.public_section_note.content).to eq('Legacy section')
+            expect(chapter.refresh.customs_tariff_chapter_note.content).to eq('Legacy chapter')
+            expect(section.refresh.customs_tariff_section_note.content).to eq('Legacy section')
           end
           TimeMachine.at('2026-11-04') do
-            expect(chapter.refresh.public_chapter_note.content).to eq('Reimported chapter')
-            expect(section.refresh.public_section_note.content).to eq('Reimported section')
+            expect(chapter.refresh.customs_tariff_chapter_note.content).to eq('Reimported chapter')
+            expect(section.refresh.customs_tariff_section_note.content).to eq('Reimported section')
           end
         end
       end

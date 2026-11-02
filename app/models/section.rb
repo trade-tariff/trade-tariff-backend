@@ -29,10 +29,6 @@ class Section < Sequel::Model
       .order(Sequel.desc(:validity_start_date), Sequel.desc(:id))
   end
 
-  def public_section_note
-    customs_tariff_section_note
-  end
-
   def first_chapter
     chapters.first || NullGoodsNomenclature.new
   end

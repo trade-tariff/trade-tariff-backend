@@ -90,21 +90,6 @@ RSpec.describe Chapter do
     end
   end
 
-  describe '#public_chapter_note' do
-    let!(:chapter) { create(:chapter, goods_nomenclature_item_id: '0100000000') }
-    let!(:customs_tariff_update) { create(:customs_tariff_update, :approved) }
-    let!(:customs_tariff_note) do
-      create(:customs_tariff_chapter_note, :approved,
-             customs_tariff_update:,
-             chapter_id: chapter.short_code,
-             content: 'Imported chapter note')
-    end
-
-    it 'returns the customs tariff note' do
-      expect(chapter.public_chapter_note).to eq(customs_tariff_note)
-    end
-  end
-
   describe '#to_param' do
     let(:chapter) { create :chapter, goods_nomenclature_item_id: '1200000000' }
 
