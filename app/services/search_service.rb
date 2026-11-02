@@ -34,6 +34,8 @@ class SearchService
   end
 
   def q=(term)
+    term = term.to_s.sub(/\A[[:space:]]*hs[[:space:]:-]*(?=\d[\d[:space:].-]*\z)/i, '')
+
     # use `cas_number_regex` to try to find a CAS number, then
     # if search term has no letters extract the digits
     # and perform search with just the digits (i.e., `no_alpha_regex`)
