@@ -417,6 +417,7 @@
               language = "system";
               types = [ "file" ];
               require_serial = true;
+              excludes = [ "^spec/" ];
               extraPackages = [ pkgs.docker-client ];
               stages = [ "pre-commit" ];
             };

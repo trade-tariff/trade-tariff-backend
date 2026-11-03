@@ -40,6 +40,7 @@ repos:
     rev: v0.1.0
     hooks:
       - id: briar
+        exclude: ^spec/
 
   - repo: https://github.com/mattlqx/pre-commit-ruby
     rev: v1.3.6
