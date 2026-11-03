@@ -11,8 +11,8 @@ RSpec.describe 'Database configuration' do
     ).fetch('production')
   end
 
-  let(:writer_url) { 'postgres://tariff:secret@writer.example.test/tariff' }
-  let(:reader_url) { 'postgres://tariff:secret@reader.example.test/tariff' }
+  let(:writer_url) { 'postgres://tariff:secret@writer.example.test/tariff' } # trufflehog:ignore
+  let(:reader_url) { 'postgres://tariff:secret@reader.example.test/tariff' } # trufflehog:ignore
 
   before do
     stub_const(
