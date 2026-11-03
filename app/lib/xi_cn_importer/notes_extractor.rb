@@ -217,9 +217,9 @@ module XiCnImporter
         return
       end
 
-      return unless note_table?(node)
+      content = extract_note_content(node)
+      return if content.blank?
 
-      content = extract_table_content(node)
       if @collecting_additional
         @additional_lines << content
       else
@@ -273,6 +273,18 @@ module XiCnImporter
     end
 
     # --- Content extraction ---
+
+    def extract_note_content(node)
+      if node.name == 'p'
+        return unless (%w[normal oj-normal] & (node['class']&.split || [])).any?
+
+        paragraph_text_without_footnotes(node)
+      elsif node.name == 'table' && node['class']&.split&.include?(COMMODITY_TABLE_CLASS)
+        table_formatter.call(node, node_text_fn: method(:paragraph_text_without_footnotes))
+      elsif note_table?(node)
+        extract_table_content(node)
+      end
+    end
 
     def extract_gri_rows(table)
       rows_of(table).each do |row|
@@ -392,7 +404,16 @@ module XiCnImporter
     end
 
     def commodity_table?(node)
-      node.name == 'table' && node['class']&.split&.include?(COMMODITY_TABLE_CLASS)
+      return false unless node.name == 'table' && node['class']&.split&.include?(COMMODITY_TABLE_CLASS)
+
+      first_row = rows_of(node).first
+      return true unless first_row
+
+      # The same class marks informational tables, including the chapter 98
+      # directory. Keep named-header tables unless they contain a CN-code column.
+      paragraphs = first_row.xpath('./*[local-name()="td"]/*[local-name()="p"]')
+      paragraphs.none? { |p| p['class']&.split&.include?('oj-tbl-hdr') } ||
+        paragraphs.any? { |p| paragraph_text_without_footnotes(p).match?(/\ACN code\z/i) }
     end
 
     def note_table?(node)
