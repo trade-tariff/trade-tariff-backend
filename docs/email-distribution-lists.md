@@ -31,8 +31,16 @@ duplicates.
 - If Cognito cannot be read (any AWS SDK error, for example a timeout, access
   denied or missing AWS credentials), the email also goes to the fallback env
   var. This is a fault, so the log has an error:
-  `distribution_list.read_failed group=<list> reason=<ErrorClass>`. Add a
-  CloudWatch metric filter and alarm on `distribution_list.read_failed`.
+  `distribution_list.read_failed group=<list> reason=<ErrorClass>`. The
+  CloudWatch alarm `distribution-list-read-failed-<environment>`
+  (`terraform/distribution_list_alarms.tf`) sends one of these lines to Slack
+  within 5 minutes. It runs only where `enable_alarms` is true (production).
+  Fallback warnings do not trigger the alarm.
+
+An empty list does not mean no email. Emptying a list, or disabling all its
+members, sends the email to the fallback env var until the fallback is
+removed. To stop an email now, also clear its fallback env var. The admin
+app shows the same warning on each list.
 
 The backend never stores, caches or logs the emails.
 
