@@ -2,7 +2,7 @@ class ActionLogMailer < ApplicationMailer
   default from: TradeTariffBackend.from_email
 
   def daily_report(csv_data, date)
-    recipients = Array(TradeTariffBackend.myott_report_email)
+    recipients = Array(TradeTariffBackend.myott_report_email.presence)
     return if recipients.blank?
 
     @date = date

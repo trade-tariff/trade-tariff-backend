@@ -55,13 +55,15 @@ RSpec.describe ActionLogMailer do
       end
     end
 
-    context 'when there are no recipients' do
-      before do
-        allow(TradeTariffBackend).to receive(:myott_report_email).and_return(nil)
-      end
+    [nil, '', '   '].each do |blank|
+      context "when there are no recipients (#{blank.inspect})" do
+        before do
+          allow(TradeTariffBackend).to receive(:myott_report_email).and_return(blank)
+        end
 
-      it 'does not build a message' do
-        expect(mail.message).to be_a(ActionMailer::Base::NullMail)
+        it 'does not build a message' do
+          expect(mail.message).to be_a(ActionMailer::Base::NullMail)
+        end
       end
     end
   end
