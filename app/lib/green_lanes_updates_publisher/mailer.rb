@@ -4,10 +4,9 @@ module GreenLanesUpdatesPublisher
   class Mailer < ApplicationMailer
     include MailerEnvironment
 
-    default from: TradeTariffBackend.from_email,
-            to: -> { TradeTariffBackend.green_lanes_update_email }
+    default from: TradeTariffBackend.from_email
 
-    def update(updates, date)
+    def update(updates, date, recipients)
       @updated_date = date.to_fs(:govuk)
       @updates = updates
       @include_measure_updates = TradeTariffBackend.green_lanes_notify_measure_updates
@@ -21,7 +20,8 @@ module GreenLanesUpdatesPublisher
         update.status == ::GreenLanes::UpdateNotification::NotificationStatus::UPDATED
       end
 
-      mail subject: "#{subject_prefix(:info)} Green Lanes Updates"
+      mail to: recipients,
+           subject: "#{subject_prefix(:info)} Green Lanes Updates"
     end
   end
 end

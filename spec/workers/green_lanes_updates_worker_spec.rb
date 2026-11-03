@@ -48,6 +48,50 @@ RSpec.describe GreenLanesUpdatesWorker, type: :worker do
     end
   end
 
+  describe 'update email' do
+    let(:message) { instance_double(ActionMailer::MessageDelivery, deliver_now: true) }
+
+    before do
+      allow(GreenLanesUpdatesPublisher::Mailer).to receive(:update).and_return(message)
+    end
+
+    context 'when there are recipients' do
+      before do
+        finder = instance_double(GreenLanesUpdatesPublisher::DataUpdatesFinder, call: [instance_double(GreenLanesUpdatesPublisher::GreenLanesUpdate, status: nil)])
+        allow(GreenLanesUpdatesPublisher::DataUpdatesFinder).to receive(:new).and_return(finder)
+        allow(GreenLanesUpdatesPublisher::UpdateNotificationsCreator).to receive(:new)
+          .and_return(instance_double(GreenLanesUpdatesPublisher::UpdateNotificationsCreator, call: nil))
+        allow(TradeTariffBackend).to receive(:green_lanes_update_email)
+          .and_return(%w[a@example.com], nil)
+        worker.perform(2.days.ago.to_date.iso8601)
+      end
+
+      it 'looks up the recipients once' do
+        expect(TradeTariffBackend).to have_received(:green_lanes_update_email).once
+      end
+
+      it 'sends to the recipients it checked' do
+        expect(GreenLanesUpdatesPublisher::Mailer).to have_received(:update)
+          .with(anything, anything, %w[a@example.com]).exactly(3).times
+      end
+    end
+
+    context 'when there are no recipients' do
+      before do
+        allow(TradeTariffBackend).to receive(:green_lanes_update_email).and_return(nil)
+        worker.perform
+      end
+
+      it 'does not send the email' do
+        expect(GreenLanesUpdatesPublisher::Mailer).not_to have_received(:update)
+      end
+
+      it 'still records the notifications' do
+        expect(GreenLanes::UpdateNotification.count).to be_positive
+      end
+    end
+  end
+
   describe '#create_automated_ca' do
     def build_created_update(measure)
       GreenLanesUpdatesPublisher::GreenLanesUpdate.new(

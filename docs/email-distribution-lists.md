@@ -24,15 +24,22 @@ Cognito `ListUsersInGroup` and returns their emails, sorted and without
 duplicates.
 
 - If the list has members, the email goes to them.
-- If the list is empty, or Cognito cannot be read (for example, a timeout,
-  access denied, or no `COGNITO_USER_POOL_ID`), the email goes to the
-  fallback env var. The log has a
-  `distribution_list.fallback group=<list> reason=<reason>` line.
+- If the list is empty, or `COGNITO_USER_POOL_ID` is not set, the email goes
+  to the fallback env var. This is expected while lists are being filled. The
+  log has a warning:
+  `distribution_list.fallback group=<list> reason=<empty|no_user_pool>`.
+- If Cognito cannot be read (any AWS SDK error, for example a timeout, access
+  denied or missing AWS credentials), the email also goes to the fallback env
+  var. This is a fault, so the log has an error:
+  `distribution_list.read_failed group=<list> reason=<ErrorClass>`. Add a
+  CloudWatch metric filter and alarm on `distribution_list.read_failed`.
 
 The backend never stores, caches or logs the emails.
 
 The fallback env vars are temporary. When production logs show no
-`distribution_list.fallback` lines, remove the env vars and the fallback code.
+`distribution_list.fallback` or `distribution_list.read_failed` lines, remove
+the env vars and the fallback code. After that, a read failure should raise,
+because there is nothing to fall back to.
 
 ## Configuration
 

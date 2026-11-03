@@ -1,11 +1,16 @@
 RSpec.describe GreenLanesUpdatesPublisher::Mailer do
   describe '#update' do
-    subject(:mail) { described_class.update([], Time.zone.today).message }
+    subject(:mail) { described_class.update([], Time.zone.today, %w[a@example.com b@example.com]).message }
 
-    it 'reads the recipients when the email is sent, not when the class is loaded' do
-      allow(TradeTariffBackend).to receive(:green_lanes_update_email).and_return(%w[a@example.com b@example.com])
+    before { allow(TradeTariffBackend).to receive(:green_lanes_update_email) }
 
+    it 'sends to the recipients it is given' do
       expect(mail.to).to eq(%w[a@example.com b@example.com])
+    end
+
+    it 'does not look up the recipients again' do
+      mail
+      expect(TradeTariffBackend).not_to have_received(:green_lanes_update_email)
     end
   end
 end

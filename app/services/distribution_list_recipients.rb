@@ -12,10 +12,27 @@ class DistributionListRecipients
   # Role/access groups. Distribution lists must never touch these.
   PROTECTED_GROUPS = %w[admin myott portal].freeze
 
-  CLIENT_ERRORS = [
-    Aws::CognitoIdentityProvider::Errors::ServiceError,
-    Seahorse::Client::NetworkingError,
-  ].freeze
+  # Matches any error raised by the AWS SDK: Cognito and STS service errors,
+  # networking errors, and credential or region errors raised when the client
+  # is built or the request is signed. Any of these means the list cannot be
+  # read, so the caller uses its fallback. Other errors are bugs and still
+  # raise.
+  module AwsError
+    NAMESPACES = %w[Aws:: Seahorse::].freeze
+
+    def self.===(error)
+      error.is_a?(StandardError) && error.class.name.to_s.start_with?(*NAMESPACES)
+    end
+  end
+
+  # Short timeouts so a slow Cognito delays the email by seconds, not minutes,
+  # before it falls back.
+  CLIENT_OPTIONS = {
+    retry_mode: 'standard',
+    max_attempts: 2,
+    http_open_timeout: 5,
+    http_read_timeout: 10,
+  }.freeze
 
   def self.valid_group_name?(name)
     name = name.to_s
@@ -23,7 +40,7 @@ class DistributionListRecipients
   end
 
   def self.client
-    @client ||= Aws::CognitoIdentityProvider::Client.new(region: TradeTariffBackend.aws_region)
+    @client ||= Aws::CognitoIdentityProvider::Client.new(region: TradeTariffBackend.aws_region, **CLIENT_OPTIONS)
   end
 
   def initialize(client: nil, user_pool_id: TradeTariffBackend.cognito_user_pool_id)
@@ -45,8 +62,8 @@ class DistributionListRecipients
       .sort
 
     emails.presence || fallback(group_name, 'empty')
-  rescue *CLIENT_ERRORS => e
-    fallback(group_name, e.class.name.demodulize)
+  rescue AwsError => e
+    read_failed(group_name, e)
   end
 
 private
@@ -76,8 +93,21 @@ private
     email&.strip&.downcase.presence
   end
 
+  # Expected while lists are being filled, so only a warning.
   def fallback(group_name, reason)
     Rails.logger.warn("distribution_list.fallback group=#{group_name} reason=#{reason}")
+    nil
+  end
+
+  # A Cognito or AWS fault. Logged as an error with its own event name so a
+  # CloudWatch metric filter can alert on it. The message names the group and
+  # the error class only: AWS error messages are not logged, so no email can
+  # leak.
+  #
+  # TODO: when the env var fallbacks are removed (Phase 3), raise instead of
+  # returning nil, because there will be nothing to fall back to.
+  def read_failed(group_name, error)
+    Rails.logger.error("distribution_list.read_failed group=#{group_name} reason=#{error.class.name.demodulize}")
     nil
   end
 end

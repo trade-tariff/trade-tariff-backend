@@ -2,7 +2,8 @@ class ActionLogMailer < ApplicationMailer
   default from: TradeTariffBackend.from_email
 
   def daily_report(csv_data, date)
-    return if TradeTariffBackend.myott_report_email.blank?
+    recipients = Array(TradeTariffBackend.myott_report_email)
+    return if recipients.blank?
 
     @date = date
 
@@ -12,7 +13,7 @@ class ActionLogMailer < ApplicationMailer
     }
 
     mail(
-      to: Array(TradeTariffBackend.myott_report_email),
+      to: recipients,
       subject: "[HMRC Online Trade Tariff] User Action Logs Report #{@date}",
     )
   end
