@@ -34,14 +34,14 @@ Workers live under `app/workers/`. Queues and scheduled jobs are configured in `
 
 Each queue has a dedicated Sidekiq capsule. The default allocation per process is:
 
-| Queue | Workload | Job threads |
-| --- | --- | ---: |
-| `sync` | Data sync jobs and their dependants | 1 |
-| `within_1_minute` | Other data-related jobs, user-triggered jobs, and urgent notifications | 3 |
-| `within_1_hour` | Report-related jobs | 2 |
-| `within_1_day` | Most weekly and monthly jobs | 1 |
-| `default` | Jobs without another queue assignment | 2 |
-| `evaluation` | Evaluation searches | 1 |
+| Queue | Workload                                          | Job threads |
+| --- |---------------------------------------------------| ---: |
+| `sync` | Data sync jobs and their dependants               | 1 |
+| `within_1_minute` | Other data-related jobs, and user-triggered jobs  | 3 |
+| `within_1_hour` | Report-related jobs                               | 2 |
+| `within_1_day` | Most weekly and monthly jobs                      | 1 |
+| `default` | Jobs without another queue assignment             | 2 |
+| `evaluation` | Evaluation searches                               | 1 |
 
 `SIDEKIQ_CONCURRENCY` remains the total job-thread budget per process, defaulting to 10.
 The named capsules reserve eight threads. The default capsule receives the remainder,

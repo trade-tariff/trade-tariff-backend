@@ -2,7 +2,7 @@ RSpec.describe NotificationsWorker, type: :worker do
   subject(:worker) { described_class.new }
 
   describe 'sidekiq options' do
-    it 'uses the urgent notification queue' do
+    it 'uses the default queue for notification' do
       expect(described_class.sidekiq_options['queue']).to eq(:default)
     end
 
