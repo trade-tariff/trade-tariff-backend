@@ -267,16 +267,6 @@
           terraform init -backend=false -reconfigure -upgrade
         '';
 
-        # Keep this revision aligned with .pre-commit-config.yaml. Delegate only
-        # Briar to its Docker hook; all other developer hooks remain Nix-managed.
-        briarConfig = pkgs.writeText "briar-pre-commit.yaml" ''
-          repos:
-            - repo: https://github.com/willfish/briar
-              rev: v0.1.0
-              hooks:
-                - id: briar
-        '';
-
         preCommitCheck = pre-commit-hooks.lib.${system}.run {
           src = ./.;
           configPath = ".pre-commit-config-nix.yaml";
@@ -404,21 +394,13 @@
             briar = {
               enable = true;
               name = "Briar (offline secret scan)";
-              entry = toString (
-                pkgs.writeShellScript "briar-hook" ''
-                  set -euo pipefail
-                  files=()
-                  for file in "$@"; do
-                    files+=("./$file")
-                  done
-                  exec ${pkgs.pre-commit}/bin/pre-commit run --config ${briarConfig} briar --files "''${files[@]}"
-                ''
-              );
-              language = "system";
+              # Keep the image version and digest aligned with .pre-commit-config.yaml.
+              entry = "ghcr.io/willfish/briar:v0.1.0@sha256:8e36caa3ef5892e45435d5388632d63f25e50224cee01678b82503eecc7cf728";
+              args = [ "--" ];
+              language = "docker_image";
               types = [ "file" ];
               require_serial = true;
               excludes = [ "^spec/" ];
-              extraPackages = [ pkgs.docker-client ];
               stages = [ "pre-commit" ];
             };
 
