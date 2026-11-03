@@ -8,6 +8,7 @@ module Search
         request_id: event.payload[:request_id],
         query: event.payload[:query],
         search_type: event.payload[:search_type],
+        resource_id: event.payload[:resource_id],
       }, event)
     end
 

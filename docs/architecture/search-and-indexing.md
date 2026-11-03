@@ -18,6 +18,8 @@ Public search routes are defined in `app/engines/v2_api.rb`:
 
 Classic V2 code-only queries accept an initial `HS` prefix in any case, with spaces, a colon or a hyphen before the code. For example, `HS 8708.50.20` uses the same lookup as `8708.50.20`. Historic codes keep the existing lookup. Missing codes fall back to fuzzy search. Descriptions that contain letters after the prefix remain text queries.
 
+The structured `search_started` event includes the submitted `resource_id`, or null when none is supplied. Public V2 uses suggestion-row IDs; internal search uses goods nomenclature SIDs. This field records a submitted selection, not an inferred exact match. Frontend cache hits do not make backend search requests, so these events do not count every frontend submission.
+
 ## Classic interface with internal retrieval
 
 `POST /uk/internal/search` (or `/xi/internal/search`) accepts these optional fields:

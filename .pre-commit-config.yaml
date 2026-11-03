@@ -36,10 +36,17 @@ repos:
       - id: shellcheck
         args: ["--severity=warning"]
 
-  - repo: https://github.com/trufflesecurity/trufflehog
-    rev: v3.95.3
+  - repo: local
     hooks:
-      - id: trufflehog
+      - id: briar
+        name: Briar (offline secret scan)
+        language: docker_image
+        # Keep the image version and digest aligned with flake.nix.
+        entry: ghcr.io/willfish/briar:v0.1.0@sha256:8e36caa3ef5892e45435d5388632d63f25e50224cee01678b82503eecc7cf728
+        args: ["--"]
+        types: [file]
+        require_serial: true
+        exclude: ^spec/
 
   - repo: https://github.com/mattlqx/pre-commit-ruby
     rev: v1.3.6
