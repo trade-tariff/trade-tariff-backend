@@ -272,7 +272,7 @@
         briarConfig = pkgs.writeText "briar-pre-commit.yaml" ''
           repos:
             - repo: https://github.com/willfish/briar
-              rev: 33cbe7f61c36fc230be39f4a6c0088404042f13e
+              rev: v0.1.0
               hooks:
                 - id: briar
         '';
