@@ -37,12 +37,13 @@ class CachedCommodityService
     end
 
     def relevant?(meta, country_id)
-      return false if meta[:excluded_geographical_area_ids].include?(country_id)
-      return true if meta[:erga_omnes] && meta[:national]
-      return true if meta[:erga_omnes] && meta[:meursing_type]
-      return true if meta[:geographical_area_id].blank? || meta[:geographical_area_id] == country_id
-
-      meta[:contained_geographical_area_ids].include?(country_id)
+      Measure::GeographicalRelevance.relevant?(
+        country_id: country_id,
+        geographical_area_id: meta[:geographical_area_id],
+        national: meta[:national],
+        meursing_type: meta[:meursing_type],
+        excluded_area_ids: meta[:excluded_geographical_area_ids],
+      ) { meta[:contained_geographical_area_ids] }
     end
 
     def update_relationship_arrays

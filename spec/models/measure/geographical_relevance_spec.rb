@@ -98,4 +98,60 @@ RSpec.describe Measure::GeographicalRelevance do
       end
     end
   end
+
+  describe '.relevant?' do
+    def relevant?(country_id: 'FR', geographical_area_id: 'US', national: false, meursing_type: false, excluded_area_ids: [], contained_area_ids: [])
+      described_class.relevant?(
+        country_id: country_id,
+        geographical_area_id: geographical_area_id,
+        national: national,
+        meursing_type: meursing_type,
+        excluded_area_ids: excluded_area_ids,
+      ) { contained_area_ids }
+    end
+
+    it 'returns false when the country is excluded, even for erga omnes' do
+      expect(relevant?(geographical_area_id: erga_omnes_id, national: true, excluded_area_ids: %w[FR])).to be false
+    end
+
+    it 'returns true for erga omnes national measures' do
+      expect(relevant?(geographical_area_id: erga_omnes_id, national: true)).to be true
+    end
+
+    it 'returns true for erga omnes meursing measures' do
+      expect(relevant?(geographical_area_id: erga_omnes_id, meursing_type: true)).to be true
+    end
+
+    it 'returns true when the measure has no geographical area' do
+      expect(relevant?(geographical_area_id: nil)).to be true
+    end
+
+    it 'returns true when the measure area equals the country' do
+      expect(relevant?(geographical_area_id: 'FR')).to be true
+    end
+
+    it 'returns true when the country is in the contained areas' do
+      expect(relevant?(geographical_area_id: 'EU', contained_area_ids: %w[FR DE])).to be true
+    end
+
+    it 'returns false when nothing matches' do
+      expect(relevant?(geographical_area_id: 'US', contained_area_ids: %w[DE])).to be false
+    end
+
+    it 'does not look up contained areas when an earlier rule decides' do
+      lookups = 0
+      described_class.relevant?(
+        country_id: 'FR',
+        geographical_area_id: 'FR',
+        national: false,
+        meursing_type: false,
+        excluded_area_ids: [],
+      ) do
+        lookups += 1
+        []
+      end
+
+      expect(lookups).to eq(0)
+    end
+  end
 end
