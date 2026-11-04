@@ -4,11 +4,7 @@ end
 AdminApi.routes.draw do
   namespace :api, defaults: { format: 'json' }, path: '' do
     scope module: :admin do
-      resources :sections, only: %i[index show] do
-        scope module: 'sections', constraints: { id: /\d+/ } do
-          resource :section_note, only: %i[show create update destroy]
-        end
-      end
+      resources :sections, only: %i[index show]
 
       resources :updates, only: %i[index show]
       resources :rollbacks, only: %i[create index]
@@ -39,7 +35,6 @@ AdminApi.routes.draw do
 
       resources :chapters, only: %i[index show], constraints: { id: /\d{2}/ } do
         scope module: 'chapters', constraints: { chapter_id: /\d{2}/, id: /\d+/ } do
-          resource :chapter_note, only: %i[show create update destroy]
           resources :search_references, only: %i[show index destroy create update]
         end
       end

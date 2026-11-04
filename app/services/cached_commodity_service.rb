@@ -171,10 +171,10 @@ private
           goods_nomenclature_descriptions: {},
           heading: %i[footnotes goods_nomenclature_descriptions],
           chapter: [
-            chapter_note_eager_load,
+            :customs_tariff_chapter_note,
             :goods_nomenclature_descriptions,
             :guides,
-            { sections: [section_note_eager_load] },
+            { sections: [:customs_tariff_section_note] },
           ],
           ancestors: :goods_nomenclature_descriptions,
           full_chemicals: {},
@@ -185,14 +185,6 @@ private
       load_quota_associations(result)
       result
     end
-  end
-
-  def chapter_note_eager_load
-    TradeTariffBackend.promote_customs_tariff_notes? ? :customs_tariff_chapter_note : :chapter_note
-  end
-
-  def section_note_eager_load
-    TradeTariffBackend.promote_customs_tariff_notes? ? :customs_tariff_section_note : :section_note
   end
 
   # Eager-load quota_order_number and its definition sub-tree only for

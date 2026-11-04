@@ -2,7 +2,7 @@ module Api
   module Admin
     class SectionsController < AdminController
       def index
-        @sections = Section.eager({ chapters: [:chapter_note] }, :section_note).all
+        @sections = Section.eager(:chapters).all
 
         render json: Api::Admin::Sections::SectionListSerializer.new(@sections).serializable_hash
       end
@@ -12,7 +12,7 @@ module Api
         @section = Section.take(position: params[:id])
 
         options = { is_collection: false }
-        options[:include] = %i[chapters section_note]
+        options[:include] = %i[chapters]
         render json: Api::Admin::Sections::SectionSerializer.new(@section, options).serializable_hash
       end
     end

@@ -6,19 +6,19 @@ RSpec.describe DataMigrator do
   end
 
   let(:migrations_dir) { Rails.root.join(file_fixture_path).join('data_migrations') }
-  let(:note_attrs) { { section_id: '9999', content: 'Data migration test' } }
-  let(:section_note) { SectionNote.where(note_attrs) }
+  let(:guide_attrs) { { title: 'Data migration test', url: 'https://example.com/guide' } }
+  let(:guides) { Guide.where(guide_attrs) }
 
   let :test_migration do
     Sequel::Model.db[:data_migrations]
-                 .where(filename: '20220422105306_create_section_note.rb')
+                 .where(filename: '20220422105306_create_guide.rb')
   end
 
   describe 'migrate' do
     subject(:migrate) { described_class.migrate(nil) }
 
-    it 'runs the outstanding migration to create the chapter note' do
-      expect { migrate }.to change(section_note, :count).from(0).to(1)
+    it 'runs the outstanding migration to create the guide' do
+      expect { migrate }.to change(guides, :count).from(0).to(1)
     end
 
     it 'creates the migration record in the data_migrations table' do
@@ -36,7 +36,7 @@ RSpec.describe DataMigrator do
     before { described_class.migrate(nil) }
 
     it 'reverts the migration' do
-      expect { rollback }.to change(section_note, :count).from(1).to(0)
+      expect { rollback }.to change(guides, :count).from(1).to(0)
     end
 
     it 'removes the migration record from the data_migrations_table' do

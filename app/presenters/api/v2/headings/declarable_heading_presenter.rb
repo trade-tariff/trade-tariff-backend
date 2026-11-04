@@ -47,7 +47,7 @@ module Api
         end
 
         def section
-          SectionPresenter.new(heading.section)
+          @section ||= SectionPresenter.new(heading.section)
         end
 
         def meursing_code?

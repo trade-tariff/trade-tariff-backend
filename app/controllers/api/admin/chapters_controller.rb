@@ -2,14 +2,14 @@ module Api
   module Admin
     class ChaptersController < AdminController
       def index
-        @chapters = Chapter.eager(:chapter_note).all
+        @chapters = Chapter.all
 
         render json: Api::Admin::Chapters::ChapterListSerializer.new(@chapters).serializable_hash
       end
 
       def show
         options = { is_collection: false }
-        options[:include] = %i[chapter_note headings section]
+        options[:include] = %i[headings section]
 
         render json: Api::Admin::Chapters::ChapterSerializer.new(chapter, options).serializable_hash
       end
