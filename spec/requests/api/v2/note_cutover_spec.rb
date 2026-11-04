@@ -8,16 +8,27 @@ RSpec.describe 'Section and chapter note cutover', :v2 do
                                     validity_start_date: Date.new(1972, 1, 1))
   end
   let(:section) { chapter.section }
+  let!(:heading) do
+    create(:heading, :declarable, :with_indent, goods_nomenclature_item_id: '0101000000',
+                                                validity_start_date: Date.new(1972, 1, 1))
+  end
   let!(:current_update) { create(:customs_tariff_update, validity_start_date: Date.new(2026, 10, 1)) }
 
+  around do |example|
+    original_environment = ENV['ENVIRONMENT']
+    ENV['ENVIRONMENT'] = 'production'
+    example.run
+  ensure
+    ENV['ENVIRONMENT'] = original_environment
+  end
+
   before do
-    create(:chapter_note, chapter_id: chapter.short_code, content: 'Legacy chapter')
-    create(:section_note, section_id: section.id, content: 'Legacy section')
+    Sequel::Model.db[:chapter_notes].insert(chapter_id: chapter.short_code, content: 'Legacy chapter')
+    Sequel::Model.db[:section_notes].insert(section_id: section.id, content: 'Legacy section')
     create(:customs_tariff_chapter_note,
            customs_tariff_update: current_update, chapter_id: chapter.short_code, content: 'Extracted chapter')
     create(:customs_tariff_section_note,
            customs_tariff_update: current_update, section_id: section.id, content: 'Extracted section')
-    allow(TradeTariffBackend).to receive(:promote_customs_tariff_notes?).and_return(true)
   end
 
   [
@@ -42,6 +53,15 @@ RSpec.describe 'Section and chapter note cutover', :v2 do
       expect(response).to have_http_status(:ok)
       section_body = JSON.parse(response.body)
       expect(section_body.dig('data', 'attributes', 'section_note')).to eq("#{source} section")
+
+      api_get "/#{TradeTariffBackend.service}/api/headings/#{heading.short_code}", params: { as_of: date }
+
+      expect(response).to have_http_status(:ok)
+      heading_body = JSON.parse(response.body)
+      expect(heading_body.fetch('included').find { |item| item['type'] == 'chapter' }
+                         .dig('attributes', 'chapter_note')).to eq("#{source} chapter")
+      expect(heading_body.fetch('included').find { |item| item['type'] == 'section' }
+                         .dig('attributes', 'section_note')).to eq("#{source} section")
     end
   end
 
@@ -55,8 +75,8 @@ RSpec.describe 'Section and chapter note cutover', :v2 do
     migration.apply(Sequel::Model.db, :up)
 
     TimeMachine.at('2027-01-01') do
-      expect(chapter.refresh.public_chapter_note.content).to eq('Future chapter')
-      expect(section.refresh.public_section_note.content).to eq('Future section')
+      expect(chapter.refresh.customs_tariff_chapter_note.content).to eq('Future chapter')
+      expect(section.refresh.customs_tariff_section_note.content).to eq('Future section')
     end
   end
 
@@ -80,8 +100,8 @@ RSpec.describe 'Section and chapter note cutover', :v2 do
     migration.apply(Sequel::Model.db, :up)
     chapters = CustomsTariffChapterNote.order(:id).all.map(&:values)
     sections = CustomsTariffSectionNote.order(:id).all.map(&:values)
-    ChapterNote.first.update(content: 'Later legacy edit')
-    SectionNote.first.update(content: 'Later legacy edit')
+    Sequel::Model.db[:chapter_notes].update(content: 'Later legacy edit')
+    Sequel::Model.db[:section_notes].update(content: 'Later legacy edit')
 
     migration.apply(Sequel::Model.db, :up)
 
@@ -138,12 +158,12 @@ RSpec.describe 'Section and chapter note cutover', :v2 do
               .to include(validity_start_date: Date.new(2027, 1, 1), validity_end_date: Date.new(2027, 12, 31))
           end
           TimeMachine.at('2026-11-03 23:59:59') do
-            expect(chapter.refresh.public_chapter_note.content).to eq('Legacy chapter')
-            expect(section.refresh.public_section_note.content).to eq('Legacy section')
+            expect(chapter.refresh.customs_tariff_chapter_note.content).to eq('Legacy chapter')
+            expect(section.refresh.customs_tariff_section_note.content).to eq('Legacy section')
           end
           TimeMachine.at('2026-11-04') do
-            expect(chapter.refresh.public_chapter_note.content).to eq('Reimported chapter')
-            expect(section.refresh.public_section_note.content).to eq('Reimported section')
+            expect(chapter.refresh.customs_tariff_chapter_note.content).to eq('Reimported chapter')
+            expect(section.refresh.customs_tariff_section_note.content).to eq('Reimported section')
           end
         end
       end

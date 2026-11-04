@@ -705,6 +705,119 @@ RSpec.describe XiCnImporter::NotesExtractor do
   end
 
   describe 'chapter note extraction' do
+    context 'when a chapter note uses standalone prose and an informational table' do
+      let(:informational_table) do
+        <<~HTML
+          <table class="oj-table"><tbody>
+            <tr>
+              <td><p class="oj-tbl-hdr">Member State</p></td>
+              <td><p class="oj-tbl-hdr">Name and address of the competent department</p></td>
+            </tr>
+            <tr>
+              <td><p class="oj-tbl-txt">Belgium</p></td>
+              <td><p class="oj-addr">Competent department</p><p class="oj-addr">Example address</p></td>
+            </tr>
+          </tbody></table>
+        HTML
+      end
+      let(:html) do
+        <<~HTML
+          <?xml version="1.0" encoding="UTF-8"?>
+          <html xmlns="http://www.w3.org/1999/xhtml"><body>
+          <p class="oj-ti-grseq-1">PART ONE</p>
+          <p class="oj-ti-grseq-1">SCHEDULE OF CUSTOMS DUTIES</p>
+          <p class="oj-ti-grseq-1">SECTION XXI</p>
+          <p class="oj-ti-grseq-1">CHAPTER 98</p>
+          <p class="oj-ti-grseq-1">COMPLETE INDUSTRIAL PLANT</p>
+          <p class="oj-ti-annotation">Note</p>
+          <p class="oj-normal"><span class="oj-italic">Commission Implementing Regulation (EU) 2020/1197</span><a href="#ntr121-source">(<span>121</span>)</a> permits a simplified declaration procedure.</p>
+          #{informational_table}
+          <p class="oj-normal">National instructions define the criteria.</p>
+          <table class="oj-table"><tbody>
+            <tr id="commodity-table-header">
+              <td><p class="oj-tbl-hdr">CN code</p></td>
+              <td><p class="oj-tbl-hdr">Description</p></td>
+            </tr>
+            <tr><td><p class="oj-tbl-cod">9801</p></td><td><p class="oj-tbl-txt">Commodity description must not appear.</p></td></tr>
+          </tbody></table>
+          <p class="oj-ti-grseq-1">CHAPTER 99</p>
+          <p class="oj-ti-annotation">Notes</p>
+          <table><tbody><tr><td><p class="normal">1.</p></td><td><p class="normal">The next chapter note.</p></td></tr></tbody></table>
+          </body></html>
+        HTML
+      end
+      let(:chapter) { extract(html).chapters.fetch('98') }
+
+      it 'preserves standalone note prose and strips source footnote references' do
+        expect(chapter).to include('Commission Implementing Regulation (EU) 2020/1197 permits a simplified declaration procedure.')
+        expect(chapter).not_to include('(121)')
+      end
+
+      it 'renders the informational table without discarding address paragraphs' do
+        expect(chapter).to include('| Member State | Name and address of the competent department |')
+        expect(chapter).to include('| Belgium | Competent department Example address |')
+      end
+
+      it 'continues collecting note prose after the informational table' do
+        expect(chapter).to include('National instructions define the criteria.')
+        expect(chapter.index('National instructions')).to be > chapter.index('| Belgium |')
+      end
+
+      it 'excludes the following commodity table and the chapter title' do
+        expect(chapter).not_to include('9801', 'Commodity description must not appear.', 'COMPLETE INDUSTRIAL PLANT')
+      end
+
+      it 'keeps the next chapter separate' do
+        expect(chapter).not_to include('The next chapter note.')
+        expect(extract(html).chapters.fetch('99')).to eq('1. The next chapter note.')
+      end
+
+      context 'when the prose uses the normal paragraph class' do
+        let(:html) { super().gsub('class="oj-normal"', 'class="normal"') }
+
+        it 'preserves the note prose' do
+          expect(chapter).to include('permits a simplified declaration procedure.')
+        end
+      end
+
+      context 'when there is no informational table' do
+        let(:informational_table) { '' }
+
+        it 'keeps a prose-only chapter note' do
+          expect(chapter).to include('permits a simplified declaration procedure.')
+          expect(chapter).not_to include('9801')
+        end
+      end
+
+      context 'when the commodity table has no column headings' do
+        let(:html) { super().sub(/<tr id="commodity-table-header">.*?<\/tr>/m, '') }
+
+        it 'still excludes the commodity table' do
+          expect(chapter).not_to include('9801', 'Commodity description must not appear.')
+        end
+      end
+
+      context 'when the commodity column headings use the oj-tbl-txt class' do
+        let(:html) do
+          super().sub('class="oj-tbl-hdr">CN code', 'class="oj-tbl-txt">CN code')
+                 .sub('class="oj-tbl-hdr">Description', 'class="oj-tbl-txt">Description')
+        end
+
+        it 'still excludes the commodity table' do
+          expect(chapter).not_to include('9801', 'Commodity description must not appear.')
+        end
+      end
+
+      context 'when the prose and table belong to additional notes' do
+        let(:html) { super().sub('>Note</p>', '>Additional notes</p>') }
+
+        it 'keeps both under the additional notes heading' do
+          expect(chapter).to start_with("### Additional Notes\n\n")
+          expect(chapter).to include('permits a simplified declaration procedure.', '| Belgium |')
+        end
+      end
+    end
+
     it 'extracts chapter notes with zero-padded two-character string keys' do
       result = extract(full_fixture_html)
       expect(result.chapters['01']).to include('This chapter covers all live animals.')

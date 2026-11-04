@@ -1,13 +1,13 @@
 RSpec.describe Version do
   describe '#reify' do
     it 'constructs an unsaved instance from the snapshot' do
-      note = create :section_note, content: 'original'
+      note = create :customs_tariff_section_note, content: 'original'
       note.update(content: 'updated')
 
       version = note.versions.first
       reified = version.reify
 
-      expect(reified).to be_a(SectionNote)
+      expect(reified).to be_a(CustomsTariffSectionNote)
       expect(reified.content).to eq('original')
       expect(reified).to be_new
     end
@@ -26,7 +26,7 @@ RSpec.describe Version do
 
   describe '#previous_version' do
     it 'returns the preceding version for the same item' do
-      note = create :section_note, content: 'v1'
+      note = create :customs_tariff_section_note, content: 'v1'
       note.update(content: 'v2')
       note.update(content: 'v3')
 
@@ -39,7 +39,7 @@ RSpec.describe Version do
 
   describe '#changeset' do
     it 'returns nil for create events' do
-      note = create :section_note, content: 'original'
+      note = create :customs_tariff_section_note, content: 'original'
       version = note.versions.first
 
       expect(version.event).to eq('create')
@@ -47,7 +47,7 @@ RSpec.describe Version do
     end
 
     it 'returns a diff for update events' do
-      note = create :section_note, content: 'A' * 50
+      note = create :customs_tariff_section_note, content: 'A' * 50
       note.update(content: 'B' * 50)
 
       version = note.versions.order(:id).last
@@ -60,7 +60,7 @@ RSpec.describe Version do
 
   describe '.preload_predecessors' do
     it 'batch-loads predecessors to avoid N+1' do
-      note = create :section_note, content: 'v1'
+      note = create :customs_tariff_section_note, content: 'v1'
       note.update(content: 'v2')
       note.update(content: 'v3')
 
@@ -76,7 +76,7 @@ RSpec.describe Version do
     end
 
     it 'finds predecessors excluded by event filtering' do
-      note = create :section_note, content: 'v1'
+      note = create :customs_tariff_section_note, content: 'v1'
       note.update(content: 'v2')
 
       # Simulate event-filtered page: only the update version is in the batch

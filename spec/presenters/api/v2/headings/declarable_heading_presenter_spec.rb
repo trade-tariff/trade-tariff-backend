@@ -6,6 +6,15 @@ RSpec.describe Api::V2::Headings::DeclarableHeadingPresenter do
   let(:heading) { create(:heading, :declarable) }
   let(:measures) { create_list(:measure, 1) }
 
+  describe '#section' do
+    let(:heading) { create(:heading, :declarable, :with_chapter) }
+
+    it 'reuses the section presenter' do
+      expect(presenter.section).to be_a(Api::V2::Headings::SectionPresenter)
+      expect(presenter.section).to equal(presenter.section)
+    end
+  end
+
   describe '#meursing_code?' do
     context 'when the import measures have meursing codes' do
       let(:measures) { create_list(:measure, 1, :with_measure_components, :with_meursing) }

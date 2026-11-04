@@ -1,7 +1,6 @@
 RSpec.describe Api::V2::SectionsController, :v2 do
   describe 'GET #show' do
     let!(:section) { create(:section) }
-    let!(:legacy_note) { create(:section_note, section_id: section.id, content: 'Legacy section note') }
     let!(:customs_tariff_update) { create(:customs_tariff_update, :approved) }
 
     before do
@@ -12,10 +11,6 @@ RSpec.describe Api::V2::SectionsController, :v2 do
     end
 
     context 'when customs tariff notes are promoted' do
-      before do
-        allow(TradeTariffBackend).to receive(:promote_customs_tariff_notes?).and_return(true)
-      end
-
       it 'returns the imported section note' do
         api_get "/uk/api/sections/#{section.position}"
 
@@ -62,18 +57,6 @@ RSpec.describe Api::V2::SectionsController, :v2 do
 
           expect(JSON.parse(response.body).dig('data', 'attributes', 'section_note')).to eq('Latest pending section note')
         end
-      end
-    end
-
-    context 'when customs tariff notes are not promoted' do
-      before do
-        allow(TradeTariffBackend).to receive(:promote_customs_tariff_notes?).and_return(false)
-      end
-
-      it 'returns the legacy section note' do
-        api_get "/uk/api/sections/#{section.position}"
-
-        expect(JSON.parse(response.body).dig('data', 'attributes', 'section_note')).to eq(legacy_note.content)
       end
     end
   end
@@ -130,12 +113,9 @@ RSpec.describe Api::V2::SectionsController, :v2 do
 
       api_get '/uk/api/sections', params: { include: '' }
 
-      chapter_note_association = TradeTariffBackend.promote_customs_tariff_notes? ? :customs_tariff_chapter_note : :chapter_note
-      section_note_association = TradeTariffBackend.promote_customs_tariff_notes? ? :customs_tariff_section_note : :section_note
-
       expect(Section)
         .to have_received(:eager)
-        .with({ chapters: [chapter_note_association] }, section_note_association)
+        .with({ chapters: [:customs_tariff_chapter_note] }, :customs_tariff_section_note)
     end
 
     it 'returns a bad request for unsupported include paths' do

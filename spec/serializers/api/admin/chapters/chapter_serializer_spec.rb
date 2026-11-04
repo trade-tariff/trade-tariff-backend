@@ -14,14 +14,12 @@ RSpec.describe Api::Admin::Chapters::ChapterSerializer do
           producline_suffix: serializable.producline_suffix,
           headings_to: serializable.headings_to,
           headings_from: serializable.headings_from,
-          chapter_note_id: nil,
           description: serializable.description,
           section_id: serializable.section_id,
         },
         relationships: {
           section: be_a(Hash),
           headings: be_a(Hash),
-          chapter_note: be_a(Hash),
         },
       },
     }
