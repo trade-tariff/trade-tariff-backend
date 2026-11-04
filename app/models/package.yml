@@ -1,0 +1,12 @@
+# Tariff models must not depend on code outside app/models.
+#
+# A model that uses a worker, service, API client or request-scoped state
+# (TradeTariffRequest, TimeMachine, TradeTariffBackend) mixes tariff rules with
+# application code. `bundle exec packwerk check` fails on any new reference of
+# this kind.
+#
+# package_todo.yml records the references that existed when this check was
+# added. When you remove a reference from the code, run
+# `bundle exec packwerk update-todo` to remove its entry. Do not use that
+# command to hide a new reference.
+enforce_dependencies: true

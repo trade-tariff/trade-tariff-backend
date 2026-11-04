@@ -135,6 +135,11 @@ jobs:
       - name: Prepare test databases
         run: bundle exec rails db:test:prepare_parallel
 
+      - name: Check package boundaries
+        run: |
+          bundle exec packwerk validate
+          bundle exec packwerk check
+
       - name: Run tests
         run: |
           mkdir -p ctrf
