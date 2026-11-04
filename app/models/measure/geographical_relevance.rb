@@ -6,16 +6,17 @@ class Measure
   class GeographicalRelevance
     # The single country rule. It takes plain values so that it can run on a
     # Measure and on pre-computed facts about a Measure (the cached commodity
-    # response). The block returns the contained area ids. It runs only when
-    # the earlier rules do not decide, because it can cost a database query.
-    def self.relevant?(country_id:, geographical_area_id:, national:, meursing_type:, excluded_area_ids:)
+    # response). meursing_type and contained_area_ids are callables. Each one
+    # runs only when the earlier rules need it, because each one can cost a
+    # database query when the association is not preloaded.
+    def self.relevant?(country_id:, geographical_area_id:, national:, excluded_area_ids:, meursing_type:, contained_area_ids:)
       return false if country_id.in?(excluded_area_ids)
 
       erga_omnes = geographical_area_id == GeographicalArea::ERGA_OMNES_ID
-      return true if erga_omnes && (national || meursing_type)
+      return true if erga_omnes && (national || meursing_type.call)
       return true if geographical_area_id.blank? || geographical_area_id == country_id
 
-      yield.include?(country_id)
+      contained_area_ids.call.include?(country_id)
     end
 
     def initialize(measure)
@@ -27,9 +28,10 @@ class Measure
         country_id: country_id,
         geographical_area_id: measure.geographical_area_id,
         national: measure.national?,
-        meursing_type: measure.measure_type&.meursing?,
         excluded_area_ids: excluded_area_ids,
-      ) { contained_area_ids }
+        meursing_type: -> { measure.measure_type&.meursing? },
+        contained_area_ids: -> { contained_area_ids },
+      )
     end
 
   private

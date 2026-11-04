@@ -97,6 +97,31 @@ RSpec.describe Measure::GeographicalRelevance do
         expect(relevance.relevant_for?('FR')).to be false
       end
     end
+
+    # measure_type is an association. It must be read only when the earlier
+    # rules need it, so callers that did not preload it do not run extra queries.
+    describe 'lazy measure type' do
+      it 'does not read measure_type for a national erga omnes measure' do
+        measure = measure_double(geo_id: erga_omnes_id, national: true)
+        allow(measure).to receive(:measure_type).and_raise('measure_type was read')
+
+        expect(described_class.new(measure).relevant_for?('DE')).to be true
+      end
+
+      it 'does not read measure_type for an excluded country' do
+        measure = measure_double(geo_id: erga_omnes_id, excluded_ids: %w[FR])
+        allow(measure).to receive(:measure_type).and_raise('measure_type was read')
+
+        expect(described_class.new(measure).relevant_for?('FR')).to be false
+      end
+
+      it 'does not read measure_type for a measure that is not erga omnes' do
+        measure = measure_double(geo_id: 'FR')
+        allow(measure).to receive(:measure_type).and_raise('measure_type was read')
+
+        expect(described_class.new(measure).relevant_for?('FR')).to be true
+      end
+    end
   end
 
   describe '.relevant?' do
@@ -105,9 +130,10 @@ RSpec.describe Measure::GeographicalRelevance do
         country_id: country_id,
         geographical_area_id: geographical_area_id,
         national: national,
-        meursing_type: meursing_type,
         excluded_area_ids: excluded_area_ids,
-      ) { contained_area_ids }
+        meursing_type: -> { meursing_type },
+        contained_area_ids: -> { contained_area_ids },
+      )
     end
 
     it 'returns false when the country is excluded, even for erga omnes' do
@@ -138,18 +164,21 @@ RSpec.describe Measure::GeographicalRelevance do
       expect(relevant?(geographical_area_id: 'US', contained_area_ids: %w[DE])).to be false
     end
 
-    it 'does not look up contained areas when an earlier rule decides' do
+    it 'does not look up meursing type or contained areas when an earlier rule decides' do
       lookups = 0
+      counting_lookup = lambda {
+        lookups += 1
+        []
+      }
+
       described_class.relevant?(
         country_id: 'FR',
         geographical_area_id: 'FR',
         national: false,
-        meursing_type: false,
         excluded_area_ids: [],
-      ) do
-        lookups += 1
-        []
-      end
+        meursing_type: counting_lookup,
+        contained_area_ids: counting_lookup,
+      )
 
       expect(lookups).to eq(0)
     end
