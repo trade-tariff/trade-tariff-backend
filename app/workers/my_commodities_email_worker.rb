@@ -2,7 +2,7 @@ class MyCommoditiesEmailWorker
   include Sidekiq::Worker
 
   # Cap retries: Notify outages must not use Sidekiq's default (25) and crowd the default queue.
-  sidekiq_options retry: 3
+  sidekiq_options queue: :within_1_day, retry: 3
 
   # The date the orchestrator hands us, and that we parse back out again here.
   DATE_FORMAT = '%d/%m/%Y'.freeze
