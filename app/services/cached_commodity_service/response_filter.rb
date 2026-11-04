@@ -41,9 +41,10 @@ class CachedCommodityService
         country_id: country_id,
         geographical_area_id: meta[:geographical_area_id],
         national: meta[:national],
-        meursing_type: meta[:meursing_type],
         excluded_area_ids: meta[:excluded_geographical_area_ids],
-      ) { meta[:contained_geographical_area_ids] }
+        meursing_type: -> { meta[:meursing_type] },
+        contained_area_ids: -> { meta[:contained_geographical_area_ids] },
+      )
     end
 
     def update_relationship_arrays
