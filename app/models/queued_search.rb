@@ -26,7 +26,7 @@ class QueuedSearch
   end
 
   def key
-    "queued_search:#{TradeTariffBackend.service}:#{id}"
+    "queued_search:#{TariffService.current}:#{id}"
   end
 
   def payload

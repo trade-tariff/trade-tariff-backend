@@ -3,7 +3,7 @@ RSpec.describe MeasureCollection do
 
   describe '#filter' do
     before do
-      allow(TradeTariffBackend).to receive(:service).and_return(service)
+      allow(TariffService).to receive(:current).and_return(service)
     end
 
     context 'when there are excise measures and the service is xi' do

@@ -7,8 +7,8 @@ class MeasureTypeExclusion
   }.freeze
 
   class << self
-    def load_from_file(file = SOURCES.fetch(TradeTariffBackend.service))
-      exclusions_by_service[TradeTariffBackend.service] = parse_file(file)
+    def load_from_file(file = SOURCES.fetch(TariffService.current))
+      exclusions_by_service[TariffService.current] = parse_file(file)
       self
     end
 
@@ -31,7 +31,7 @@ class MeasureTypeExclusion
     # Returns the exclusion hash for the current service, loading from disk on
     # first access. Keyed by [measure_type_id, geographical_area_id] pairs.
     def exclusions
-      service = TradeTariffBackend.service
+      service = TariffService.current
       exclusions_by_service[service] ||= parse_file(SOURCES.fetch(service))
     end
 
