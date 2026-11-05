@@ -127,13 +127,6 @@
     - dependency
     files:
     - app/models/measure/component_resolver.rb
-  "::NullObject":
-    violations:
-    - dependency
-    files:
-    - app/models/null_goods_nomenclature.rb
-    - app/models/null_quota_event.rb
-    - app/models/public_users/null_commodity.rb
   "::OpenaiClient::MODEL_CONFIGS":
     violations:
     - dependency
@@ -204,12 +197,8 @@
     - dependency
     files:
     - app/models/admin_configuration.rb
-    - app/models/chapter.rb
-    - app/models/concerns/ten_digit_goods_nomenclature.rb
     - app/models/enquiry_form/submission.rb
-    - app/models/heading.rb
     - app/models/healthcheck.rb
-    - app/models/measure.rb
     - app/models/measure/component_resolver.rb
     - app/models/news/item.rb
   "::TradeTariffRequest":
