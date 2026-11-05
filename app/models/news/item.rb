@@ -73,7 +73,7 @@ module News
     end
 
     def public_url
-      URI.join(TradeTariffBackend.frontend_host, '/news/stories/', slug).to_s
+      URI.join(DeploymentSettings.frontend_host, '/news/stories/', slug).to_s
     end
 
     module DatasetFilters

@@ -131,7 +131,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'interactive_search_max_questions' => 7,
     'refine_search_with_answers_enabled' => true,
     'label_model' => NESTED_OPTION_DEFAULTS['label_model'][:selected],
-    'label_page_size' => -> { TradeTariffBackend.goods_nomenclature_label_page_size },
+    'label_page_size' => -> { DeploymentSettings.label_page_size },
     'opensearch_result_limit' => 50,
     'pos_noun_boost' => 10,
     'pos_qualifier_boost' => 3,
@@ -176,7 +176,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     end
 
     def by_name(config_name)
-      if TradeTariffBackend.environment.production?
+      if DeploymentSettings.environment.production?
         Rails.cache.fetch("admin_configurations/#{config_name}", expires_in: CACHE_TTL) do
           where(name: config_name).first
         end

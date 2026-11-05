@@ -23,7 +23,7 @@ RSpec.describe EnquiryForm::SendTradeTariffSubmissionEmailWorker, type: :worker 
       conn.set(EnquiryForm::SendSubmissionEmailWorker.cache_key(reference), form_data.to_json, ex: 1.hour.to_i)
     end
     allow(GovukNotifier).to receive(:new).and_return(notifier_client)
-    allow(TradeTariffBackend).to receive(:support_email).and_return('team@example.com')
+    allow(DeploymentSettings).to receive(:support_email).and_return('team@example.com')
   end
 
   after do
