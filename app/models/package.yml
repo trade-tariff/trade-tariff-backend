@@ -2,11 +2,17 @@
 #
 # A model that uses a worker, service, API client or request-scoped state
 # (TradeTariffRequest, TimeMachine, TradeTariffBackend) mixes tariff rules with
-# application code. `bundle exec packwerk check` fails on any new reference of
-# this kind.
+# application code. `bundle exec packwerk check` fails when a file uses a
+# constant from outside app/models and that file and constant pair is not in
+# package_todo.yml.
 #
-# package_todo.yml records the references that existed when this check was
-# added. When you remove a reference from the code, run
-# `bundle exec packwerk update-todo` to remove its entry. Do not use that
-# command to hide a new reference.
+# package_todo.yml records the file and constant pairs that existed when this
+# check was added. Packwerk matches an entry by file and constant, not by
+# line. So a new use of a listed constant in a listed file still passes. A
+# reviewer must catch it. A new constant, or a new file, fails the check.
+#
+# An entry is stale when the file no longer uses the constant. The check fails
+# on a stale entry. When you remove the last use of a constant from a listed
+# file, run `bundle exec packwerk update-todo` to remove its entry. Do not use
+# that command to hide a new reference.
 enforce_dependencies: true
