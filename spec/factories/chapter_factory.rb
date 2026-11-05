@@ -19,7 +19,7 @@ FactoryBot.define do
 
     trait :with_note do
       after(:create) do |chapter, _evaluator|
-        create(:chapter_note, chapter_id: chapter.to_param)
+        create(:customs_tariff_chapter_note, chapter_id: chapter.to_param)
       end
     end
 
@@ -34,12 +34,6 @@ FactoryBot.define do
     trait :chapter01 do
       goods_nomenclature_item_id { '0100000000' }
     end
-  end
-
-  factory :chapter_note do
-    chapter
-
-    content { Forgery(:basic).text }
   end
 
   factory :chapter_guide, class: 'Guide' do

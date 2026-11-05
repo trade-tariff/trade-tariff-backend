@@ -5,7 +5,7 @@ class ImportCustomsTariffDocumentWorker
   include Sidekiq::Worker
   include ScheduledJobHeartbeat
 
-  sidekiq_options queue: :default, retry: false, slack_alerts: false
+  sidekiq_options retry: false, slack_alerts: false
 
   def perform
     return unless TradeTariffBackend.uk?

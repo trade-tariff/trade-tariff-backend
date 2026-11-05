@@ -69,10 +69,7 @@ publish_freshness_metric() {
   aws cloudwatch put-metric-data \
     --namespace "$METRIC_NAMESPACE" \
     --metric-name "$METRIC_NAME" \
-    --dimensions \
-      "Name=Environment,Value=$ENVIRONMENT" \
-      "Name=Bucket,Value=$S3_BUCKET" \
-      "Name=LatestKey,Value=$LATEST_KEY" \
+    --dimensions "Environment=$ENVIRONMENT,Bucket=$S3_BUCKET,LatestKey=$LATEST_KEY" \
     --unit Count \
     --value "$value" > /dev/null
 

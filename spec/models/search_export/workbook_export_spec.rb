@@ -132,19 +132,19 @@ RSpec.describe SearchExport::WorkbookExport do
     original = export
     changed_from = create_workbook_export(from_date: Date.yesterday - 1, to_date: Date.current)
     changed_to = create_workbook_export(from_date: Date.yesterday, to_date: Date.current + 1)
-    allow(TradeTariffBackend).to receive(:service).and_return('xi')
+    allow(TariffService).to receive(:current).and_return('xi')
     other_service = create_workbook_export(from_date: Date.yesterday, to_date: Date.current)
     expect([original, changed_from, changed_to, other_service].map(&:id).uniq.size).to eq(4)
     other_service.delete
   ensure
-    allow(TradeTariffBackend).to receive(:service).and_call_original
+    allow(TariffService).to receive(:current).and_call_original
   end
 
   it 'keeps services separate' do
     id = export.id
-    allow(TradeTariffBackend).to receive(:service).and_return('xi')
+    allow(TariffService).to receive(:current).and_return('xi')
     expect(described_class.find(id)).to be_nil
   ensure
-    allow(TradeTariffBackend).to receive(:service).and_call_original
+    allow(TariffService).to receive(:current).and_call_original
   end
 end

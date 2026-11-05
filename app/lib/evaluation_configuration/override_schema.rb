@@ -17,6 +17,7 @@ module EvaluationConfiguration
     # VectorRetrievalService, OpensearchRetrievalService, HybridRetrievalService#rrf_merge).
     DESCRIPTION_BY_KEY = {
       'question_model' => 'The AI model used to generate clarifying questions during the search.',
+      'reasoning_effort' => 'How hard the question model thinks before it answers. Higher levels are slower and cost more, and may give better answers. Which levels are allowed depends on the question model, and a level it does not support is rejected. If you do not set it, the live search setting is used.',
       'simulator_model' => 'The AI model that plays the role of the person answering clarifying questions, standing in for a real user during an evaluation run.',
       'candidate_limit' => "How many results OpenSearch returns before they're re-ranked and narrowed down.",
       'max_rounds' => 'The most clarifying questions the search can ask before it has to give its best answer.',
@@ -24,6 +25,7 @@ module EvaluationConfiguration
       'vector_score_threshold' => 'The minimum similarity score (as a percentage) a result needs to count as a real match in the vector search.',
       'vector_ef_search' => 'How thoroughly the vector search index is searched — higher numbers check more candidates (more accurate, slower); lower numbers are faster but may miss some matches.',
       'search_non_declarables' => "Include commodity codes that can't actually be declared on their own (e.g. chapter or heading-level codes) in the results.",
+      'search_atars_enabled' => 'Also search the keywords taken from public ATaRs (Advance Tariff Rulings, HMRC rulings on how a specific product is classified) when finding candidate commodity codes. This only changes the keyword search, not the vector search, and only has an effect if the search index was built with ATaR keywords.',
       'search_compressed_notes_enabled' => 'Include AI-summarised classification notes for each candidate code as extra context for the clarifying questions.',
       'search_general_rules_enabled' => 'Include the General Rules of Interpretation (the legal rules customs classification is based on) as extra context for the clarifying questions.',
     }.freeze
@@ -38,6 +40,8 @@ module EvaluationConfiguration
       case key
       when *AllowlistValidator::MODEL_KEYS
         { name: key, config_type: 'options', options: OpenaiClient::MODEL_CONFIGS.keys.map { |model| { key: model, label: model } }, description: }
+      when 'reasoning_effort'
+        { name: key, config_type: 'options', options: AllowlistValidator.reasoning_levels.map { |level| { key: level, label: level } }, description: }
       when *AllowlistValidator::BOOLEAN_KEYS
         { name: key, config_type: 'boolean', description: }
       else

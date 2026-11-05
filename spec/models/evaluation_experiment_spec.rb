@@ -151,4 +151,24 @@ RSpec.describe EvaluationExperiment do
       expect(EvaluationResult.where(run_id: other_run.id).count).to eq(1)
     end
   end
+
+  describe 'the set it is scored against' do
+    it 'names a gold query set, and says it is one' do
+      gold_query_set = create(:evaluation_gold_query_set, name: 'Baseline GQS')
+      experiment = create(:evaluation_experiment, gold_query_set_id: gold_query_set.id)
+
+      expect(experiment).to have_attributes(source_type: 'gold_query_set', source_name: 'Baseline GQS')
+    end
+
+    it 'names a synthetic input set, and says it is one' do
+      synthetic_input_set = create(:evaluation_synthetic_input_set, name: 'Baseline SIS')
+      experiment = create(:evaluation_experiment, synthetic_input_set_id: synthetic_input_set.id)
+
+      expect(experiment).to have_attributes(source_type: 'synthetic_input_set', source_name: 'Baseline SIS')
+    end
+
+    it 'has neither when no set was chosen yet' do
+      expect(create(:evaluation_experiment)).to have_attributes(source_type: nil, source_name: nil)
+    end
+  end
 end

@@ -44,8 +44,10 @@ Terraform to deploy the service into AWS.
 | [aws_cloudwatch_event_rule.database_backup_freshness_check](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule) | resource |
 | [aws_cloudwatch_event_target.database_backup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_target) | resource |
 | [aws_cloudwatch_event_target.database_backup_freshness_check](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_target) | resource |
+| [aws_cloudwatch_log_metric_filter.distribution_list_read_failed](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_metric_filter) | resource |
 | [aws_cloudwatch_log_metric_filter.search_degradation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_metric_filter) | resource |
 | [aws_cloudwatch_metric_alarm.database_backup_freshness](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
+| [aws_cloudwatch_metric_alarm.distribution_list_read_failed](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_cloudwatch_metric_alarm.search_degradation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_iam_policy.eventbridge_pass_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.eventbridge_tag_task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
@@ -76,9 +78,11 @@ Terraform to deploy the service into AWS.
 | [aws_secretsmanager_secret_version.backend_xi_worker_configuration](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret_version) | data source |
 | [aws_secretsmanager_secret_version.ecs_tls_certificate](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret_version) | data source |
 | [aws_security_group.opensearch_client](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/security_group) | data source |
+| [aws_secretsmanager_secret_version.generated](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret_version) | data source |
 | [aws_security_group.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/security_group) | data source |
 | [aws_sns_topic.slack_observability_topic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/sns_topic) | data source |
 | [aws_sns_topic.slack_topic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/sns_topic) | data source |
+| [aws_ssm_parameter.generated](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ssm_parameter) | data source |
 | [aws_subnets.private](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnets) | data source |
 | [aws_vpc.vpc](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/vpc) | data source |
 
@@ -94,6 +98,8 @@ Terraform to deploy the service into AWS.
 | <a name="input_enable_observability_alerts"></a> [enable\_observability\_alerts](#input\_enable\_observability\_alerts) | n/a | `bool` | `false` | no |
 | <a name="input_enable_private_search_access"></a> [enable\_private\_search\_access](#input\_enable\_private\_search\_access) | Attach the platform search-client security group after it exists in this environment. This does not change the search URL. | `bool` | `false` | no |
 | <a name="input_environment"></a> [environment](#input\_environment) | Deployment environment. | `string` | n/a | yes |
+| <a name="input_generated_parameters"></a> [generated\_parameters](#input\_generated\_parameters) | UAT only. For each service, environment variables mapped to the SSM parameter that has the value. The common stack creates these parameters on each start. They replace the values in the configuration secret. | `map(map(string))` | `{}` | no |
+| <a name="input_generated_secrets"></a> [generated\_secrets](#input\_generated\_secrets) | UAT only. For each service (backend-uk, backend-xi, worker-uk, worker-xi, backend-job), environment variables mapped to the Secrets Manager secret that has the value. The common stack creates these secrets on each start. They replace the values in the configuration secret. | `map(map(string))` | `{}` | no |
 | <a name="input_max_capacity"></a> [max\_capacity](#input\_max\_capacity) | Largest number of tasks the service can scale-out to. | `number` | `5` | no |
 | <a name="input_memory"></a> [memory](#input\_memory) | Memory to allocate in MB. Powers of 2 only. | `number` | n/a | yes |
 | <a name="input_min_capacity_uk"></a> [min\_capacity\_uk](#input\_min\_capacity\_uk) | Smallest number of tasks the backend-uk service can scale-in to. | `number` | `1` | no |
@@ -102,6 +108,7 @@ Terraform to deploy the service into AWS.
 | <a name="input_scale_in_cooldown"></a> [scale\_in\_cooldown](#input\_scale\_in\_cooldown) | Prevents aggressive scale-in by enforcing a waiting period after tasks are removed. | `number` | `300` | no |
 | <a name="input_scale_out_cooldown"></a> [scale\_out\_cooldown](#input\_scale\_out\_cooldown) | Minimum time to wait after a scale-out before allowing another scale-out, giving new tasks time to start contributing capacity. | `number` | `60` | no |
 | <a name="input_service_count"></a> [service\_count](#input\_service\_count) | Number of services to use. | `number` | `1` | no |
+| <a name="input_start_without_tasks"></a> [start\_without\_tasks](#input\_start\_without\_tasks) | Create the backend and worker services with no tasks. The UAT start uses it before it restores the database, because the services cannot start on an empty database. | `bool` | `false` | no |
 
 ## Outputs
 

@@ -4,7 +4,7 @@ class ExternalUserDeletionWorker
   include Sidekiq::Worker
 
   # External Identity API calls; cap retries vs Sidekiq default (25).
-  sidekiq_options retry: 3
+  sidekiq_options queue: :within_1_day, retry: 3
 
   def perform(user_id)
     user = PublicUsers::User[user_id]

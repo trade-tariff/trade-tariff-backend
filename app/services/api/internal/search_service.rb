@@ -66,7 +66,7 @@ module Api
           configuration: diagnostics_configuration,
         )
 
-        ::Search::Instrumentation.search(request_id:, query: q, search_type: @search_type) do
+        ::Search::Instrumentation.search(request_id:, query: q, search_type: @search_type, resource_id: @resource_id) do
           search_result
         end
       end
@@ -305,7 +305,8 @@ module Api
           query: q, expanded_query: search_retrieval_query,
           as_of: as_of, request_id: request_id, limit: opensearch_result_limit,
           filter_prefixes: filter_prefixes,
-          search_non_declarables: @configuration_overrides['search_non_declarables']
+          search_non_declarables: @configuration_overrides['search_non_declarables'],
+          search_atars_enabled: @configuration_overrides['search_atars_enabled']
         )
         ::Search::Instrumentation.retrieval_results_returned(
           request_id: request_id,
@@ -340,7 +341,8 @@ module Api
           rrf_k: @configuration_overrides['rrf_k'],
           vector_score_threshold: @configuration_overrides['vector_score_threshold'],
           vector_ef_search: @configuration_overrides['vector_ef_search'],
-          search_non_declarables: @configuration_overrides['search_non_declarables']
+          search_non_declarables: @configuration_overrides['search_non_declarables'],
+          search_atars_enabled: @configuration_overrides['search_atars_enabled']
         )
 
         RetrievalResult.new(
@@ -415,6 +417,8 @@ module Api
       end
 
       def finish_terminal(response)
+        return response if @skip_question
+
         ::Search::ResultOffers.record(response:, request_id:) if @search_type == 'interactive'
         # Older clients return a query containing both expansion and answer refinements.
         # Without separate expansion data, omit the capture rather than guess.
@@ -548,6 +552,7 @@ module Api
         }.reject { |_key, value| value != false && value.blank? }.tap do |configuration|
           configuration[:hybrid_query_guardrail_enabled] = AdminConfiguration.enabled?('hybrid_query_guardrail_enabled')
           configuration[:search_non_declarables] = diagnostics_search_non_declarables
+          configuration[:search_atars_enabled] = diagnostics_search_atars_enabled
         end
       end
 
@@ -557,11 +562,19 @@ module Api
         AdminConfiguration.enabled?('search_non_declarables')
       end
 
+      # The value this search used, not just the live setting: a run that overrides it must be able
+      # to show afterwards which way it ran.
+      def diagnostics_search_atars_enabled
+        return @configuration_overrides['search_atars_enabled'] unless @configuration_overrides['search_atars_enabled'].nil?
+
+        AdminConfiguration.enabled?('search_atars_enabled')
+      end
+
       def diagnostics_search_model
         config = model_configuration('search_model')
-        return config if @configuration_overrides['question_model'].blank?
-
-        config.merge(selected: @configuration_overrides['question_model'])
+        config = config.merge(selected: @configuration_overrides['question_model']) if @configuration_overrides['question_model'].present?
+        config = config.merge(reasoning_effort: @configuration_overrides['reasoning_effort']) if @configuration_overrides['reasoning_effort'].present?
+        config
       end
 
       def model_configuration(name)
@@ -694,6 +707,7 @@ module Api
           request_id: request_id,
           max_rounds: @configuration_overrides['max_rounds'],
           question_model: @configuration_overrides['question_model'],
+          reasoning_effort: @configuration_overrides['reasoning_effort'],
           search_compressed_notes_enabled: @configuration_overrides['search_compressed_notes_enabled'],
           search_general_rules_enabled: @configuration_overrides['search_general_rules_enabled'],
           search_type: @search_type,

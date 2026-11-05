@@ -5,7 +5,6 @@ module AdminConfigurationSeeder
     MODEL_LABELS = {
       'gpt-4.1-2025-04-14' => 'GPT-4.1 (1M context)',
       'gpt-4.1-mini-2025-04-14' => 'GPT-4.1 mini (1M context)',
-      'gpt-4.1-nano-2025-04-14' => 'GPT-4.1 nano (1M context)',
       'gpt-4o' => 'GPT-4o (multimodal)',
       'gpt-4o-mini' => 'GPT-4o mini',
       'gpt-5-2025-08-07' => 'GPT-5 (base)',
@@ -21,9 +20,11 @@ module AdminConfigurationSeeder
       'gpt-5.6-terra' => 'GPT-5.6 Terra (balanced)',
       'gpt-5.6-luna' => 'GPT-5.6 Luna (cost-efficient)',
       'gpt-6-astra' => 'GPT-6 Astra (latest flagship)',
+      'gpt-6.1-sol' => 'GPT-6.1 Sol',
+      'gpt-6.1-terra' => 'GPT-6.1 Terra (balanced)',
+      'gpt-6-luna' => 'GPT-6 Luna (cost-efficient)',
       'o3-2025-04-16' => 'o3 (full reasoning)',
       'o3-pro' => 'o3-pro (complex reasoning)',
-      'o4-mini-2025-04-16' => 'o4-mini (small reasoning)',
     }.freeze
 
     PROMPT_FILES = {

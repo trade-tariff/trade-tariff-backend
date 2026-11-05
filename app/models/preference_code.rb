@@ -50,7 +50,7 @@ class PreferenceCode
     MEASURE_TYPE_ID_PREFERENCE_CODE_MAPPING['143'] = lambda do |presented_declarable, measure|
       if measure.gsp_or_dcts?
         if presented_declarable.special_nature?(measure)
-          '255'
+          '225'
         elsif measure.authorised_use?
           '223'
         else

@@ -1,0 +1,215 @@
+# This file contains a list of dependencies that are not part of the long term plan for the
+# 'app/models' package.
+# We should generally work to reduce this list over time.
+#
+# You can regenerate this file using the following command:
+#
+# bin/packwerk update-todo
+---
+".":
+  "::AiUsage::Instrumentation":
+    violations:
+    - dependency
+    files:
+    - app/models/goods_nomenclature_self_text.rb
+  "::Api::User::BatcherService::MyCommoditiesBatcherService":
+    violations:
+    - dependency
+    files:
+    - app/models/public_users/subscription.rb
+  "::Api::User::TargetsFilterService::MyCommoditiesTargetsFilterService":
+    violations:
+    - dependency
+    files:
+    - app/models/public_users/subscription.rb
+  "::ApplyWorker":
+    violations:
+    - dependency
+    files:
+    - app/models/apply.rb
+  "::CdsUpdateNotificationWorker":
+    violations:
+    - dependency
+    files:
+    - app/models/cds_update_notification.rb
+  "::CompositeSearchTextBuilder":
+    violations:
+    - dependency
+    files:
+    - app/models/goods_nomenclature_self_text.rb
+  "::DownloadWorker":
+    violations:
+    - dependency
+    files:
+    - app/models/download.rb
+  "::DutyExpressionFormatter":
+    violations:
+    - dependency
+    files:
+    - app/models/concerns/duty_expression_formattable.rb
+  "::EmbeddingService":
+    violations:
+    - dependency
+    files:
+    - app/models/goods_nomenclature_self_text.rb
+  "::EmbeddingService::BATCH_SIZE":
+    violations:
+    - dependency
+    files:
+    - app/models/goods_nomenclature_self_text.rb
+  "::EmbeddingService::MODEL":
+    violations:
+    - dependency
+    files:
+    - app/models/goods_nomenclature_self_text.rb
+  "::EvalAppClient":
+    violations:
+    - dependency
+    files:
+    - app/models/evaluation_run.rb
+  "::EvalAppClient::Error":
+    violations:
+    - dependency
+    files:
+    - app/models/evaluation_run.rb
+  "::EvaluationConfiguration::AllowlistValidator":
+    violations:
+    - dependency
+    files:
+    - app/models/evaluation_run.rb
+  "::EvaluationConfiguration::BaselineProvider":
+    violations:
+    - dependency
+    files:
+    - app/models/evaluation_run.rb
+  "::EvaluationConfiguration::DigestCalculator":
+    violations:
+    - dependency
+    files:
+    - app/models/evaluation_run.rb
+  "::EvaluationConfiguration::Merger":
+    violations:
+    - dependency
+    files:
+    - app/models/evaluation_run.rb
+  "::EvaluationConfiguration::ReasoningEffort":
+    violations:
+    - dependency
+    files:
+    - app/models/evaluation_run.rb
+  "::ExpandSearchQueryService":
+    violations:
+    - dependency
+    files:
+    - app/models/admin_configuration.rb
+  "::ExternalUserDeletionWorker":
+    violations:
+    - dependency
+    files:
+    - app/models/public_users/user.rb
+  "::GenerateRunLabelWorker":
+    violations:
+    - dependency
+    files:
+    - app/models/evaluation_run.rb
+  "::IdentityApiClient":
+    violations:
+    - dependency
+    files:
+    - app/models/public_users/user.rb
+  "::MeursingMeasureComponentResolverService":
+    violations:
+    - dependency
+    files:
+    - app/models/measure/component_resolver.rb
+  "::MeursingMeasureFinderService":
+    violations:
+    - dependency
+    files:
+    - app/models/measure/component_resolver.rb
+  "::OpenaiClient::MODEL_CONFIGS":
+    violations:
+    - dependency
+    files:
+    - app/models/admin_configuration.rb
+  "::PaperTrail::BulkVersioning":
+    violations:
+    - dependency
+    files:
+    - app/models/goods_nomenclature_self_text.rb
+  "::RequirementDutyExpressionFormatter":
+    violations:
+    - dependency
+    files:
+    - app/models/measure_condition.rb
+  "::RollbackWorker":
+    violations:
+    - dependency
+    files:
+    - app/models/rollback.rb
+  "::SearchNegationService":
+    violations:
+    - dependency
+    files:
+    - app/models/goods_nomenclature_description.rb
+    - app/models/search_reference.rb
+  "::StopPressSubscriptionWorker":
+    violations:
+    - dependency
+    files:
+    - app/models/news/item.rb
+  "::TariffChangesService::BaseChanges::CREATION":
+    violations:
+    - dependency
+    files:
+    - app/models/tariff_change.rb
+  "::TariffChangesService::BaseChanges::DELETION":
+    violations:
+    - dependency
+    files:
+    - app/models/tariff_change.rb
+  "::TariffChangesService::BaseChanges::ENDING":
+    violations:
+    - dependency
+    files:
+    - app/models/tariff_change.rb
+  "::TariffChangesService::BaseChanges::UPDATE":
+    violations:
+    - dependency
+    files:
+    - app/models/tariff_change.rb
+  "::TariffSynchronizer::CdsUpdate":
+    violations:
+    - dependency
+    files:
+    - app/models/cds_update_notification.rb
+  "::TimeMachine":
+    violations:
+    - dependency
+    files:
+    - app/models/goods_nomenclature.rb
+    - app/models/goods_nomenclature_label.rb
+    - app/models/goods_nomenclature_self_text.rb
+    - app/models/goods_nomenclatures/nested_set/ancestor_associations.rb
+    - app/models/goods_nomenclatures/nested_set/descendant_associations.rb
+  "::TradeTariffBackend":
+    violations:
+    - dependency
+    files:
+    - app/models/healthcheck.rb
+    - app/models/measure/component_resolver.rb
+  "::TradeTariffRequest":
+    violations:
+    - dependency
+    files:
+    - app/models/apply.rb
+    - app/models/cds_update_notification.rb
+    - app/models/download.rb
+    - app/models/measure/component_resolver.rb
+    - app/models/measure_type.rb
+    - app/models/rollback.rb
+  "::VersionDiffService":
+    violations:
+    - dependency
+    files:
+    - app/models/version.rb

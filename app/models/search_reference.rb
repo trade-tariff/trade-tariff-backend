@@ -41,7 +41,31 @@ class SearchReference < Sequel::Model
 
   self.raise_on_save_failure = false
 
+  module DatasetMethods
+    def admin_export
+      sr = Sequel[:search_references]
+      lbl = Sequel[:goods_nomenclature_labels]
+
+      left_join(:goods_nomenclature_labels, lbl[:goods_nomenclature_sid] => sr[:goods_nomenclature_sid])
+        .select_all(:search_references)
+        .select_append(
+          lbl[:description].as(:label_description),
+          lbl[:synonyms].as(:label_synonyms),
+          lbl[:colloquial_terms].as(:label_colloquial_terms),
+          lbl[:known_brands].as(:label_known_brands),
+          lbl[:stale].as(:label_stale),
+          lbl[:needs_review].as(:label_needs_review),
+          lbl[:approved].as(:label_approved),
+          lbl[:manually_edited].as(:label_manually_edited),
+          lbl[:expired].as(:label_expired),
+        )
+        .order(sr[:goods_nomenclature_item_id], sr[:productline_suffix], sr[:title], sr[:id])
+    end
+  end
+
   dataset_module do
+    include DatasetMethods
+
     def by_title
       order(Sequel.asc(:title))
     end

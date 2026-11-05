@@ -32,7 +32,7 @@ module RulesOfOrigin
 
       CSV.foreach(@source_file, headers: true) do |row|
         count += 1
-        next unless row['scope'] == 'both' || row['scope'] == TradeTariffBackend.service
+        next unless row['scope'] == 'both' || row['scope'] == TariffService.current
 
         if row['id_rule'].blank? || row['sub_heading'].blank? || row['scheme_code'].blank?
           next if skip_invalid_rows

@@ -635,7 +635,7 @@ RSpec.describe News::Item do
     let(:host) { 'https://www.trade-tariff.service.gov.uk/' }
 
     before do
-      allow(TradeTariffBackend).to receive(:frontend_host).and_return(host)
+      allow(DeploymentSettings).to receive(:frontend_host).and_return(host)
     end
 
     it { is_expected.to eq 'https://www.trade-tariff.service.gov.uk/news/stories/tariff-stop-press-notice---22-may-2025' }

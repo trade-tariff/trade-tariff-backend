@@ -87,7 +87,7 @@ class MeasureType < Sequel::Model
   delegate :description, to: :measure_type_description
 
   def self.excluded_measure_types
-    if TradeTariffBackend.xi?
+    if TariffService.xi?
       if TradeTariffRequest.green_lanes
         GL_EXCLUDED_TYPES
       else

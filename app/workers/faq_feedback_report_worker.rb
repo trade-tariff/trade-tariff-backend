@@ -1,7 +1,7 @@
 class FaqFeedbackReportWorker
   include Sidekiq::Worker
 
-  sidekiq_options retry: 1, retry_in: 1.hour
+  sidekiq_options queue: :within_1_day, retry: 1, retry_in: 1.hour
 
   DEFAULT_DELIVER_EMAIL = true
 

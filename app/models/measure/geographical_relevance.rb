@@ -4,29 +4,39 @@ class Measure
   # Determines whether a Measure is geographically relevant to a given country.
   # Encapsulates erga omnes logic, exclusion lists, and area membership checks.
   class GeographicalRelevance
+    # The single country rule. It takes plain values so that it can run on a
+    # Measure and on pre-computed facts about a Measure (the cached commodity
+    # response). meursing_type and contained_area_ids are callables. Each one
+    # runs only when the earlier rules need it, because each one can cost a
+    # database query when the association is not preloaded.
+    def self.relevant?(country_id:, geographical_area_id:, national:, excluded_area_ids:, meursing_type:, contained_area_ids:)
+      return false if country_id.in?(excluded_area_ids)
+
+      erga_omnes = geographical_area_id == GeographicalArea::ERGA_OMNES_ID
+      return true if erga_omnes && (national || meursing_type.call)
+      return true if geographical_area_id.blank? || geographical_area_id == country_id
+
+      contained_area_ids.call.include?(country_id)
+    end
+
     def initialize(measure)
       @measure = measure
     end
 
     def relevant_for?(country_id)
-      return false if excluded?(country_id)
-      return true if erga_omnes? && (measure.national? || measure.measure_type&.meursing?)
-      return true if measure.geographical_area_id.blank? || measure.geographical_area_id == country_id
-
-      contained_area_ids.include?(country_id)
+      self.class.relevant?(
+        country_id: country_id,
+        geographical_area_id: measure.geographical_area_id,
+        national: measure.national?,
+        excluded_area_ids: excluded_area_ids,
+        meursing_type: -> { measure.measure_type&.meursing? },
+        contained_area_ids: -> { contained_area_ids },
+      )
     end
 
   private
 
     attr_reader :measure
-
-    def excluded?(country_id)
-      country_id.in?(excluded_area_ids)
-    end
-
-    def erga_omnes?
-      measure.geographical_area_id == GeographicalArea::ERGA_OMNES_ID
-    end
 
     def excluded_area_ids
       measure.excluded_geographical_areas

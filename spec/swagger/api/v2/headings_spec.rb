@@ -15,7 +15,7 @@ RSpec.describe 'Headings', swagger_doc: 'v2/swagger.json', type: :request do
       tags 'Headings'
       produces 'application/json'
       jsonapi_query_parameters(includes: JsonapiSwaggerParameters::HEADING_INCLUDES)
-      description 'Returns a single heading. The response uses either HeadingSerializer (non-declarable) or DeclarableHeadingSerializer (declarable) depending on the heading type.'
+      description 'Returns a single heading. The response uses either HeadingSerializer (non-declarable) or DeclarableHeadingSerializer (declarable) depending on the heading type. Included chapter and section notes use the requested as_of date.'
       operationId 'getHeading'
 
       response '200', 'heading found' do

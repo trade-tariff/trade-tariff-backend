@@ -1806,7 +1806,8 @@
                             },
                             "chapter_note": {
                               "type": "string",
-                              "nullable": true
+                              "nullable": true,
+                              "description": "Legal note text for the requested as_of date, present when a note exists"
                             },
                             "forum_url": {
                               "type": "string",
@@ -4340,7 +4341,7 @@
         "tags": [
           "Headings"
         ],
-        "description": "Returns a single heading. The response uses either HeadingSerializer (non-declarable) or DeclarableHeadingSerializer (declarable) depending on the heading type.",
+        "description": "Returns a single heading. The response uses either HeadingSerializer (non-declarable) or DeclarableHeadingSerializer (declarable) depending on the heading type. Included chapter and section notes use the requested as_of date.",
         "operationId": "getHeading",
         "responses": {
           "200": {
@@ -6415,7 +6416,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Search term, such as a goods description, commodity code, chapter or heading code, CAS number, CUS number, or search reference."
+            "description": "Search term, such as a goods description, commodity code, chapter or heading code, CAS number, CUS number, or search reference. Code-only queries accept an HS prefix in any case, for example HS:940340 or HS 8708.50.20."
           },
           {
             "$ref": "#/components/parameters/AsOfDate"
@@ -7026,7 +7027,7 @@
                 "properties": {
                   "q": {
                     "type": "string",
-                    "description": "Search term, such as a goods description, commodity code, chapter or heading code, CAS number, CUS number, or search reference."
+                    "description": "Search term, such as a goods description, commodity code, chapter or heading code, CAS number, CUS number, or search reference. Code-only queries accept an HS prefix in any case, for example HS:940340 or HS 8708.50.20."
                   },
                   "as_of": {
                     "type": "string",
@@ -7354,7 +7355,7 @@
                             "section_note": {
                               "type": "string",
                               "nullable": true,
-                              "description": "Legal note text, present when a note exists"
+                              "description": "Legal note text for the requested as_of date, present when a note exists"
                             }
                           }
                         },

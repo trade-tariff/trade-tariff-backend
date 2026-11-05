@@ -4,7 +4,7 @@ module Search
 
     attr_reader :query_string, :date, :expanded_query, :pos_search, :size,
                 :noun_boost, :qualifier_boost, :filter_prefixes, :search_non_declarables,
-                :require_text_match
+                :require_text_match, :search_atars_enabled
 
     class << self
       def tagger
@@ -12,7 +12,7 @@ module Search
       end
     end
 
-    def initialize(query_string, date, size:, noun_boost:, qualifier_boost:, expanded_query: nil, pos_search: true, filter_prefixes: [], search_non_declarables: false, require_text_match: true)
+    def initialize(query_string, date, size:, noun_boost:, qualifier_boost:, expanded_query: nil, pos_search: true, filter_prefixes: [], search_non_declarables: false, require_text_match: true, search_atars_enabled: nil)
       @query_string = query_string
       @date = date
       @expanded_query = expanded_query
@@ -23,6 +23,7 @@ module Search
       @filter_prefixes = Array(filter_prefixes).compact_blank
       @search_non_declarables = search_non_declarables
       @require_text_match = require_text_match
+      @search_atars_enabled = search_atars_enabled
     end
 
     def query
@@ -140,7 +141,7 @@ module Search
           description^3
           ancestor_descriptions
         ]
-        fields << 'atar_keywords^2' if AdminConfiguration.enabled?('search_atars_enabled')
+        fields << 'atar_keywords^2' if search_atars?
 
         if SearchLabels.enabled?
           fields += %w[
@@ -153,6 +154,14 @@ module Search
 
         fields
       end
+    end
+
+    # An explicit true or false (an evaluation run's override) wins over the live admin setting.
+    # nil means nothing was overridden, so the live setting applies, as it does for the public search.
+    def search_atars?
+      return search_atars_enabled unless search_atars_enabled.nil?
+
+      AdminConfiguration.enabled?('search_atars_enabled')
     end
 
     def hidden_goods_nomenclature_filter

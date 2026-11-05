@@ -75,6 +75,22 @@ RSpec.describe TariffSynchronizer::StagingManager do
       expect { manager.promote! }
         .not_to(change(real_operation_klass, :count))
     end
+
+    it 'assigns oids in staging order when heap order differs' do
+      staging_ds = manager.dataset_for(real_operation_klass)
+      staging_ds.insert(monetary_unit_code: 'TST', operation: 'C', operation_date: Time.zone.today)
+      staging_ds.insert(monetary_unit_code: 'TST', operation: 'D', operation_date: Time.zone.today)
+      # An UPDATE writes a new tuple version after the D row, so an unordered
+      # scan of the staging table returns D before C.
+      staging_ds.where(operation: 'C').update(operation: 'C')
+
+      manager.promote!
+
+      expect(real_operation_klass.where(monetary_unit_code: 'TST').order(:oid).select_map(:operation))
+        .to eq(%w[C D])
+    ensure
+      real_operation_klass.where(monetary_unit_code: 'TST').delete
+    end
   end
 
   describe '#cleanup' do

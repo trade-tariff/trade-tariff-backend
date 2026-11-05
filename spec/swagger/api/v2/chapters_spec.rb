@@ -82,7 +82,7 @@ RSpec.describe 'Chapters', swagger_doc: 'v2/swagger.json', type: :request do
                          validity_start_date: { type: :string, nullable: true, format: 'date-time' },
                          validity_end_date: { type: :string, nullable: true, format: 'date-time' },
                          description_plain: { type: :string, nullable: true },
-                         chapter_note: { type: :string, nullable: true },
+                         chapter_note: { type: :string, nullable: true, description: 'Legal note text for the requested as_of date, present when a note exists' },
                          forum_url: { type: :string, nullable: true },
                          section_id: { type: :integer, nullable: true },
                        },

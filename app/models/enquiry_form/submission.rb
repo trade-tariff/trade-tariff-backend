@@ -77,6 +77,6 @@ private
   end
 
   def trade_tariff_recipient
-    Mail::Address.new(TradeTariffBackend.support_email).address
+    Mail::Address.new(DeploymentSettings.support_email).address
   end
 end

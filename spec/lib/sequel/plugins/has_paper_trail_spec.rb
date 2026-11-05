@@ -1,15 +1,15 @@
 RSpec.describe Sequel::Plugins::HasPaperTrail do
-  let(:model_with_plugin) { create :section_note, content: 'first content' }
+  let(:model_with_plugin) { create :customs_tariff_section_note, content: 'first content' }
 
   describe 'version tracking' do
     it 'creates a version record on create' do
       expect {
-        create :section_note, content: 'new content'
+        create :customs_tariff_section_note, content: 'new content'
       }.to change(Version, :count).by(1)
 
       version = Version.last
       expect(version.event).to eq('create')
-      expect(version.item_type).to eq('SectionNote')
+      expect(version.item_type).to eq('CustomsTariffSectionNote')
     end
 
     it 'creates a version record on update' do
@@ -77,7 +77,7 @@ RSpec.describe Sequel::Plugins::HasPaperTrail do
 
       versions = model_with_plugin.versions.all
       expect(versions.size).to be >= 2
-      expect(versions.map(&:item_type).uniq).to eq(%w[SectionNote])
+      expect(versions.map(&:item_type).uniq).to eq(%w[CustomsTariffSectionNote])
     end
   end
 
@@ -150,7 +150,6 @@ RSpec.describe Sequel::Plugins::HasPaperTrail do
 
       expect(described_class.tracked_models.map(&:name)).to eq(%w[
         AdminConfiguration
-        ChapterNote
         CustomsTariffChapterNote
         CustomsTariffSectionNote
         DescriptionIntercept
@@ -159,7 +158,6 @@ RSpec.describe Sequel::Plugins::HasPaperTrail do
         GoodsNomenclatureLabel
         GoodsNomenclatureSelfText
         SearchReference
-        SectionNote
         TariffKnowledge::Node
         TariffKnowledge::SyntheticAtar
       ])
@@ -171,7 +169,7 @@ RSpec.describe Sequel::Plugins::HasPaperTrail do
       model_with_plugin
 
       expect {
-        SectionNote.without_paper_trail do
+        CustomsTariffSectionNote.without_paper_trail do
           model_with_plugin.update(content: 'silent change')
         end
       }.not_to change(Version, :count)
@@ -180,7 +178,7 @@ RSpec.describe Sequel::Plugins::HasPaperTrail do
     it 'restores version creation after the block' do
       model_with_plugin
 
-      SectionNote.without_paper_trail do
+      CustomsTariffSectionNote.without_paper_trail do
         model_with_plugin.update(content: 'silent')
       end
 
@@ -193,7 +191,7 @@ RSpec.describe Sequel::Plugins::HasPaperTrail do
       model_with_plugin
 
       begin
-        SectionNote.without_paper_trail do
+        CustomsTariffSectionNote.without_paper_trail do
           raise 'boom'
         end
       rescue RuntimeError

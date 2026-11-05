@@ -326,6 +326,21 @@ RSpec.describe SearchDiagnostics::RequestLogLookup do
       end
     end
 
+    context 'with a date range' do
+      let(:request) { super().merge(from: '2026-06-01', to: '2026-06-01') }
+
+      it 'searches the whole of each UTC day' do
+        lookup.call
+
+        expect(client).to have_received(:start_query).with(
+          hash_including(
+            start_time: Time.utc(2026, 6, 1).to_i,
+            end_time: Time.utc(2026, 6, 1).end_of_day.to_i,
+          ),
+        )
+      end
+    end
+
     context 'with a blank request id' do
       let(:request) { super().merge(request_id: ' ') }
 

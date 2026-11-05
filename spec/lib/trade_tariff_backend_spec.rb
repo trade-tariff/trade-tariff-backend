@@ -23,12 +23,6 @@ RSpec.describe TradeTariffBackend do
     end
   end
 
-  describe '.change_count' do
-    it 'returns 10' do
-      expect(described_class.change_count).to eq(10)
-    end
-  end
-
   describe '.revision' do
     before { described_class.instance_variable_set(:@revision, nil) }
 

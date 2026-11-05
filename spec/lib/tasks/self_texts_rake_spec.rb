@@ -374,8 +374,6 @@ RSpec.describe 'self_texts rake tasks' do
     let(:api_base_url) { 'https://gb.api.openai.com/v1' }
 
     before do
-      EmbeddingService.reset_client!
-
       stub_request(:post, "#{api_base_url}/embeddings")
         .to_return do |request|
           body = JSON.parse(request.body)

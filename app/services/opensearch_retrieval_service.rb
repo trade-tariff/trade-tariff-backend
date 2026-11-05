@@ -1,11 +1,11 @@
 class OpensearchRetrievalService
   Result = Data.define(:results, :expanded_query)
 
-  def self.call(query:, as_of:, expanded_query: nil, request_id: nil, limit: 30, filter_prefixes: [], search_non_declarables: nil)
-    new(query:, as_of:, expanded_query:, request_id:, limit:, filter_prefixes:, search_non_declarables:).call
+  def self.call(query:, as_of:, expanded_query: nil, request_id: nil, limit: 30, filter_prefixes: [], search_non_declarables: nil, search_atars_enabled: nil)
+    new(query:, as_of:, expanded_query:, request_id:, limit:, filter_prefixes:, search_non_declarables:, search_atars_enabled:).call
   end
 
-  def initialize(query:, as_of:, expanded_query: nil, request_id: nil, limit: 30, filter_prefixes: [], search_non_declarables: nil)
+  def initialize(query:, as_of:, expanded_query: nil, request_id: nil, limit: 30, filter_prefixes: [], search_non_declarables: nil, search_atars_enabled: nil)
     @query = query
     @as_of = as_of
     @expanded_query = expanded_query.presence || query
@@ -13,6 +13,7 @@ class OpensearchRetrievalService
     @limit = limit
     @filter_prefixes = Array(filter_prefixes).compact_blank
     @search_non_declarables = search_non_declarables
+    @search_atars_enabled = search_atars_enabled
   end
 
   def call
@@ -53,6 +54,7 @@ private
           filter_prefixes: @filter_prefixes,
           search_non_declarables: search_non_declarables?,
           require_text_match: require_text_match,
+          search_atars_enabled: @search_atars_enabled,
         ).query,
       )
     end

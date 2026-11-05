@@ -463,6 +463,44 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
     end
   end
 
+  describe 'GET #export' do
+    let(:run) { create(:evaluation_run, evaluation_experiment: experiment, status: 'completed') }
+    let(:id) { run.id }
+    let(:make_request) { authenticated_get export_api_admin_search_evaluation_run_path(id) }
+
+    context 'with an existing run' do
+      before { create(:evaluation_result, evaluation_run: run) }
+
+      it { is_expected.to have_http_status :success }
+
+      it 'sends an Excel workbook, not JSON' do
+        expect(api_response.media_type).to eq('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      end
+
+      it 'names the download after the run' do
+        expect(api_response.headers['Content-Disposition']).to include("evaluation-run-#{run.id}.xlsx")
+      end
+
+      it 'sends it as an attachment' do
+        expect(api_response.headers['Content-Disposition']).to start_with('attachment')
+      end
+
+      it 'has a Summary sheet then a Results sheet' do
+        sheet_names = Nokogiri::XML(xlsx_entry(api_response.body, 'xl/workbook.xml'))
+                              .remove_namespaces!
+                              .xpath('//sheet').map { |sheet| sheet['name'] }
+
+        expect(sheet_names).to eq(%w[Summary Results])
+      end
+    end
+
+    context 'with an unknown run' do
+      let(:id) { 999_999 }
+
+      it { is_expected.to have_http_status :not_found }
+    end
+  end
+
   describe 'PATCH #update' do
     let(:run) { create(:evaluation_run, evaluation_experiment: experiment, status: 'running') }
     let(:make_request) { authenticated_patch api_admin_search_evaluation_run_path(run.id, format: :json), params: params }
@@ -697,6 +735,65 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
 
       it 'rejects it with 400 because it cannot be a valid run id' do
         expect(api_response).to have_http_status :bad_request
+      end
+    end
+  end
+
+  describe 'the set a run was scored against' do
+    def gold_experiment
+      @gold_experiment ||= create(:evaluation_experiment, gold_query_set_id: create(:evaluation_gold_query_set, name: 'Baseline GQS').id)
+    end
+
+    def synthetic_experiment
+      @synthetic_experiment ||= create(:evaluation_experiment, synthetic_input_set_id: create(:evaluation_synthetic_input_set, name: 'Baseline SIS').id)
+    end
+
+    def attributes_of(run)
+      json_response['data'].find { |row| row['id'] == run.id.to_s }['attributes']
+    end
+
+    describe 'GET #index' do
+      let(:make_request) { authenticated_get api_admin_search_evaluation_runs_path(format: :json) }
+
+      it 'names the set of a run whose experiment uses a gold query set' do
+        run = create(:evaluation_run, evaluation_experiment: gold_experiment)
+
+        expect(attributes_of(run)).to include('source_type' => 'gold_query_set', 'source_name' => 'Baseline GQS')
+      end
+
+      it 'names the set of a run whose experiment uses a synthetic input set' do
+        run = create(:evaluation_run, evaluation_experiment: synthetic_experiment)
+
+        expect(attributes_of(run)).to include('source_type' => 'synthetic_input_set', 'source_name' => 'Baseline SIS')
+      end
+
+      it 'looks the sets up once for the whole page, not once per run' do
+        create(:evaluation_run, evaluation_experiment: synthetic_experiment)
+        3.times do |index|
+          experiment = create(:evaluation_experiment, gold_query_set_id: create(:evaluation_gold_query_set, name: "GQS #{index}").id)
+          create(:evaluation_run, evaluation_experiment: experiment)
+        end
+        log = StringIO.new
+        EvaluationRun.db.loggers << Logger.new(log)
+
+        begin
+          api_response
+        ensure
+          EvaluationRun.db.loggers.pop
+        end
+
+        expect(log.string.scan(/FROM "uk"."evaluation_gold_query_sets"/).size).to eq(1)
+        expect(log.string.scan(/FROM "uk"."evaluation_synthetic_input_sets"/).size).to eq(1)
+      end
+    end
+
+    describe 'GET #show' do
+      it 'names the set' do
+        run = create(:evaluation_run, evaluation_experiment: synthetic_experiment)
+
+        authenticated_get api_admin_search_evaluation_run_path(run.id, format: :json)
+
+        expect(JSON.parse(response.body)['data']['attributes']).to include('source_type' => 'synthetic_input_set', 'source_name' => 'Baseline SIS')
       end
     end
   end

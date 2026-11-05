@@ -5,17 +5,17 @@ module Search
         ActiveSupport::Notifications.instrument("#{event_name}.search", with_request_context(payload), &block)
       end
 
-      def search_started(request_id:, query:, search_type:)
-        instrument('search_started', request_id:, query:, search_type:)
+      def search_started(request_id:, query:, search_type:, resource_id: nil)
+        instrument('search_started', request_id:, query:, search_type:, resource_id:)
       end
 
       def search_action_classified(request_id:, search_type:, search_action:)
         instrument('search_action_classified', request_id:, search_type:, search_action:)
       end
 
-      def search(request_id:, query:, search_type:)
+      def search(request_id:, query:, search_type:, resource_id: nil)
         TradeTariffRequest.set(search_type:) do
-          search_started(request_id:, query:, search_type:)
+          search_started(request_id:, query:, search_type:, resource_id:)
           start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
           result, completion_payload = yield

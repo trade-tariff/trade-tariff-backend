@@ -4,7 +4,7 @@ require_relative '../lib/self_text_generator/logger'
 class GenerateSelfTextReindexWorker
   include Sidekiq::Worker
 
-  sidekiq_options queue: :default, retry: false
+  sidekiq_options queue: :within_1_day, retry: false
 
   def perform
     SelfTextGenerator::Instrumentation.reindex_started

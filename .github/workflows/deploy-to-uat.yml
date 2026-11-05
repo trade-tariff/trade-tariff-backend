@@ -1,0 +1,88 @@
+name: Deploy to UAT
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: 'Git SHA or branch to deploy. Run the workflow from main.'
+        type: string
+        required: true
+
+# The check and the deploy hold one slot, so a queued run checks UAT again when it starts.
+concurrency:
+  group: deploy-uat-tariff-backend
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.sha.outputs.sha }}
+    steps:
+      # The UAT deploy role trusts only main. The sha input selects the commit.
+      - run: |
+          if [[ $GITHUB_REF != "refs/heads/main" ]]; then
+            echo "::error::Run this workflow from main. Put the commit or branch in sha."
+            exit 1
+          fi
+
+      # A branch can move between the deploy-ecs jobs, so they all use the same commit.
+      - id: sha
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REF: ${{ inputs.sha }}
+        run: |
+          ref=$(jq -rn --arg ref "$REF" '$ref | @uri')
+          sha=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${ref}" --jq .sha)
+
+          if [[ ! $sha =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::${REF} is not a commit or branch of ${GITHUB_REPOSITORY}."
+            exit 1
+          fi
+
+          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+
+      - id: environment-config
+        uses: trade-tariff/trade-tariff-tools/.github/actions/configure-environment@main
+        with:
+          app-name: tariff-backend
+          environment: uat
+
+      - uses: aws-actions/configure-aws-credentials@v6.3.0
+        with:
+          role-to-assume: ${{ steps.environment-config.outputs.deploy-role-arn }}
+          aws-region: eu-west-2
+
+      # UAT Stop destroys only the components that UAT Start deployed, so do not create backend here.
+      # A service with no tasks is from a start that has not finished its database restore.
+      - env:
+          CLUSTER: ${{ steps.environment-config.outputs.cluster }}
+        run: |
+          services=(backend-uk backend-xi)
+          running=0
+          if ! result=$(aws ecs describe-services --cluster "$CLUSTER" --services "${services[@]}" --output json 2>&1); then
+            [[ $result == *ClusterNotFoundException* ]] || { echo "$result" >&2; exit 1; }
+          else
+            running=$(jq '[.services[] | select(.status == "ACTIVE" and .desiredCount > 0)] | length' <<<"$result")
+          fi
+
+          if [[ $running != "${#services[@]}" ]]; then
+            echo "::error::Backend does not run in UAT. Run UAT Start with backend and wait for it to finish."
+            exit 1
+          fi
+
+  deploy:
+    needs: check
+    uses: trade-tariff/trade-tariff-tools/.github/workflows/deploy-ecs.yml@main
+    with:
+      app-name: tariff-backend
+      environment: uat
+      test-flavour: none
+      migrate: true
+      checkout-ref: ${{ needs.check.outputs.sha }}
+    secrets:
+      slack-webhook: ${{ secrets.SLACK_WEBHOOK }}

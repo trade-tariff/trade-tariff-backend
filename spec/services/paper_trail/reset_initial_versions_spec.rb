@@ -6,7 +6,7 @@ RSpec.describe PaperTrail::ResetInitialVersions do
     end
 
     it 'truncates existing versions and recreates one create snapshot per tracked record', :aggregate_failures do
-      note = create(:section_note, content: 'before')
+      note = create(:customs_tariff_section_note, content: 'before')
       note.update(content: 'after')
       config = create(:admin_configuration, name: 'reset_test_config')
       create(:description_intercept, term: 'boots')
@@ -32,7 +32,7 @@ RSpec.describe PaperTrail::ResetInitialVersions do
       expect(Version.select_map(:event).uniq).to eq(%w[create])
       expect(Version.where(item_type: 'GhostRecord').count).to eq(0)
 
-      note_version = Version.where(item_type: 'SectionNote', item_id: note.id.to_s).first
+      note_version = Version.where(item_type: 'CustomsTariffSectionNote', item_id: note.id.to_s).first
       expect(note_version.object['content']).to eq('after')
 
       config_version = Version.where(item_type: 'AdminConfiguration', item_id: config.name).first
@@ -40,11 +40,11 @@ RSpec.describe PaperTrail::ResetInitialVersions do
     end
 
     it 'uses the current time when the tracked record has no timestamps' do
-      note = create(:section_note)
+      note = create(:customs_tariff_section_note)
 
       described_class.new.call
 
-      version = Version.where(item_type: 'SectionNote', item_id: note.id.to_s).first
+      version = Version.where(item_type: 'CustomsTariffSectionNote', item_id: note.id.to_s).first
       expect(version.created_at).to eq(Time.zone.parse('2026-04-14 12:00:00'))
     end
   end
