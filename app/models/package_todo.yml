@@ -7,24 +7,6 @@
 # bin/packwerk update-todo
 ---
 ".":
-  "::ActiveModel::Model":
-    violations:
-    - dependency
-    files:
-    - app/models/exchange_rates/period.rb
-    - app/models/green_lanes/category_assessment_json.rb
-    - app/models/notification.rb
-    - app/models/rules_of_origin/article.rb
-    - app/models/rules_of_origin/explainer.rb
-    - app/models/rules_of_origin/link.rb
-    - app/models/rules_of_origin/origin_reference_document.rb
-    - app/models/rules_of_origin/proof.rb
-    - app/models/rules_of_origin/rule.rb
-    - app/models/rules_of_origin/scheme.rb
-    - app/models/search_validator.rb
-    - app/models/tariff_changes/grouped_commodity_change.rb
-    - app/models/tariff_changes/grouped_measure_change.rb
-    - app/models/tariff_changes/grouped_measure_commodity_change.rb
   "::AiUsage::Instrumentation":
     violations:
     - dependency
@@ -55,11 +37,6 @@
     - dependency
     files:
     - app/models/goods_nomenclature_self_text.rb
-  "::CsvDescriptionFormatter":
-    violations:
-    - dependency
-    files:
-    - app/models/goods_nomenclature_description.rb
   "::DescriptionFormatter":
     violations:
     - dependency
@@ -69,17 +46,6 @@
     - app/models/footnote_description.rb
     - app/models/goods_nomenclature_description.rb
     - app/models/measurement_unit_qualifier_description.rb
-  "::DescriptionHtmlFormatter":
-    violations:
-    - dependency
-    files:
-    - app/models/goods_nomenclature_description.rb
-  "::DescriptionTrimFormatter":
-    violations:
-    - dependency
-    files:
-    - app/models/goods_nomenclature_description.rb
-    - app/models/section.rb
   "::DownloadWorker":
     violations:
     - dependency
