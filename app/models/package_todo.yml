@@ -207,7 +207,6 @@
     - app/models/chapter.rb
     - app/models/concerns/ten_digit_goods_nomenclature.rb
     - app/models/enquiry_form/submission.rb
-    - app/models/exchange_rates/xe_api.rb
     - app/models/heading.rb
     - app/models/healthcheck.rb
     - app/models/measure.rb
