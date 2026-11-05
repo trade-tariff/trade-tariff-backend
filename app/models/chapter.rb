@@ -101,7 +101,7 @@ class Chapter < GoodsNomenclature
       # create/update date
       criteria.where { |o| o.>=(:operation_date, operation_date) } if operation_date.present?
     }
-     .limit(TradeTariffBackend.change_count)
+     .limit(Change::RECENT_LIMIT)
      .order(Sequel.desc(:operation_date, nulls: :last), Sequel.desc(:depth))
   end
 

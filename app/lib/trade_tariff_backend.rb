@@ -37,11 +37,6 @@ module TradeTariffBackend
       end
     end
 
-    # Number of changes to fetch for Commodity/Heading/Chapter
-    def change_count
-      10
-    end
-
     def error_serializer(_request)
       Api::V2::ErrorSerializationService.new
     end

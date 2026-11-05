@@ -35,4 +35,10 @@ RSpec.describe Change do
       end
     end
   end
+
+  describe 'RECENT_LIMIT' do
+    it 'is the number of changes to fetch for a commodity, heading or chapter' do
+      expect(described_class::RECENT_LIMIT).to eq(10)
+    end
+  end
 end
