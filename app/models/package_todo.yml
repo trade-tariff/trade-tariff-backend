@@ -37,15 +37,6 @@
     - dependency
     files:
     - app/models/goods_nomenclature_self_text.rb
-  "::DescriptionFormatter":
-    violations:
-    - dependency
-    files:
-    - app/models/additional_code_description.rb
-    - app/models/certificate_description.rb
-    - app/models/footnote_description.rb
-    - app/models/goods_nomenclature_description.rb
-    - app/models/measurement_unit_qualifier_description.rb
   "::DownloadWorker":
     violations:
     - dependency
@@ -221,16 +212,7 @@
     - app/models/healthcheck.rb
     - app/models/measure.rb
     - app/models/measure/component_resolver.rb
-    - app/models/measure/dataset_filters/overview_filters.rb
-    - app/models/measure_collection.rb
-    - app/models/measure_type.rb
-    - app/models/measure_type_exclusion.rb
     - app/models/news/item.rb
-    - app/models/queued_search.rb
-    - app/models/rules_of_origin/data_set.rb
-    - app/models/rules_of_origin/heading_mappings.rb
-    - app/models/rules_of_origin/rule_set.rb
-    - app/models/search_export/workbook_export.rb
   "::TradeTariffRequest":
     violations:
     - dependency

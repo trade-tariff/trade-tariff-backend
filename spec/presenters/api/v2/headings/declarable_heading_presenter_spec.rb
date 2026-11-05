@@ -76,6 +76,7 @@ RSpec.describe Api::V2::Headings::DeclarableHeadingPresenter do
 
   describe '#entry_price_system?' do
     before do
+      allow(TariffService).to receive(:current).and_return(service)
       allow(TradeTariffBackend).to receive(:service).and_return(service)
     end
 

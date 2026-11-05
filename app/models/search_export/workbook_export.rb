@@ -12,8 +12,8 @@ module SearchExport
     attr_reader :id
 
     def self.create(from_date:, to_date:)
-      fingerprint = Digest::SHA256.hexdigest([TradeTariffBackend.service, from_date.iso8601, to_date.iso8601].to_json)
-      active_key = "search_export:#{TradeTariffBackend.service}:active:#{fingerprint}"
+      fingerprint = Digest::SHA256.hexdigest([TariffService.current, from_date.iso8601, to_date.iso8601].to_json)
+      active_key = "search_export:#{TariffService.current}:active:#{fingerprint}"
       Sidekiq.redis do |redis|
         loop do
           export = new(SecureRandom.uuid, newly_created: true)
@@ -51,7 +51,7 @@ module SearchExport
 
     def newly_created? = @newly_created
 
-    def key = "search_export:#{TradeTariffBackend.service}:#{id}"
+    def key = "search_export:#{TariffService.current}:#{id}"
     def file_key = "#{key}:file"
 
     def payload

@@ -115,7 +115,7 @@ RSpec.describe Measure do
   describe '.without_excluded_types' do
     subject { measure.class.without_excluded_types.all.map(&:measure_sid) }
 
-    before { allow(TradeTariffBackend).to receive(:service).and_return(service) }
+    before { allow(TariffService).to receive(:current).and_return(service) }
 
     let(:measure) { create :measure, :with_base_regulation, measure_type_id: }
 
@@ -139,7 +139,7 @@ RSpec.describe Measure do
   describe '.overview' do
     subject { measure.class.overview.all.map(&:measure_sid) }
 
-    before { allow(TradeTariffBackend).to receive(:service).and_return(service) }
+    before { allow(TariffService).to receive(:current).and_return(service) }
 
     let(:measure) do
       create :measure, :with_base_regulation, measure_type_id:,

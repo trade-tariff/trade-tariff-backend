@@ -35,11 +35,11 @@ RSpec.describe QueuedSearch do
   describe '#payload' do
     it 'isolates UK and XI payloads' do
       id = search.id
-      allow(TradeTariffBackend).to receive(:service).and_return('xi')
+      allow(TariffService).to receive(:current).and_return('xi')
 
       expect(described_class.new(id).payload).to be_nil
     ensure
-      allow(TradeTariffBackend).to receive(:service).and_call_original
+      allow(TariffService).to receive(:current).and_call_original
     end
   end
 
