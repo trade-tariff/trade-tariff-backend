@@ -30,7 +30,7 @@ RSpec.describe AdminConfiguration do
 
       before do
         allow(Rails).to receive(:cache).and_return(memory_store)
-        allow(TradeTariffBackend).to receive(:environment).and_return(ActiveSupport::StringInquirer.new('production'))
+        allow(DeploymentSettings).to receive(:environment).and_return(ActiveSupport::StringInquirer.new('production'))
       end
 
       it 'caches the result for subsequent calls' do
@@ -56,7 +56,7 @@ RSpec.describe AdminConfiguration do
 
     context 'when in non-production environment' do
       before do
-        allow(TradeTariffBackend).to receive(:environment).and_return(ActiveSupport::StringInquirer.new('staging'))
+        allow(DeploymentSettings).to receive(:environment).and_return(ActiveSupport::StringInquirer.new('staging'))
       end
 
       it 'returns fresh data without caching' do

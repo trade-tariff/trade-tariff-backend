@@ -54,7 +54,7 @@ RSpec.describe EnquiryForm::Submission do
       let(:feature_flags) { %w[interactive_search] }
 
       it 'uses the configured support recipient and masks contact details for Trade Tariff' do
-        allow(TradeTariffBackend).to receive(:support_email)
+        allow(DeploymentSettings).to receive(:support_email)
           .and_return('Online Trade Tariff Support <team@example.com>')
 
         delivery = submission.delivery_for(described_class::TRADE_TARIFF_AUDIENCE)
@@ -68,7 +68,7 @@ RSpec.describe EnquiryForm::Submission do
       end
 
       it 'only includes explicitly approved fields in the team copy' do
-        allow(TradeTariffBackend).to receive(:support_email).and_return('team@example.com')
+        allow(DeploymentSettings).to receive(:support_email).and_return('team@example.com')
         submission = described_class.from(form_data.merge(future_contact_detail: 'must not leak'))
 
         expect(submission.delivery_for(described_class::TRADE_TARIFF_AUDIENCE).form_data)

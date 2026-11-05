@@ -196,11 +196,8 @@
     violations:
     - dependency
     files:
-    - app/models/admin_configuration.rb
-    - app/models/enquiry_form/submission.rb
     - app/models/healthcheck.rb
     - app/models/measure/component_resolver.rb
-    - app/models/news/item.rb
   "::TradeTariffRequest":
     violations:
     - dependency
