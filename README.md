@@ -43,7 +43,10 @@ REDIS_URL=redis://localhost:6379
 ELASTICSEARCH_URL=http://localhost:9200
 ```
 
-`ELASTICSEARCH_URL` is the configuration name used for OpenSearch.
+OpenSearch uses `ELASTICSEARCH_VPC_URL` when it is non-blank. Otherwise it uses
+`ELASTICSEARCH_URL`, or the existing local default when that variable is absent.
+Set the VPC URL only on processes that can reach the private domain. These are
+runtime environment variables; the application does not fetch SSM parameters.
 `DB_USER` defaults to `postgres`. See [config/database.yml](config/database.yml)
 for database settings. Keep credentials out of Git and use only local or
 explicitly authorised development services.
