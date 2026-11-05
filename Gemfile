@@ -17,6 +17,7 @@ gem 'aws-actionmailer-ses'
 gem 'aws-sdk-cloudfront'
 gem 'aws-sdk-cloudwatch'
 gem 'aws-sdk-cloudwatchlogs'
+gem 'aws-sdk-cognitoidentityprovider'
 gem 'aws-sdk-rails'
 gem 'aws-sdk-s3'
 

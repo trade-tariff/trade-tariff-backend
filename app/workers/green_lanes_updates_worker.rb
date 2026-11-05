@@ -19,9 +19,8 @@ class GreenLanesUpdatesWorker
 
       create_automated_ca(updates)
 
-      if TradeTariffBackend.green_lanes_update_email.present?
-        send_updates_email(updates, date)
-      end
+      recipients = update_email_recipients
+      send_updates_email(updates, date, recipients) if recipients.present?
 
       create_notification(updates)
     end
@@ -76,9 +75,16 @@ private
     end
   end
 
-  def send_updates_email(updates, date)
+  # Read once so the presence check and the delivery use the same recipients.
+  def update_email_recipients
+    return @update_email_recipients if defined?(@update_email_recipients)
+
+    @update_email_recipients = TradeTariffBackend.green_lanes_update_email
+  end
+
+  def send_updates_email(updates, date, recipients)
     logger.info 'Sending update emails'
-    ::GreenLanesUpdatesPublisher::Mailer.update(updates, date).deliver_now
+    ::GreenLanesUpdatesPublisher::Mailer.update(updates, date, recipients).deliver_now
   end
 
   def create_notification(updates)

@@ -51,6 +51,12 @@ RSpec.describe Appendix5aPopulatorService do
         end
       end
 
+      it 'reads the recipient list once per run, so each index points to the same person' do
+        call
+
+        expect(TradeTariffBackend).to have_received(:cupid_team_to_emails).once
+      end
+
       it 'enqueues via the real Sidekiq perform_async boundary without raising (Sidekiq.strict_args! guard)' do
         allow(Notifications::EmailWorker).to receive(:perform_async).and_call_original
 
@@ -158,7 +164,7 @@ RSpec.describe Appendix5aPopulatorService do
         call
 
         expect(Rails.logger).to have_received(:error).with(
-          'Appendix 5a guidance changed but CUPID_TEAM_TO_EMAILS is not configured — no notification emails were sent',
+          'Appendix 5a guidance changed but the dl-cupid-team list and CUPID_TEAM_TO_EMAILS are empty — no notification emails were sent',
         )
       end
 
