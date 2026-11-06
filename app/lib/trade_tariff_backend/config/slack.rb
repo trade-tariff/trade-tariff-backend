@@ -1,6 +1,8 @@
 module TradeTariffBackend
   module Config
     module Slack
+      NON_PRODUCTION_ALERTS_CHANNEL = '#non-production-alerts'.freeze
+
       def slack_web_hook_url
         ENV['SLACK_WEB_HOOK_URL']
       end
@@ -18,11 +20,11 @@ module TradeTariffBackend
       end
 
       def slack_failures_channel
-        ENV.fetch('SLACK_FAILURES_CHANNEL', '#production-alerts')
+        ENV.fetch('SLACK_FAILURES_CHANNEL') { environment.production? ? '#production-alerts' : NON_PRODUCTION_ALERTS_CHANNEL }
       end
 
       def slack_observability_channel
-        ENV.fetch('SLACK_OBSERVABILITY_CHANNEL', '#production-observability')
+        ENV.fetch('SLACK_OBSERVABILITY_CHANNEL') { environment.production? ? '#production-observability' : NON_PRODUCTION_ALERTS_CHANNEL }
       end
     end
   end

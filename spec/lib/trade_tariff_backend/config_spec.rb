@@ -281,16 +281,38 @@ RSpec.describe TradeTariffBackend::Config do
     end
 
     describe '.slack_failures_channel' do
-      it 'defaults to #production-alerts' do
-        ENV.delete('SLACK_FAILURES_CHANNEL')
+      before { ENV.delete('SLACK_FAILURES_CHANNEL') }
+
+      it 'defaults to #production-alerts in production' do
+        ENV['ENVIRONMENT'] = 'production'
         expect(config.slack_failures_channel).to eq('#production-alerts')
+      end
+
+      %w[development staging uat].each do |environment|
+        it "defaults to #non-production-alerts in #{environment}" do
+          ENV['ENVIRONMENT'] = environment
+          expect(config.slack_failures_channel).to eq('#non-production-alerts')
+        end
+      end
+
+      it 'reads SLACK_FAILURES_CHANNEL from ENV' do
+        ENV['ENVIRONMENT'] = 'production'
+        ENV['SLACK_FAILURES_CHANNEL'] = '#custom-alerts'
+        expect(config.slack_failures_channel).to eq('#custom-alerts')
       end
     end
 
     describe '.slack_observability_channel' do
-      it 'defaults to #production-observability' do
+      it 'defaults to #production-observability in production' do
         ENV.delete('SLACK_OBSERVABILITY_CHANNEL')
+        ENV['ENVIRONMENT'] = 'production'
         expect(config.slack_observability_channel).to eq('#production-observability')
+      end
+
+      it 'defaults to #non-production-alerts outside production' do
+        ENV.delete('SLACK_OBSERVABILITY_CHANNEL')
+        ENV['ENVIRONMENT'] = 'uat'
+        expect(config.slack_observability_channel).to eq('#non-production-alerts')
       end
 
       it 'reads SLACK_OBSERVABILITY_CHANNEL from ENV' do
