@@ -1,6 +1,19 @@
 # frozen_string_literal: true
 
 RSpec.describe TariffChange do
+  describe 'action constants' do
+    it 'names the four kinds of change' do
+      expect([described_class::CREATION, described_class::ENDING, described_class::UPDATE, described_class::DELETION])
+        .to eq(%w[creation ending update deletion])
+    end
+
+    it 'is what TariffChangesService::BaseChanges uses' do
+      expect(
+        [TariffChangesService::BaseChanges::CREATION, TariffChangesService::BaseChanges::ENDING, TariffChangesService::BaseChanges::UPDATE, TariffChangesService::BaseChanges::DELETION],
+      ).to eq([described_class::CREATION, described_class::ENDING, described_class::UPDATE, described_class::DELETION])
+    end
+  end
+
   describe 'associations' do
     it { is_expected.to respond_to(:goods_nomenclature) }
   end
