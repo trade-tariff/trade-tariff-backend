@@ -12,6 +12,19 @@ RSpec.describe RemoveFailedSubscribersWorker, type: :worker do
     end
   end
 
+  context 'when the soft delete deletes the user' do
+    before do
+      allow(user).to receive(:soft_delete!).and_call_original
+      allow(ExternalUserDeletionWorker).to receive(:perform_async)
+    end
+
+    it 'starts the external deletion worker once for the user' do
+      described_class.new.perform
+
+      expect(ExternalUserDeletionWorker).to have_received(:perform_async).with(user.id).once
+    end
+  end
+
   it 'calls soft_delete! on all failed subscribers' do
     described_class.new.perform
     expect(user).to have_received(:soft_delete!)

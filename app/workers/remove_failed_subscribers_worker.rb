@@ -8,7 +8,7 @@ class RemoveFailedSubscribersWorker
     return unless TradeTariffBackend.uk?
 
     PublicUsers::User.failed_subscribers.each do |user|
-      user.soft_delete!
+      PublicUsers::UserDeletionService.soft_delete(user)
       PublicUsers::ActionLog.create(user_id: user.id, action: PublicUsers::ActionLog::FAILED_SUBSCRIBER)
     end
   end

@@ -47,11 +47,13 @@ RSpec.describe GovukNotifierStatusCheckWorker, type: :worker do
   context 'when checker returns permanent-failure' do
     it 'unsubscribes all active subscriptions and soft deletes the user' do
       allow(checker).to receive(:call).and_return(GovukNotifier::PERMANENT_FAILURE)
+      allow(ExternalUserDeletionWorker).to receive(:perform_async)
 
       worker.perform(user.id, notification_id)
 
       expect(user.subscriptions_dataset.where(active: true).count).to eq(0)
       expect(user.refresh.deleted).to be(true)
+      expect(ExternalUserDeletionWorker).to have_received(:perform_async).with(user.id).once
     end
   end
 
