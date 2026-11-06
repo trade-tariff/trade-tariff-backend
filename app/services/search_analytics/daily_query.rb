@@ -6,9 +6,14 @@ module SearchAnalytics
     ROW_LIMIT = 10_000
     MAX_PARTITIONS = 127
     PROCESSING_VERSION = 1
+    CLASSIC_HYBRID_PROCESSING_VERSION = 2
     # Recollect classic counts from the broken timestamp rewrite without
     # invalidating unrelated query groups that still contain valid history.
     QUERY_PROCESSING_VERSIONS = { 'classic_outcomes' => 2 }.freeze
+    # Nightly collection runs off the request path, and CloudWatch keeps
+    # running abandoned queries, which slows the rest of the batch. Allow
+    # slow scans to finish instead of dropping the day.
+    COLLECTION_MAX_POLLS = ENV.fetch('SEARCH_ANALYTICS_DAILY_QUERY_MAX_POLLS', 300).to_i
     IDENTIFIER_QUERIES = %w[search_journeys journey_outcomes search_actions selection_results selection_pages].freeze
 
     attr_reader :reporting_date
@@ -36,6 +41,7 @@ module SearchAnalytics
     def fingerprints
       query_definitions.to_h do |name, sql|
         version = QUERY_PROCESSING_VERSIONS.fetch(name, PROCESSING_VERSION)
+        version = [version, CLASSIC_HYBRID_PROCESSING_VERSION].max if sql.include?(classic_hybrid_filter)
         [name, Digest::SHA256.hexdigest([version, @service, @region, sql].to_json)]
       end
     end
@@ -91,7 +97,8 @@ module SearchAnalytics
 
     # Shared by collection and syntax validation so both compile the same bounds.
     def bounded_query(sql, start_at:, end_at:)
-      # Keep failure cohorts scoped to the full day while partitioning metrics.
+      # Reports are binned by UTC day. Keep failure and skip cohorts scoped to
+      # the reporting day while partitioning metrics.
       metric_scope = true
       stream_filter = sql.include?(FrontendEventsQuery::STREAM_FILTER) ? FrontendEventsQuery::STREAM_FILTER : log_stream_filter
       sql.gsub(stream_filter) do
@@ -105,6 +112,10 @@ module SearchAnalytics
 
     def client = @client ||= Aws::CloudWatchLogs::Client.new(region: @region, retry_limit: 0)
     def forced?(name) = @force && (@selected.nil? || @selected.include?(name))
+
+    def classic_hybrid_filter = ClassicHybridFilter.call(source:, log_stream_filter:)
+
+    def request_exclusion_filter = "(#{super} AND #{classic_hybrid_filter})"
 
     def collect(name, sql)
       @partition_count = 0
@@ -172,15 +183,16 @@ module SearchAnalytics
 
       rows, matched = execute_window(sql, start_at, end_at)
       complete = rows.size < ROW_LIMIT
-      # CloudWatch reports the failure subquery's records_matched for this query,
-      # not its result cohort. Its exact distinct-ID count is checked below.
+      # Exclusion subqueries can supply records_matched instead of the result
+      # cohort. Keep row limits and exact identifier counts for those queries.
       if (IDENTIFIER_QUERIES + %w[frontend_events classic_outcomes result_offers] - %w[selection_results]).include?(name)
         raise QueryError, 'Missing journey completeness statistics' if matched.nil?
 
-        count_field = name == 'search_journeys' ? 'started_events' : 'event_count'
-        complete &&= rows.sum { |row| Integer(row.fetch(count_field)) } == matched
+        unless %w[search_journeys result_offers].include?(name)
+          complete &&= rows.sum { |row| Integer(row.fetch('event_count')) } == matched
+        end
       end
-      complete &&= rows.all? { |row| complete_identifier_set?(row) } if (IDENTIFIER_QUERIES - %w[search_journeys]).include?(name)
+      complete &&= rows.all? { |row| complete_identifier_set?(row) } if IDENTIFIER_QUERIES.include?(name)
       if complete
         return rows unless name == 'journey_outcomes'
 
@@ -205,9 +217,9 @@ module SearchAnalytics
     def execute_window(sql, start_at, end_at)
       query_id = response = nil
       bounded = bounded_query(sql, start_at:, end_at:)
-      scan_start, scan_end = sql.include?(request_exclusion_filter) ? [now - 1.day, now] : [start_at, end_at]
+      scan_start, scan_end = sql.include?(classic_hybrid_filter) ? [now - 1.day, now] : [start_at, end_at]
       query_id = client.start_query(query_language: 'SQL', start_time: scan_start.to_i, end_time: scan_end.to_i, query_string: bounded).query_id
-      QUERY_MAX_POLLS.times do
+      COLLECTION_MAX_POLLS.times do
         response = client.get_query_results(query_id:)
         return [response.results.map { |row| parsed_row(row) }, response.statistics&.records_matched] if response.status == 'Complete'
 

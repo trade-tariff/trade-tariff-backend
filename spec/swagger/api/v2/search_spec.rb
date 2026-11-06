@@ -92,7 +92,7 @@ RSpec.describe 'Search', swagger_doc: 'v2/swagger.json', type: :request do
     properties: {
       q: {
         type: :string,
-        description: 'Search term, such as a goods description, commodity code, chapter or heading code, CAS number, CUS number, or search reference.',
+        description: 'Search term, such as a goods description, commodity code, chapter or heading code, CAS number, CUS number, or search reference. Code-only queries accept an HS prefix in any case, for example HS:940340 or HS 8708.50.20.',
       },
       as_of: {
         type: :string,
@@ -126,7 +126,7 @@ RSpec.describe 'Search', swagger_doc: 'v2/swagger.json', type: :request do
 
       parameter name: :q, in: :query, required: false,
                 schema: { type: :string },
-                description: 'Search term, such as a goods description, commodity code, chapter or heading code, CAS number, CUS number, or search reference.'
+                description: 'Search term, such as a goods description, commodity code, chapter or heading code, CAS number, CUS number, or search reference. Code-only queries accept an HS prefix in any case, for example HS:940340 or HS 8708.50.20.'
       parameter '$ref' => '#/components/parameters/AsOfDate'
       parameter name: :request_id, in: :query, required: false,
                 schema: { type: :string },
@@ -138,12 +138,21 @@ RSpec.describe 'Search', swagger_doc: 'v2/swagger.json', type: :request do
       response '200', 'search result returned' do
         schema search_response_schema
 
-        let(:q) { nil }
+        let(:q) { 'HS9504400000' }
         let(:as_of) { nil }
         let(:request_id) { nil }
         let(:resource_id) { nil }
 
-        run_test!
+        before do
+          commodity = create(:commodity, goods_nomenclature_item_id: '9504400000')
+          TimeMachine.now do
+            create(:search_suggestion, :goods_nomenclature, goods_nomenclature: commodity)
+          end
+        end
+
+        run_test! do |response|
+          expect(JSON.parse(response.body).dig('data', 'attributes', 'type')).to eq('exact_match')
+        end
       end
 
       standard_error_responses
@@ -168,14 +177,18 @@ RSpec.describe 'Search', swagger_doc: 'v2/swagger.json', type: :request do
       response '200', 'search result returned' do
         schema search_response_schema
 
-        let(:chapter) { create(:chapter, goods_nomenclature_item_id: '0100000000') }
-        let(:search_request) { { q: '01', as_of: Time.zone.today.iso8601, request_id: 'swagger-search-request' } }
+        let(:search_request) { { q: 'hs 8716109800', as_of: Time.zone.today.iso8601, request_id: 'swagger-search-request' } }
 
         before do
-          create(:search_suggestion, :goods_nomenclature, goods_nomenclature: chapter)
+          commodity = create(:commodity, goods_nomenclature_item_id: '8716109800')
+          TimeMachine.now do
+            create(:search_suggestion, :goods_nomenclature, goods_nomenclature: commodity)
+          end
         end
 
-        run_test!
+        run_test! do |response|
+          expect(JSON.parse(response.body).dig('data', 'attributes', 'type')).to eq('exact_match')
+        end
       end
 
       standard_error_responses

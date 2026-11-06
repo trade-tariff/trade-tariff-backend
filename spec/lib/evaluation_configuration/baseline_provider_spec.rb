@@ -11,6 +11,7 @@ RSpec.describe EvaluationConfiguration::BaselineProvider do
       allow(AdminConfiguration).to receive(:integer_value).with('interactive_search_max_questions').and_return(7)
       allow(AdminConfiguration).to receive(:enabled?).and_call_original
       allow(AdminConfiguration).to receive(:enabled?).with('search_non_declarables').and_return(false)
+      allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(true)
       allow(AdminConfiguration).to receive(:enabled?).with('search_compressed_notes_enabled').and_return(false)
       allow(AdminConfiguration).to receive(:enabled?).with('search_general_rules_enabled').and_return(false)
       allow(AdminConfiguration).to receive(:nested_options_value).and_call_original
@@ -34,6 +35,10 @@ RSpec.describe EvaluationConfiguration::BaselineProvider do
       expect(described_class.call['search_non_declarables']).to be(false)
     end
 
+    it 'maps search_atars_enabled directly from AdminConfiguration' do
+      expect(described_class.call['search_atars_enabled']).to be(true)
+    end
+
     it 'maps search_compressed_notes_enabled directly from AdminConfiguration' do
       expect(described_class.call['search_compressed_notes_enabled']).to be(false)
     end
@@ -54,16 +59,27 @@ RSpec.describe EvaluationConfiguration::BaselineProvider do
       expect(described_class.call['question_model']).to eq('gpt-5.4')
     end
 
+    it 'maps reasoning_effort from the selected search_model option\'s sub value' do
+      expect(described_class.call['reasoning_effort']).to eq('medium')
+    end
+
+    it 'records no reasoning_effort when the search_model has none configured' do
+      allow(AdminConfiguration).to receive(:nested_options_value).with('search_model')
+        .and_return(selected: 'gpt-4o-mini', sub_values: {})
+
+      expect(described_class.call).to include('reasoning_effort' => nil)
+    end
+
     it 'omits simulator_model entirely, since it has no real backend source' do
       result = described_class.call
       expect(result).not_to have_key('simulator_model')
     end
 
-    it 'returns exactly the 9 keys with a real backend source' do
+    it 'returns exactly the 11 keys with a real backend source' do
       expect(described_class.call.keys).to contain_exactly(
         'rrf_k', 'vector_score_threshold', 'vector_ef_search', 'search_non_declarables',
-        'search_compressed_notes_enabled', 'search_general_rules_enabled',
-        'candidate_limit', 'max_rounds', 'question_model'
+        'search_atars_enabled', 'search_compressed_notes_enabled', 'search_general_rules_enabled',
+        'candidate_limit', 'max_rounds', 'question_model', 'reasoning_effort'
       )
     end
   end

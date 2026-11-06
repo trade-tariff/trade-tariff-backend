@@ -9,7 +9,7 @@ FactoryBot.define do
 
     trait :with_note do
       after(:create) do |section, _evaluator|
-        create(:section_note, section_id: section.id)
+        create(:customs_tariff_section_note, section_id: section.id)
       end
     end
 
@@ -20,11 +20,5 @@ FactoryBot.define do
         chapter.save
       end
     end
-  end
-
-  factory :section_note do
-    section
-
-    content { Forgery(:basic).text }
   end
 end

@@ -62,6 +62,58 @@ RSpec.describe Search::GoodsNomenclatureQuery do
 
           expect(multi_match[:fields]).to include('atar_keywords^2')
         end
+
+        # An evaluation run can switch ATaR keyword matching on or off for itself (AI-1498). An
+        # explicit true/false beats the live admin setting; nil (no override) follows the live
+        # setting, which is what the public classification search does.
+        context 'when search_atars_enabled is true' do
+          let(:query_options) { super().merge(search_atars_enabled: true) }
+
+          before do
+            allow(AdminConfiguration).to receive(:enabled?).and_call_original
+            allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(false)
+          end
+
+          it 'searches public ATAR keywords even though the live setting is off' do
+            expect(multi_match[:fields]).to include('atar_keywords^2')
+          end
+
+          it 'does not read the live setting' do
+            multi_match
+
+            expect(AdminConfiguration).not_to have_received(:enabled?).with('search_atars_enabled')
+          end
+        end
+
+        context 'when search_atars_enabled is false' do
+          let(:query_options) { super().merge(search_atars_enabled: false) }
+
+          before do
+            allow(AdminConfiguration).to receive(:enabled?).and_call_original
+            allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(true)
+          end
+
+          it 'does not search public ATAR keywords even though the live setting is on' do
+            expect(multi_match[:fields]).not_to include('atar_keywords^2')
+          end
+
+          it 'does not read the live setting' do
+            multi_match
+
+            expect(AdminConfiguration).not_to have_received(:enabled?).with('search_atars_enabled')
+          end
+        end
+
+        context 'when search_atars_enabled is nil' do
+          let(:query_options) { super().merge(search_atars_enabled: nil) }
+
+          it 'follows the live setting' do
+            allow(AdminConfiguration).to receive(:enabled?).and_call_original
+            allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(true)
+
+            expect(multi_match[:fields]).to include('atar_keywords^2')
+          end
+        end
       end
     end
 

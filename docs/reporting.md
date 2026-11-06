@@ -44,7 +44,7 @@ A CSV of every search reference change (create, update and delete) in the previo
 
 `SearchReferenceChangesReportWorker` runs on both UK and XI at 10:30 UK time on the first Monday of each month. It generates the CSV, uploads it to the private persistence bucket and emails it with the CSV attached.
 
-**This report is emailed automatically** to `SEARCH_REFERENCES_REPORT_TO_EMAILS` (a comma-separated list or a Secrets Manager JSON hash). The support email is BCC'd. No email is sent if the variable is not set.
+**This report is emailed automatically** to the members of the `dl-search-references-report` distribution list (see [Email distribution lists](email-distribution-lists.md)). If the list is empty or cannot be read, it is sent to `SEARCH_REFERENCES_REPORT_TO_EMAILS` (a comma-separated list or a Secrets Manager JSON hash). The support email is BCC'd. No email is sent if neither has an address.
 
 The email is a short summary. It shows the total, the number of changes for each operation and the number of changes by source. It does not list the individual changes. The attached CSV has one row for each change. Operations use the same groups as the search reference invalidation alert that `ClearInvalidSearchReferences` sends. Automatic removals are grouped as Missing, Expired, Superseded and Unknown. These are followed by Added, Updated and Manually deleted.
 

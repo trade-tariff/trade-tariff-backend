@@ -39,5 +39,32 @@ RSpec.describe ActionLogMailer do
     it 'renders the email body with the correct date' do
       expect(mail.body.encoded).to include(yesterday.strftime('%Y-%m-%d'))
     end
+
+    it 'looks up the recipients once' do
+      mail.message
+      expect(TradeTariffBackend).to have_received(:myott_report_email).once
+    end
+
+    context 'when a second lookup would find no recipients' do
+      before do
+        allow(TradeTariffBackend).to receive(:myott_report_email).and_return(%w[myottreport@example.com], nil)
+      end
+
+      it 'sends to the recipients it checked' do
+        expect(mail.to).to eq(%w[myottreport@example.com])
+      end
+    end
+
+    [nil, '', '   '].each do |blank|
+      context "when there are no recipients (#{blank.inspect})" do
+        before do
+          allow(TradeTariffBackend).to receive(:myott_report_email).and_return(blank)
+        end
+
+        it 'does not build a message' do
+          expect(mail.message).to be_a(ActionMailer::Base::NullMail)
+        end
+      end
+    end
   end
 end

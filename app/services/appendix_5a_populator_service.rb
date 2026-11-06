@@ -91,10 +91,12 @@ private
 
     Rails.logger.info message
 
-    emails = TradeTariffBackend.cupid_team_to_emails
+    # Read once per run: recipients are looked up by index below, and the
+    # distribution list can change between reads.
+    emails = cupid_emails
 
     if emails.empty?
-      Rails.logger.error 'Appendix 5a guidance changed but CUPID_TEAM_TO_EMAILS is not configured — no notification emails were sent'
+      Rails.logger.error 'Appendix 5a guidance changed but the dl-cupid-team list and CUPID_TEAM_TO_EMAILS are empty — no notification emails were sent'
       return
     end
 
@@ -112,7 +114,7 @@ private
   end
 
   def send_to_recipient(recipient_index, new_count, changed_count, removed_count)
-    email = TradeTariffBackend.cupid_team_to_emails[recipient_index]
+    email = cupid_emails[recipient_index]
 
     if email.blank?
       Notifications::Instrumentation.send_skipped(pipeline: 'appendix5a', identifier: recipient_index, reason: 'recipient_not_configured')
@@ -129,6 +131,10 @@ private
     status_check_args = [recipient_index]
 
     Notifications::EmailWorker.perform_async(email, TEMPLATE_ID, personalisation, 'Appendix5aNotificationStatusCheckWorker', status_check_args)
+  end
+
+  def cupid_emails
+    @cupid_emails ||= TradeTariffBackend.cupid_team_to_emails
   end
 
   def notify_slack(message)

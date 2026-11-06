@@ -69,7 +69,7 @@ module TenDigitGoodsNomenclature
         Sequel.as(depth, :depth),
       ).where(conditions)
         .where(Sequel.~(operation_date: nil))
-        .limit(TradeTariffBackend.change_count)
+        .limit(Change::RECENT_LIMIT)
         .order(Sequel.desc(:operation_date, nulls: :last))
     end
   end
@@ -95,7 +95,7 @@ module TenDigitGoodsNomenclature
        # create/update date
        criteria.where { |o| o.>=(:operation_date, operation_date) } if operation_date.present?
      }
-     .limit(TradeTariffBackend.change_count)
+     .limit(Change::RECENT_LIMIT)
      .order(Sequel.desc(:operation_date, nulls: :last), Sequel.desc(:depth))
   end
 

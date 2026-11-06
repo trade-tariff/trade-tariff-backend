@@ -50,4 +50,12 @@ RSpec.describe EvaluationSyntheticInputSet do
 
     expect(set.evaluation_synthetic_input_set_items).to eq([item])
   end
+
+  it 'knows the experiments that use it' do
+    set = create(:evaluation_synthetic_input_set)
+    experiment = create(:evaluation_experiment, synthetic_input_set_id: set.id)
+    create(:evaluation_experiment)
+
+    expect(set.evaluation_experiments).to eq([experiment])
+  end
 end

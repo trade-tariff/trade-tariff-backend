@@ -29,6 +29,15 @@ module Api
             render json: serialize(run)
           end
 
+          # The run's summary and every result as an Excel workbook (AI-1494). Built inside the
+          # request, not in a background job: a run has one row per test question, so it is small.
+          def export
+            send_data ::Evaluation::RunWorkbook.call(run),
+                      filename: "evaluation-run-#{run.id}.xlsx",
+                      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                      disposition: 'attachment'
+          end
+
           def create
             experiment = EvaluationExperiment.with_pk!(create_params[:experiment_id])
 
@@ -164,7 +173,7 @@ module Api
           # experiment_id/status above don't have this problem because they pass a plain hash to
           # .where(...) rather than a block, so no virtual row ever rebinds self there.
           def filtered_runs
-            dataset = EvaluationRun.eager(:evaluation_experiment)
+            dataset = EvaluationRun.eager(evaluation_experiment: %i[evaluation_gold_query_set evaluation_synthetic_input_set])
             dataset = dataset.where(experiment_id: params[:experiment_id]) if params[:experiment_id].present?
             dataset = dataset.where(status: params[:status]) if params[:status].present?
 

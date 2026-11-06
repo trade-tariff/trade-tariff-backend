@@ -55,6 +55,21 @@ RSpec.describe 'Notify configuration' do
     end
   end
 
+  context 'when running in uat' do
+    let(:environment) { 'uat' }
+
+    it 'uses the staging templates and reply-to address' do
+      expect(configuration_values).to eq(%w[
+        6033e45a-7029-4c5a-b4d3-e52ba111c9b4
+        53c88c0c-69be-4375-829f-c6fbb1b9e2ef
+        ed4f4168-e8c5-4b80-94b9-050c86a40f0f
+        943fd08f-d9f0-47e0-b9dd-40284f308414
+        eae01fd6-3e73-4a21-83ed-175eec3701c5
+        fe20294b-9505-4a97-9eab-c5d5f3781bf9
+      ])
+    end
+  end
+
   context 'when running in development' do
     it 'uses the development templates and reply-to address' do
       expect(configuration_values).to eq(%w[

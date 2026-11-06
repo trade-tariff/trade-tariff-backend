@@ -11,7 +11,7 @@ RSpec.describe GenerateTariffKnowledgeCompressedNotesWorker, type: :worker do
   end
 
   it 'uses the sync queue' do
-    expect(described_class.sidekiq_options['queue']).to eq(:sync)
+    expect(described_class.sidekiq_options['queue']).to eq(:within_1_day)
   end
 
   it 'does not retry failures' do

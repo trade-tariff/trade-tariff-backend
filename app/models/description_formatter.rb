@@ -20,7 +20,7 @@ class DescriptionFormatter
     str.gsub!('!<=!', '&le;')
     str.gsub!(/\n\s*\n/, '<br/>')
     str.gsub!("\n", '<br/>')
-    if TradeTariffBackend.uk?
+    if TariffService.uk?
       str.gsub!(/izing/i, 'ising')
       str.gsub!(/ization/i, 'isation')
       str.gsub!(/ized/i, 'ised')

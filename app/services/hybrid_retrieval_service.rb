@@ -7,11 +7,11 @@ class HybridRetrievalService
     end
   end
 
-  def self.call(query:, as_of:, expanded_query: nil, retrieval_query: nil, request_id: nil, limit: 30, filter_prefixes: [], iteration: nil, search_type: 'interactive', rrf_k: nil, vector_score_threshold: nil, vector_ef_search: nil, search_non_declarables: nil)
-    new(query:, as_of:, expanded_query:, retrieval_query:, request_id:, limit:, filter_prefixes:, iteration:, search_type:, rrf_k:, vector_score_threshold:, vector_ef_search:, search_non_declarables:).call
+  def self.call(query:, as_of:, expanded_query: nil, retrieval_query: nil, request_id: nil, limit: 30, filter_prefixes: [], iteration: nil, search_type: 'interactive', rrf_k: nil, vector_score_threshold: nil, vector_ef_search: nil, search_non_declarables: nil, search_atars_enabled: nil)
+    new(query:, as_of:, expanded_query:, retrieval_query:, request_id:, limit:, filter_prefixes:, iteration:, search_type:, rrf_k:, vector_score_threshold:, vector_ef_search:, search_non_declarables:, search_atars_enabled:).call
   end
 
-  def initialize(query:, as_of:, expanded_query: nil, retrieval_query: nil, request_id: nil, limit: 30, filter_prefixes: [], iteration: nil, search_type: 'interactive', rrf_k: nil, vector_score_threshold: nil, vector_ef_search: nil, search_non_declarables: nil)
+  def initialize(query:, as_of:, expanded_query: nil, retrieval_query: nil, request_id: nil, limit: 30, filter_prefixes: [], iteration: nil, search_type: 'interactive', rrf_k: nil, vector_score_threshold: nil, vector_ef_search: nil, search_non_declarables: nil, search_atars_enabled: nil)
     @query = query
     @expanded_query = expanded_query.presence || query
     @retrieval_query = retrieval_query.presence || @expanded_query
@@ -25,6 +25,7 @@ class HybridRetrievalService
     @vector_score_threshold = vector_score_threshold
     @vector_ef_search = vector_ef_search
     @search_non_declarables = search_non_declarables
+    @search_atars_enabled = search_atars_enabled
   end
 
   def call
@@ -169,6 +170,9 @@ private
     }
     args[:filter_prefixes] = @filter_prefixes if @filter_prefixes.present?
     args[:search_non_declarables] = @search_non_declarables unless @search_non_declarables.nil?
+    # Keyword leg only. The vector leg reads embeddings that were built ahead of time, so it has no
+    # ATaR switch to relay this to.
+    args[:search_atars_enabled] = @search_atars_enabled unless @search_atars_enabled.nil?
     args
   end
 

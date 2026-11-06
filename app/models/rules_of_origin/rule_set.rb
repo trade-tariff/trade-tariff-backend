@@ -28,7 +28,7 @@ module RulesOfOrigin
       @rules ||= {}
 
       CSV.foreach(@source_file, headers: true) do |row|
-        next unless row['scope'] == 'both' || row['scope'] == TradeTariffBackend.service
+        next unless row['scope'] == 'both' || row['scope'] == TariffService.current
 
         add_rule row['id_rule'].to_i, row.to_h.without('scope', 'id_rule')
       end

@@ -22,23 +22,14 @@ class Chapter < GoodsNomenclature
     ds.with_actual(Heading).non_hidden
   end
 
-  one_to_one :chapter_note, primary_key: :chapter_short_code
   one_to_one :customs_tariff_chapter_note, key: :chapter_id, primary_key: :chapter_short_code do |ds|
-    ds.where(
-      customs_tariff_update_version: CustomsTariffUpdate.latest.select(:version).limit(1),
-    )
+    ds.actual
+      .where(customs_tariff_update_version: CustomsTariffUpdate.imported.actual.select(:version))
+      .order(Sequel.desc(:validity_start_date), Sequel.desc(:id))
   end
 
   def guide_ids
     guides.pluck(:id)
-  end
-
-  def public_chapter_note
-    if TradeTariffBackend.promote_customs_tariff_notes?
-      customs_tariff_chapter_note
-    else
-      chapter_note
-    end
   end
 
   def section_id
@@ -110,7 +101,7 @@ class Chapter < GoodsNomenclature
       # create/update date
       criteria.where { |o| o.>=(:operation_date, operation_date) } if operation_date.present?
     }
-     .limit(TradeTariffBackend.change_count)
+     .limit(Change::RECENT_LIMIT)
      .order(Sequel.desc(:operation_date, nulls: :last), Sequel.desc(:depth))
   end
 

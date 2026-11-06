@@ -86,17 +86,9 @@ module Api
         scope.all
       end
 
-      def chapter_note_eager_load
-        TradeTariffBackend.promote_customs_tariff_notes? ? :customs_tariff_chapter_note : :chapter_note
-      end
-
-      def section_note_eager_load
-        TradeTariffBackend.promote_customs_tariff_notes? ? :customs_tariff_section_note : :section_note
-      end
-
       def chapter_eager_loads
         [].tap do |eager_loads|
-          eager_loads << chapter_note_eager_load if jsonapi_field_requested?(:chapter, :chapter_note)
+          eager_loads << :customs_tariff_chapter_note if jsonapi_field_requested?(:chapter, :chapter_note)
           eager_loads << section_eager_load if chapter_section_data_requested?
         end
       end
@@ -115,7 +107,7 @@ module Api
       def section_eager_load
         return :sections unless jsonapi_field_requested?(:section, :section_note)
 
-        { sections: [section_note_eager_load] }
+        { sections: [:customs_tariff_section_note] }
       end
 
       def chapter_id

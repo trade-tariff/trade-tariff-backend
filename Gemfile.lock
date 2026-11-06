@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/willfish/fast_excel.git
-  revision: eead492721afbc11080d32961be4cfd97c8467d1
+  revision: 02e6118bebe12a93ae385b30159d7a1400f7de6c
   branch: master
   specs:
     uber_fast_excel (0.6.0)
@@ -92,19 +92,22 @@ GEM
       actionmailer (>= 7.1.0)
       aws-sdk-ses (~> 1, >= 1.50.0)
       aws-sdk-sesv2 (~> 1, >= 1.34.0)
-    aws-eventstream (1.4.0)
-    aws-partitions (1.1296.0)
-    aws-sdk-cloudfront (1.156.0)
-      aws-sdk-core (~> 3, >= 3.256.0)
+    aws-eventstream (1.4.1)
+    aws-partitions (1.1300.0)
+    aws-sdk-cloudfront (1.161.0)
+      aws-sdk-core (~> 3, >= 3.262.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-cloudwatch (1.149.0)
-      aws-sdk-core (~> 3, >= 3.256.0)
+    aws-sdk-cloudwatch (1.153.0)
+      aws-sdk-core (~> 3, >= 3.262.0)
       aws-sigv4 (~> 1.5)
     aws-sdk-cloudwatchlogs (1.165.0)
       aws-sdk-core (~> 3, >= 3.256.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-core (3.257.0)
-      aws-eventstream (~> 1, >= 1.3.0)
+    aws-sdk-cognitoidentityprovider (1.159.0)
+      aws-sdk-core (~> 3, >= 3.263.0)
+      aws-sigv4 (~> 1.5)
+    aws-sdk-core (3.263.0)
+      aws-eventstream (~> 1, >= 1.4.1)
       aws-partitions (~> 1, >= 1.992.0)
       aws-sigv4 (~> 1.9)
       base64
@@ -131,8 +134,16 @@ GEM
     aws-sigv4 (1.12.1)
       aws-eventstream (~> 1, >= 1.0.2)
     base64 (0.3.0)
+    benchmark (0.5.0)
+    better_html (2.2.0)
+      actionview (>= 7.0)
+      activesupport (>= 7.0)
+      ast (~> 2.0)
+      erubi (~> 1.4)
+      parser (>= 2.4)
+      smart_properties
     bigdecimal (4.1.3)
-    bootsnap (1.26.0)
+    bootsnap (1.26.1)
       msgpack (~> 1.5)
     brakeman (8.1.0)
       racc
@@ -142,16 +153,17 @@ GEM
     coderay (1.1.3)
     concurrent-ruby (1.3.8)
     connection_pool (3.0.2)
+    constant_resolver (0.3.0)
     crack (1.0.1)
       bigdecimal
       rexml
-    crass (1.0.7)
-    csv (3.3.6)
+    crass (1.0.8)
+    csv (3.3.7)
     database_cleaner-core (2.0.1)
     database_cleaner-sequel (2.0.2)
       database_cleaner-core (~> 2.0.0)
       sequel
-    date (3.5.1)
+    date (3.6.0)
     diff-lcs (1.6.2)
     dotenv (3.2.0)
     dotenv-rails (3.2.0)
@@ -173,8 +185,12 @@ GEM
       faraday-net_http (>= 2.0, < 3.5)
       json
       logger
+    faraday-multipart (1.2.0)
+      multipart-post (~> 2.0)
     faraday-net_http (3.4.4)
       net-http (~> 0.5)
+    faraday-retry (2.4.0)
+      faraday (~> 2.0)
     ffi (1.17.4)
     ffi (1.17.4-aarch64-linux-musl)
     ffi (1.17.4-arm64-darwin)
@@ -230,7 +246,7 @@ GEM
     loofah (2.25.2)
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
-    mail (2.9.0)
+    mail (2.9.1)
       logger
       mini_mime (>= 0.1.1)
       net-imap
@@ -242,18 +258,19 @@ GEM
     minitest (6.0.6)
       drb (~> 2.0)
       prism (~> 1.5)
-    msgpack (1.8.5)
+    msgpack (1.8.7)
     multi_json (1.15.0)
+    multipart-post (2.4.1)
     net-http (0.9.1)
       uri (>= 0.11.1)
-    net-imap (0.6.4.1)
+    net-imap (0.6.8)
       date
       net-protocol
     net-pop (0.1.2)
       net-protocol
-    net-protocol (0.2.2)
+    net-protocol (0.4.0)
       timeout
-    net-smtp (0.5.1)
+    net-smtp (0.5.2)
       net-protocol
     newrelic_rpm (10.9.1)
       logger
@@ -271,6 +288,17 @@ GEM
     opensearch-ruby (3.4.0)
       faraday (>= 1.0, < 3)
       multi_json (>= 1.0)
+    packwerk (3.3.1)
+      activesupport (>= 6.0)
+      ast
+      benchmark
+      better_html
+      bundler
+      constant_resolver (>= 0.3)
+      parallel
+      parser
+      prism (>= 1.4.0)
+      zeitwerk (>= 2.6.1)
     parallel (1.28.0)
     parallel_tests (5.8.0)
       parallel
@@ -296,7 +324,7 @@ GEM
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.8.1)
-    rack (3.2.7)
+    rack (3.2.8)
     rack-attack (6.8.0)
       rack (>= 1.0, < 4)
     rack-session (2.1.2)
@@ -359,7 +387,7 @@ GEM
       io-console (~> 0.5)
     request_store (1.7.0)
       rack (>= 1.4)
-    resolv (0.8.0)
+    resolv (0.8.1)
     responders (3.2.1)
       actionpack (>= 7.0)
       railties (>= 7.0)
@@ -390,8 +418,8 @@ GEM
     rspec-rebound (0.2.1)
       rspec-core (~> 3.3)
     rspec-support (3.13.7)
-    rspec_junit_formatter (0.6.0)
-      rspec-core (>= 2, < 4, != 2.12.0)
+    rspec_junit_formatter (0.8.0)
+      rspec-core (>= 3.13, < 4)
     rswag-specs (2.17.0)
       activesupport (>= 5.2, < 8.2)
       json-schema (>= 2.2, < 7.0)
@@ -446,9 +474,20 @@ GEM
     ruby-lsp-rspec (0.1.29)
       ruby-lsp (~> 0.26.0)
     ruby-progressbar (1.13.0)
+    ruby_llm (2.1.1)
+      base64
+      faraday (>= 1.10.0, != 2.0.0)
+      faraday-multipart (>= 1)
+      faraday-net_http (>= 1)
+      faraday-retry (>= 1)
+      json (< 4)
+      marcel (>= 1.0, < 3)
+      schematist (~> 1.1)
+      zeitwerk (~> 2)
     rubyzip (3.7.0)
     rufus-scheduler (3.9.2)
       fugit (~> 1.1, >= 1.11.1)
+    schematist (1.1.0)
     securerandom (0.4.1)
     sequel (5.109.0)
       bigdecimal
@@ -469,6 +508,7 @@ GEM
     simplecov (1.3.2)
     sin_lru_redux (2.5.3)
     slack-notifier (2.4.0)
+    smart_properties (1.17.0)
     thor (1.5.0)
     timeout (0.6.1)
     tsort (0.2.0)
@@ -479,7 +519,7 @@ GEM
     unicode-emoji (4.2.0)
     uri (1.1.1)
     useragent (0.16.11)
-    webmock (3.26.4)
+    webmock (3.34.0)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
@@ -502,6 +542,7 @@ DEPENDENCIES
   aws-sdk-cloudfront
   aws-sdk-cloudwatch
   aws-sdk-cloudwatchlogs
+  aws-sdk-cognitoidentityprovider
   aws-sdk-rails
   aws-sdk-s3
   bootsnap
@@ -527,6 +568,7 @@ DEPENDENCIES
   nokogiri
   notifications-ruby-client
   opensearch-ruby
+  packwerk
   parallel_tests
   pg
   pry-rails
@@ -537,7 +579,7 @@ DEPENDENCIES
   redis
   redis-client
   redlock
-  resolv (~> 0.8.0)
+  resolv (~> 0.8.1)
   responders
   rspec-ctrf
   rspec-json_expectations
@@ -549,6 +591,7 @@ DEPENDENCIES
   rubocop-performance
   ruby-lsp-rails
   ruby-lsp-rspec
+  ruby_llm (~> 2.1)
   rubyzip
   sequel
   sequel-rails
@@ -560,7 +603,7 @@ DEPENDENCIES
   webmock
 
 RUBY VERSION
-  ruby 4.0.7
+  ruby 4.0.9
 
 BUNDLED WITH
-  4.0.3
+  4.0.23

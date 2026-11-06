@@ -23,22 +23,10 @@ class Section < Sequel::Model
     chapters.pluck(:goods_nomenclature_sid)
   end
 
-  one_to_one :section_note
-
-  one_to_one :current_customs_tariff_section_note, class: :CustomsTariffSectionNote, key: :section_id, primary_key: :id do |ds|
-    ds.where(customs_tariff_update_version: CustomsTariffUpdate.latest.select(:version).limit(1))
-  end
-
   one_to_one :customs_tariff_section_note, key: :section_id, primary_key: :id do |ds|
-    ds.where(customs_tariff_update_version: CustomsTariffUpdate.latest.select(:version).limit(1))
-  end
-
-  def public_section_note
-    if TradeTariffBackend.promote_customs_tariff_notes?
-      customs_tariff_section_note
-    else
-      section_note
-    end
+    ds.actual
+      .where(customs_tariff_update_version: CustomsTariffUpdate.imported.actual.select(:version))
+      .order(Sequel.desc(:validity_start_date), Sequel.desc(:id))
   end
 
   def first_chapter

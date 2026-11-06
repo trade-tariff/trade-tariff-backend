@@ -10,14 +10,15 @@ RSpec.describe Evaluation::SyntheticInputSetCreator do
       expect(EvaluationSyntheticInputSet[set.id]).to be_present
     end
 
-    it 'creates one item per sampled synthetic ATaR, each a snapshot of its query and expected code' do
+    it 'creates one item per sampled synthetic ATaR, searching with the real user search and keeping the description as oracle text' do
       set
       items = EvaluationSyntheticInputSetItem.where(set_id: set.id).all
 
       expect(items.size).to eq(3)
       items.each do |item|
         synthetic_atar = TariffKnowledge::SyntheticAtar[item.synthetic_atar_id]
-        expect(item.query).to eq(synthetic_atar.description)
+        expect(item.query).to eq(synthetic_atar.real_user_search)
+        expect(item.oracle_text).to eq(synthetic_atar.description)
         expect(item.expected_code).to eq(synthetic_atar.goods_nomenclature_item_id)
       end
     end

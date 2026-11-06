@@ -5,7 +5,7 @@ module "backend_uk" {
 
   service_name              = "backend-uk"
   container_definition_kind = "web"
-  service_count             = var.service_count
+  service_count             = var.start_without_tasks ? 0 : var.service_count
 
   cluster_name    = "trade-tariff-cluster-${var.environment}"
   subnet_ids      = data.aws_subnets.private.ids
@@ -36,7 +36,7 @@ module "backend_uk" {
   container_user           = local.container_user
 
   has_autoscaler     = local.has_autoscaler
-  min_capacity       = var.min_capacity_uk
+  min_capacity       = var.start_without_tasks ? 0 : var.min_capacity_uk
   max_capacity       = var.max_capacity
   scale_in_cooldown  = var.scale_in_cooldown
   scale_out_cooldown = var.scale_out_cooldown

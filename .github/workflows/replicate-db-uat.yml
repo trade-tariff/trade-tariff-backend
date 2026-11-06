@@ -1,0 +1,102 @@
+name: Run UAT DB Replicate Job
+
+on:
+  workflow_dispatch:
+  # The UAT start job in trade-tariff-platform-aws-terraform runs this after it deploys backend.
+  workflow_call:
+
+env:
+  AWS_REGION: eu-west-2
+  IAM_ROLE_ARN: arn:aws:iam::352285845378:role/GithubActions-ECS-Deployments-Role
+  CLUSTER: trade-tariff-cluster-uat
+  SERVICE_NAME: backend-job-352285845378
+  CONTAINER_NAME: backend-job
+  SG_NAME: trade-tariff-ecs-security-group-uat
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  run-job:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ env.IAM_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Fetch Subnet and Security Group IDs
+        id: network
+        run: |
+          SUBNETS=$(aws ec2 describe-subnets \
+            --filters "Name=tag:Name,Values=*private*" \
+            --query 'Subnets[*].SubnetId' \
+            --output text \
+            --region "$AWS_REGION" | tr '\t' ',')
+
+          SG=$(aws ec2 describe-security-groups \
+            --filters "Name=group-name,Values=${{ env.SG_NAME }}" \
+            --query 'SecurityGroups[0].GroupId' \
+            --output text \
+            --region "$AWS_REGION")
+
+          echo "SUBNETS=$SUBNETS" >> "$GITHUB_ENV"
+          echo "SG=$SG" >> "$GITHUB_ENV"
+      - name: Run ECS task
+        run: |
+          set -euo pipefail
+
+          TASK_ARN=$(aws ecs run-task \
+            --cluster "${{ env.CLUSTER }}" \
+            --launch-type FARGATE \
+            --region "${{ env.AWS_REGION }}" \
+            --network-configuration "awsvpcConfiguration={subnets=[${{ env.SUBNETS }}],securityGroups=[${{ env.SG }}],assignPublicIp=DISABLED}" \
+            --task-definition "${{ env.SERVICE_NAME }}" \
+            --started-by github-action \
+            --count 1 \
+            --query 'tasks[0].taskArn' \
+            --output text \
+            --overrides '{
+                "containerOverrides": [{
+                  "name": "${{ env.CONTAINER_NAME }}",
+                  "command": ["/bin/sh", "-c", "exec ./bin/db-replicate"]
+                }]
+              }')
+
+          echo "Replication task ARN: ${TASK_ARN}"
+
+          # `aws ecs wait tasks-stopped` gives up after 10 minutes. A restore takes longer.
+          for _ in $(seq 1 180); do
+            STATUS=$(aws ecs describe-tasks \
+              --cluster "${{ env.CLUSTER }}" \
+              --region "${{ env.AWS_REGION }}" \
+              --tasks "${TASK_ARN}" \
+              --query 'tasks[0].lastStatus' \
+              --output text || echo UNKNOWN)
+
+            if [[ "${STATUS}" == "STOPPED" ]]; then
+              break
+            fi
+
+            sleep 15
+          done
+
+          if [[ "${STATUS}" != "STOPPED" ]]; then
+            echo "Replication task still running after 45 minutes: ${TASK_ARN}" >&2
+            exit 1
+          fi
+
+          EXIT_CODE=$(aws ecs describe-tasks \
+            --cluster "${{ env.CLUSTER }}" \
+            --region "${{ env.AWS_REGION }}" \
+            --tasks "${TASK_ARN}" \
+            --query 'tasks[0].containers[0].exitCode' \
+            --output text)
+
+          if [[ "${EXIT_CODE}" != "0" ]]; then
+            echo "Replication task failed with exit code ${EXIT_CODE}: ${TASK_ARN}" >&2
+            exit 1
+          fi
+
+          echo "Replication task completed successfully."

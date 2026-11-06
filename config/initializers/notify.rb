@@ -21,7 +21,7 @@ NOTIFY_CONFIGURATION =
         tariff_management: '61e19d5e-4fae-4b7e-aa2e-cd05a87f4cf8',
       },
     }
-  elsif ENV['ENVIRONMENT'] == 'staging'
+  elsif %w[staging uat].include?(ENV['ENVIRONMENT'])
     {
       templates: {
         enquiry_form: {

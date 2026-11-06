@@ -2,7 +2,7 @@ class ReportWorker
   include Sidekiq::Worker
   include ScheduledJobHeartbeat
 
-  sidekiq_options retry: false
+  sidekiq_options queue: :within_1_hour, retry: false
 
   REPORTS = [
     Reporting::Commodities,

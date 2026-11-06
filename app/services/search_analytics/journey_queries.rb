@@ -16,6 +16,7 @@ module SearchAnalytics
         WHERE #{@stream} AND service = 'search' AND event = 'search_started'
           AND request_source = 'frontend'
           AND request_id IS NOT NULL AND request_id != ''
+          AND #{ClassicHybridFilter.call(source: @source, log_stream_filter: @stream)}
         GROUP BY search_type, request_source, DATE_TRUNC('HOUR', `@timestamp`), SUBSTRING(request_id, 1, 1)
         LIMIT 10000
       SQL

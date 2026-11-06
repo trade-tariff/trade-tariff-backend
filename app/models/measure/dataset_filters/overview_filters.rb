@@ -50,7 +50,7 @@ class Measure
             },
           ]
 
-          overview_types << if TradeTariffBackend.uk?
+          overview_types << if TariffService.uk?
                               {
                                 measures__measure_type_id: MeasureType::VAT_TYPES,
                                 measures__geographical_area_id: GeographicalArea::AREAS_SUBJECT_TO_VAT_OR_EXCISE_ID,

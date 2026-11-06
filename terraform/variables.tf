@@ -25,6 +25,19 @@ variable "service_count" {
   default     = 1
 }
 
+variable "start_without_tasks" {
+  description = "Create the backend and worker services with no tasks. The UAT start uses it before it restores the database, because the services cannot start on an empty database."
+  type        = bool
+  default     = false
+
+  # The ECS module makes Terraform ignore later desired_count changes. Without an autoscaler, which development does not
+  # have, the tasks start again only when someone sets the count with aws ecs update-service.
+  validation {
+    condition     = !var.start_without_tasks || var.environment == "uat"
+    error_message = "start_without_tasks is only for uat."
+  }
+}
+
 variable "min_capacity_uk" {
   description = "Smallest number of tasks the backend-uk service can scale-in to."
   type        = number
@@ -112,4 +125,16 @@ variable "backend_xi_scheduled_scaling_actions" {
     ])
     error_message = "Each backend_xi_scheduled_scaling_actions entry must have non-negative min_capacity/max_capacity and min_capacity must be <= max_capacity."
   }
+}
+
+variable "generated_secrets" {
+  description = "UAT only. For each service (backend-uk, backend-xi, worker-uk, worker-xi, backend-job), environment variables mapped to the Secrets Manager secret that has the value. The common stack creates these secrets on each start. They replace the values in the configuration secret."
+  type        = map(map(string))
+  default     = {}
+}
+
+variable "generated_parameters" {
+  description = "UAT only. For each service, environment variables mapped to the SSM parameter that has the value. The common stack creates these parameters on each start. They replace the values in the configuration secret."
+  type        = map(map(string))
+  default     = {}
 }

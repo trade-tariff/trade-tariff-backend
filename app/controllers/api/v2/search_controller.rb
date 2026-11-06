@@ -21,7 +21,7 @@ module Api
       def search
         request_id = TradeTariffRequest.request_id.presence || SecureRandom.uuid
 
-        results = ::Search::Instrumentation.search(request_id:, query: params[:q], search_type: 'classic') do
+        results = ::Search::Instrumentation.search(request_id:, query: params[:q], search_type: 'classic', resource_id: params[:resource_id].presence) do
           res = SearchService.new(Api::V2::SearchSerializationService.new, params).to_json
           [res, classic_result_metrics(res)]
         end

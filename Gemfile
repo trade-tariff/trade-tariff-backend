@@ -17,6 +17,7 @@ gem 'aws-actionmailer-ses'
 gem 'aws-sdk-cloudfront'
 gem 'aws-sdk-cloudwatch'
 gem 'aws-sdk-cloudwatchlogs'
+gem 'aws-sdk-cognitoidentityprovider'
 gem 'aws-sdk-rails'
 gem 'aws-sdk-s3'
 
@@ -50,13 +51,16 @@ gem 'logstash-event'
 gem 'newrelic_rpm'
 gem 'nokogiri'
 gem 'notifications-ruby-client'
-gem 'resolv', '~> 0.8.0'
+gem 'resolv', '~> 0.8.1'
 gem 'slack-notifier'
 
 # API related
 gem 'jsonapi-serializer'
 gem 'jwt'
 gem 'responders'
+
+# AI providers
+gem 'ruby_llm', '~> 2.1'
 
 group :development do
   gem 'foreman'
@@ -69,6 +73,7 @@ group :development, :test do
   gem 'amazing_print'
   gem 'dotenv-rails'
   gem 'factory_bot_rails', require: false
+  gem 'packwerk', require: false
   gem 'pry-rails'
   gem 'ruby-lsp-rails'
   gem 'ruby-lsp-rspec'

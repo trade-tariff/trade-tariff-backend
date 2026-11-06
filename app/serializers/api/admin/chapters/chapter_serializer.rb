@@ -16,15 +16,10 @@ module Api
                    :description,
                    :section_id
 
-        attribute :chapter_note_id do |chapter|
-          chapter.chapter_note.try(:id)
-        end
-
         attribute :section_id do |chapter|
           chapter.section.id
         end
 
-        has_one :chapter_note, serializer: Api::Admin::Chapters::ChapterNoteSerializer, id_method_name: :id, &:chapter_note
         has_many :headings, serializer: Api::Admin::Chapters::HeadingSerializer
         has_one :section, serializer: Api::Admin::Chapters::SectionSerializer
       end

@@ -11,6 +11,7 @@ RSpec.describe SearchAnalytics::SelectionQuery do
       results_type: 'text',
       final_result_type: 'text',
       search_degraded: 'boolean',
+      skip_question: 'boolean',
       '@logStream': 'text',
       '@message': 'text' }
   end
@@ -27,6 +28,7 @@ RSpec.describe SearchAnalytics::SelectionQuery do
       results_type: 'fuzzy_search',
       final_result_type: nil,
       search_degraded: false,
+      skip_question: nil,
       '@logStream': 'ecs/backend-uk/test',
       '@message': '{}' }.merge(attributes)
   end
@@ -79,6 +81,8 @@ RSpec.describe SearchAnalytics::SelectionQuery do
       event('legacy', search_type: 'internal', results_type: 'opensearch'),
       event('blank', search_type: 'internal', results_type: 'vector', final_result_type: ''),
       event('unknown', **base, final_result_type: 'other'),
+      event('classic-hybrid', **base),
+      event('classic-hybrid', event: 'interactive_configuration_used', skip_question: true),
     ]
     expect(execute('selection_results', events)).to eq(%w[answers blank legacy])
   end

@@ -79,10 +79,10 @@ jobs:
           key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pre-commit-
-      - uses: actions/setup-python@v7.0.0
+      - uses: actions/setup-python@v7.1.0
         with:
           python-version: '3'
-      - uses: ruby/setup-ruby@v1.327.0
+      - uses: ruby/setup-ruby@v1.335.0
         with:
           bundler-cache: true
       - uses: hashicorp/setup-terraform@v4
@@ -124,7 +124,7 @@ jobs:
 
       - run: echo "127.0.0.1 host.docker.internal" | sudo tee -a /etc/hosts
 
-      - uses: ruby/setup-ruby@v1.327.0
+      - uses: ruby/setup-ruby@v1.335.0
         with:
           bundler-cache: true
 
@@ -134,6 +134,11 @@ jobs:
 
       - name: Prepare test databases
         run: bundle exec rails db:test:prepare_parallel
+
+      - name: Check package boundaries
+        run: |
+          bundle exec packwerk validate
+          bundle exec packwerk check
 
       - name: Run tests
         run: |
@@ -157,7 +162,7 @@ jobs:
           git diff --staged --quiet || git commit -m "Generate swagger/v2/swagger.json [skip ci]" && git push
 
       - name: Publish Test Report
-        uses: ctrf-io/github-test-reporter@v1.3.0
+        uses: ctrf-io/github-test-reporter@v1.3.2
         with:
           report-path: './ctrf/*.json'
           flaky-rate-report: true

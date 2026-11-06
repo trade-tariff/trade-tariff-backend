@@ -4,11 +4,7 @@ end
 AdminApi.routes.draw do
   namespace :api, defaults: { format: 'json' }, path: '' do
     scope module: :admin do
-      resources :sections, only: %i[index show] do
-        scope module: 'sections', constraints: { id: /\d+/ } do
-          resource :section_note, only: %i[show create update destroy]
-        end
-      end
+      resources :sections, only: %i[index show]
 
       resources :updates, only: %i[index show]
       resources :rollbacks, only: %i[create index]
@@ -16,7 +12,9 @@ AdminApi.routes.draw do
       resources :downloads, only: %i[create]
       resources :applies, only: %i[create]
       resources :footnotes, only: %i[index show update]
-      resources :search_references, only: %i[index show], constraints: { id: /\d+/ }
+      resources :search_references, only: %i[index show], constraints: { id: /\d+/ } do
+        get :export, on: :collection
+      end
       resources :search_diagnostics, only: %i[index show], param: :request_id, constraints: { request_id: /[^\/.]+/ }
       resources :search_analytics, only: [:index]
       if TradeTariffBackend.uk?
@@ -37,7 +35,6 @@ AdminApi.routes.draw do
 
       resources :chapters, only: %i[index show], constraints: { id: /\d{2}/ } do
         scope module: 'chapters', constraints: { chapter_id: /\d{2}/, id: /\d+/ } do
-          resource :chapter_note, only: %i[show create update destroy]
           resources :search_references, only: %i[show index destroy create update]
         end
       end
@@ -183,10 +180,15 @@ AdminApi.routes.draw do
               end
             end
           end
-          resources :synthetic_input_sets, only: %i[index create]
+          resources :synthetic_input_sets, only: %i[index show create destroy] do
+            resources :items, controller: 'synthetic_input_set_items', only: %i[index]
+          end
           resources :runs, only: %i[index show create update] do
             collection do
               delete :bulk_destroy
+            end
+            member do
+              get :export
             end
           end
           resources :results, only: %i[index show create]

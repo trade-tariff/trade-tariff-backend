@@ -42,6 +42,17 @@ RSpec.describe CustomsTariffImporter::Reimporter do
   end
 
   describe '#call' do
+    context 'when an update is a legacy snapshot' do
+      before { tariff_update.update(s3_path: nil) }
+
+      it 'skips snapshots in bulk and single-version mode' do
+        reimporter.call
+        reimporter.call(version: tariff_update.version)
+
+        expect(TariffSynchronizer::FileService).not_to have_received(:get)
+      end
+    end
+
     context 'when note records already exist for the update' do
       before do
         create(:customs_tariff_section_note, customs_tariff_update: tariff_update, section_id: 1, content: 'Old section note.')

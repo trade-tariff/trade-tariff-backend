@@ -10,7 +10,7 @@ module TradeTariffBackend
       end
 
       def green_lanes_update_email
-        ENV['GREEN_LANES_UPDATE_EMAIL']
+        distribution_list_emails('dl-green-lanes-updates') || ENV['GREEN_LANES_UPDATE_EMAIL']
       end
 
       def green_lanes_notify_measure_updates

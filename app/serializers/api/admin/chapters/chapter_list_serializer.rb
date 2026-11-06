@@ -11,10 +11,6 @@ module Api
         attributes :goods_nomenclature_sid,
                    :goods_nomenclature_item_id,
                    :producline_suffix
-
-        attribute :chapter_note_id do |chapter|
-          chapter.chapter_note.try(:id)
-        end
       end
     end
   end

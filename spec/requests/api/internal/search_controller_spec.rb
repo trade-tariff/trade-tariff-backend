@@ -20,6 +20,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
         request_id: 'param-request-id',
         query: 'horse',
         search_type: 'interactive',
+        resource_id: nil,
       )
     end
 
@@ -689,14 +690,19 @@ RSpec.describe Api::Internal::SearchController, :internal do
       end
 
       it 'resolves the selected suggestion from the resource_id parameter' do
+        allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
         post api_search_path(format: :json),
-             params: { q: 'livestock', resource_id: second_heading.goods_nomenclature_sid, as_of: Time.zone.today.iso8601 }
+             params: { q: 'livestock', resource_id: second_heading.goods_nomenclature_sid, as_of: Time.zone.today.iso8601 }, as: :json
 
         payload = response.parsed_body
 
         expect(response).to have_http_status(:ok)
         expect(payload['data'].length).to eq(1)
         expect(payload['data'].first.dig('attributes', 'goods_nomenclature_item_id')).to eq('0102000000')
+        expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+          'search_started.search',
+          hash_including(search_type: 'interactive', resource_id: second_heading.goods_nomenclature_sid.to_s),
+        )
       end
 
       it 'resolves the resource ID returned by internal autocomplete', :aggregate_failures do

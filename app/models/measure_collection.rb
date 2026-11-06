@@ -14,7 +14,7 @@ class MeasureCollection < SimpleDelegator
   end
 
   def apply_excise_filter
-    if TradeTariffBackend.xi?
+    if TariffService.xi?
       new(@measures.reject(&:excise?), @filters)
     else
       new(@measures, @filters)

@@ -7,7 +7,8 @@ RSpec.describe Api::Internal::EvaluationSyntheticInputSetItemsController do
       create(
         :evaluation_synthetic_input_set_item,
         evaluation_synthetic_input_set: set,
-        query: 'Reusable plastic food storage box with a clip-on lid, made of polypropylene, for household use.',
+        query: 'food storage box',
+        oracle_text: 'Reusable plastic food storage box with a clip-on lid, made of polypropylene, for household use.',
         expected_code: '3924100000',
       )
     end
@@ -20,7 +21,7 @@ RSpec.describe Api::Internal::EvaluationSyntheticInputSetItemsController do
 
       attrs = response.parsed_body['data'].first.fetch('attributes')
       expect(attrs).to eq(
-        'query' => 'Reusable plastic food storage box with a clip-on lid, made of polypropylene, for household use.',
+        'query' => 'food storage box',
         'oracle_text' => 'Reusable plastic food storage box with a clip-on lid, made of polypropylene, for household use.',
         'expected_code' => '3924100000',
         'source_type' => 'synthetic_atar',

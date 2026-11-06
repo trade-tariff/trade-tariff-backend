@@ -24,6 +24,19 @@ RSpec.describe Api::V2::SearchController do
         request_id: 'param-request-id',
         query: 'horse',
         search_type: 'classic',
+        resource_id: nil,
+      )
+    end
+
+    it 'instruments the suggestion ID from the JSON request body' do
+      allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
+
+      post '/uk/api/search', params: { q: 'horse', resource_id: 'suggestion-row', request_id: 'selected-classic' }, headers: request_headers, as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'search_started.search',
+        hash_including(request_id: 'selected-classic', search_type: 'classic', resource_id: 'suggestion-row'),
       )
     end
 

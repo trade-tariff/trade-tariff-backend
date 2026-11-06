@@ -24,7 +24,7 @@ RSpec.describe RulesOfOrigin::DataSet do
     before do
       service = 'uk'
       scheme_associations_importer = instance_double(RulesOfOrigin::SchemeAssociations, scheme_associations:)
-      allow(TradeTariffBackend).to receive(:service).and_return(service)
+      allow(TariffService).to receive(:current).and_return(service)
       allow(RulesOfOrigin::SchemeSet).to receive(:from_default_file).with(service).and_return(scheme_set)
       allow(RulesOfOrigin::RuleSet).to receive(:from_default_file).and_return(rule_set)
       allow(RulesOfOrigin::HeadingMappings).to receive(:from_default_file).and_return(mappings)

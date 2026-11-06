@@ -203,6 +203,30 @@ RSpec.describe Api::Internal::SearchService do
         expect(configuration.fetch(:search_non_declarables)).to be(true)
       end
 
+      it 'reflects a search_atars_enabled override of false even though AdminConfiguration reports true, proving || is not used' do
+        allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(true)
+
+        configuration = captured_diagnostics_configuration('search_atars_enabled' => false)
+
+        expect(configuration.fetch(:search_atars_enabled)).to be(false)
+      end
+
+      it 'reflects a search_atars_enabled override of true even though AdminConfiguration reports false' do
+        allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(false)
+
+        configuration = captured_diagnostics_configuration('search_atars_enabled' => true)
+
+        expect(configuration.fetch(:search_atars_enabled)).to be(true)
+      end
+
+      it 'falls back to AdminConfiguration for search_atars_enabled when no override is supplied' do
+        allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(true)
+
+        configuration = captured_diagnostics_configuration({})
+
+        expect(configuration.fetch(:search_atars_enabled)).to be(true)
+      end
+
       it 'reflects a vector_score_threshold override' do
         configuration = captured_diagnostics_configuration('vector_score_threshold' => 55)
 
@@ -255,6 +279,12 @@ RSpec.describe Api::Internal::SearchService do
         configuration = captured_diagnostics_configuration('question_model' => 'gpt-4o-mini')
 
         expect(configuration.fetch(:search_model)).to eq(selected: 'gpt-4o-mini', reasoning_effort: 'medium')
+      end
+
+      it 'reflects a reasoning_effort override on search_model[:reasoning_effort]' do
+        configuration = captured_diagnostics_configuration('question_model' => 'gpt-5.6-luna', 'reasoning_effort' => 'max')
+
+        expect(configuration.fetch(:search_model)).to eq(selected: 'gpt-5.6-luna', reasoning_effort: 'max')
       end
 
       it 'falls back to AdminConfiguration for search_model when no question_model override is supplied' do
@@ -1156,6 +1186,27 @@ RSpec.describe Api::Internal::SearchService do
         expect(result.dig(:meta, :search_failures)).to eq([])
       end
 
+      it 'does not capture classifier reporting' do
+        allow(SearchExport::JourneyProjection).to receive(:record)
+        allow(Search::ResultOffers).to receive(:record)
+
+        described_class.new(q: 'handbag', skip_question: true).call
+
+        expect(SearchExport::JourneyProjection).not_to have_received(:record)
+        expect(Search::ResultOffers).not_to have_received(:record)
+      end
+
+      it 'captures zero-question guided results' do
+        allow(InteractiveSearchService).to receive(:call).and_return(nil)
+        allow(SearchExport::JourneyProjection).to receive(:record)
+        allow(Search::ResultOffers).to receive(:record)
+
+        described_class.new(q: 'handbag', skip_question: false).call
+
+        expect(SearchExport::JourneyProjection).to have_received(:record).with(hash_including(answers: []))
+        expect(Search::ResultOffers).to have_received(:record)
+      end
+
       it 'runs the question round when skip_question is false' do
         result = described_class.new({ 'q' => 'handbag', 'skip_question' => 'false' }.with_indifferent_access).call
 
@@ -1909,6 +1960,16 @@ RSpec.describe Api::Internal::SearchService do
         )
       end
 
+      # Vector retrieval reads embeddings that were built ahead of time, so a run cannot switch ATaRs
+      # for it. Passing the value on would only suggest that it can.
+      it 'does not pass search_atars_enabled to VectorRetrievalService' do
+        described_class.new(q: 'horses', configuration_overrides: { 'search_atars_enabled' => true }).call
+
+        expect(VectorRetrievalService).to have_received(:call).with(
+          satisfy { |arguments| !arguments.key?(:search_atars_enabled) },
+        )
+      end
+
       it 'applies v2 synonyms to vector retrieval while preserving the semantic query' do
         allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v2')
         allow(Search::SynonymExpander).to receive(:call)
@@ -2571,6 +2632,18 @@ RSpec.describe Api::Internal::SearchService do
         expect(OpensearchRetrievalService).to have_received(:call).with(hash_including(search_non_declarables: nil))
       end
 
+      it 'passes search_atars_enabled through to OpensearchRetrievalService for retrieval_method: opensearch' do
+        described_class.new(q: 'horses', configuration_overrides: { 'search_atars_enabled' => false }).call
+
+        expect(OpensearchRetrievalService).to have_received(:call).with(hash_including(search_atars_enabled: false))
+      end
+
+      it 'defaults search_atars_enabled to nil for OpensearchRetrievalService when not given, so the live setting applies as it does today' do
+        described_class.new(q: 'horses').call
+
+        expect(OpensearchRetrievalService).to have_received(:call).with(hash_including(search_atars_enabled: nil))
+      end
+
       it 'passes max_rounds, question_model, search_compressed_notes_enabled and search_general_rules_enabled through to InteractiveSearchService' do
         described_class.new(
           q: 'horses',
@@ -2590,11 +2663,22 @@ RSpec.describe Api::Internal::SearchService do
         )
       end
 
+      it 'passes reasoning_effort through to InteractiveSearchService' do
+        described_class.new(
+          q: 'horses',
+          configuration_overrides: { 'question_model' => 'gpt-5.6-luna', 'reasoning_effort' => 'max' },
+        ).call
+
+        expect(InteractiveSearchService).to have_received(:call).with(
+          hash_including(question_model: 'gpt-5.6-luna', reasoning_effort: 'max'),
+        )
+      end
+
       it "defaults every override to nil when configuration_overrides is not given, reproducing today's behaviour" do
         described_class.new(q: 'horses').call
 
         expect(InteractiveSearchService).to have_received(:call).with(
-          hash_including(max_rounds: nil, question_model: nil, search_compressed_notes_enabled: nil, search_general_rules_enabled: nil),
+          hash_including(max_rounds: nil, question_model: nil, reasoning_effort: nil, search_compressed_notes_enabled: nil, search_general_rules_enabled: nil),
         )
       end
     end
@@ -2621,6 +2705,18 @@ RSpec.describe Api::Internal::SearchService do
         expect(HybridRetrievalService).to have_received(:call).with(
           hash_including(rrf_k: 30, vector_score_threshold: 40, vector_ef_search: 150, search_non_declarables: true),
         )
+      end
+
+      it 'passes search_atars_enabled through to HybridRetrievalService' do
+        described_class.new(q: 'horses', configuration_overrides: { 'search_atars_enabled' => true }).call
+
+        expect(HybridRetrievalService).to have_received(:call).with(hash_including(search_atars_enabled: true))
+      end
+
+      it 'defaults search_atars_enabled to nil for HybridRetrievalService when not given, so the live setting applies as it does today' do
+        described_class.new(q: 'horses').call
+
+        expect(HybridRetrievalService).to have_received(:call).with(hash_including(search_atars_enabled: nil))
       end
 
       it "defaults rrf_k, vector_score_threshold, vector_ef_search and search_non_declarables to nil when configuration_overrides is not given, reproducing today's behaviour" do

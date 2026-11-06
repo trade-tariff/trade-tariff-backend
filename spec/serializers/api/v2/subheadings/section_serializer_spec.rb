@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::Subheadings::SectionSerializer do
   subject(:serializer) { described_class.new(serializable).serializable_hash.as_json }
 
-  let(:serializable) { create(:section, :with_note) }
+  let(:serializable) { Api::V2::Headings::SectionPresenter.new(create(:section, :with_note)) }
 
   let(:expected_pattern) do
     {

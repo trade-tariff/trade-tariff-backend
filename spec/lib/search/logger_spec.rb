@@ -97,6 +97,13 @@ RSpec.describe Search::Logger do
       expect(json['request_id']).to eq('req-1')
       expect(json['query']).to eq('horses')
       expect(json['search_type']).to eq('interactive')
+      expect(json).to include('resource_id' => nil)
+    end
+
+    it 'logs the submitted resource ID as a structured field' do
+      logger_instance.search_started(build_event('search_started', payload.merge(resource_id: 'suggestion-row')))
+
+      expect(parsed_log_output).to include('event' => 'search_started', 'resource_id' => 'suggestion-row')
     end
 
     it 'preserves nil logged fields when request source is absent' do

@@ -21,6 +21,19 @@ class EvaluationExperiment < Sequel::Model(Sequel[:evaluation_experiments].quali
     validate_source_not_already_locked
   end
 
+  # The set this experiment is scored against, for showing which one is in use: 'gold_query_set' or
+  # 'synthetic_input_set', and its name. Both are nil until a set has been chosen. Loading a page of
+  # experiments or runs eager-loads both associations, so this adds no query per row.
+  def source_type
+    return 'gold_query_set' if gold_query_set_id
+
+    'synthetic_input_set' if synthetic_input_set_id
+  end
+
+  def source_name
+    (evaluation_gold_query_set || evaluation_synthetic_input_set)&.name
+  end
+
   # evaluation_runs.experiment_id is ON DELETE RESTRICT, so the database refuses this delete while any
   # runs exist. Neither EvaluationRun nor EvaluationResult has history (has_paper_trail), so — unlike
   # gold query set deletion — there is no version cleanup needed here, only the cascade itself.

@@ -77,6 +77,36 @@ RSpec.describe InteractiveSearchService do
       end
     end
 
+    context 'when reasoning_effort is passed explicitly' do
+      let(:answer) { '{"answers": [{"commodity_code": "4202210000", "confidence": "strong"}]}' }
+
+      before { allow(OpenaiClient).to receive(:call).and_return(answer) }
+
+      it 'sends it instead of the configured search_model reasoning_effort' do
+        described_class.call(**search_params(reasoning_effort: 'high'))
+
+        expect(OpenaiClient).to have_received(:call).with(
+          anything, model: 'gpt-5.4', reasoning_effort: 'high', event_kind: 'interactive_search'
+        )
+      end
+
+      it 'sends it alongside an overridden question_model, even when the configured effort would not suit that model' do
+        described_class.call(**search_params(question_model: 'gpt-5.6-luna', reasoning_effort: 'max'))
+
+        expect(OpenaiClient).to have_received(:call).with(
+          anything, model: 'gpt-5.6-luna', reasoning_effort: 'max', event_kind: 'interactive_search'
+        )
+      end
+
+      it 'still uses the configured effort when no override is given' do
+        described_class.call(**search_params)
+
+        expect(OpenaiClient).to have_received(:call).with(
+          anything, model: 'gpt-5.4', reasoning_effort: 'medium', event_kind: 'interactive_search'
+        )
+      end
+    end
+
     context 'when question_model is passed explicitly' do
       it 'uses the given question_model instead of the configured search_model' do
         allow(OpenaiClient).to receive(:call).and_return('{"answers": [{"commodity_code": "4202210000", "confidence": "strong"}]}')

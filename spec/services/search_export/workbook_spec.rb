@@ -4,18 +4,18 @@ RSpec.describe SearchExport::Workbook do
   let(:generated_at) { Time.utc(2026, 9, 24, 12) }
 
   let(:journeys) { [] }
-  let(:clicks) { Hash.new { |hash, key| hash[key] = [] } }
+  let(:opened_pages) { Hash.new { |hash, key| hash[key] = [] } }
 
   before do
     allow(SearchExport::CloudwatchReader).to receive(:call) do |from:, to:, generated_at:|
       selected = journeys.select { |journey| journey.terminal_at.to_date.between?(from, to) }
-      selected_clicks = clicks.transform_values { |values| values.select { |click| click.clicked_at <= generated_at } }
-      SearchExport::CloudwatchReader::Result.new(journeys: selected, clicks: selected_clicks)
+      selected_pages = opened_pages.transform_values { |values| values.select { |page| page.opened_at <= generated_at } }
+      SearchExport::CloudwatchReader::Result.new(journeys: selected, opened_pages: selected_pages)
     end
   end
 
-  def store_click(request_id:, **attributes)
-    clicks[request_id] << SearchExport::CloudwatchReader::Click.new(**attributes)
+  def store_open(request_id:, **attributes)
+    opened_pages[request_id] << SearchExport::CloudwatchReader::OpenedPage.new(**attributes)
   end
 
   def store_journey(**overrides)
@@ -69,7 +69,7 @@ RSpec.describe SearchExport::Workbook do
     store_journey
     allow(journeys).to receive(:size).and_return(200_001)
     allow(SearchExport::CloudwatchReader).to receive(:call).and_return(
-      SearchExport::CloudwatchReader::Result.new(journeys:, clicks:),
+      SearchExport::CloudwatchReader::Result.new(journeys:, opened_pages:),
     )
     expect(workbook.row_count).to eq(1)
   end
@@ -104,6 +104,7 @@ RSpec.describe SearchExport::Workbook do
 
     expect(searches).to include('formula1>"Yes,No"</formula1>')
     expect(searches).to include('outlineLevel="1"')
+    expect(searches).to include('<t>Results clicked</t>')
     expect(summary).to include('COUNTA(Searches!$A$3:$A$1048576)')
   end
 
@@ -152,10 +153,10 @@ RSpec.describe SearchExport::Workbook do
     expect(sheet_xml(result.bytes, 'xl/worksheets/sheet2.xml')).not_to include('journey-1')
   end
 
-  it 'writes the first click for each code, including a click after the range end' do
+  it 'deduplicates visits, including one after the range end' do
     store_journey
-    store_click(request_id: 'journey-1', commodity_code: '0207141000', clicked_at: Time.utc(2026, 9, 24, 1))
-    store_click(request_id: 'journey-1', commodity_code: '0207141000', clicked_at: Time.utc(2026, 9, 23, 11))
+    store_open(request_id: 'journey-1', commodity_code: '0207141000', opened_at: Time.utc(2026, 9, 24, 1))
+    store_open(request_id: 'journey-1', commodity_code: '0207141000', opened_at: Time.utc(2026, 9, 23, 11))
 
     xml = sheet_xml(workbook.bytes, 'xl/worksheets/sheet2.xml')
 
@@ -163,7 +164,7 @@ RSpec.describe SearchExport::Workbook do
     expect(xml.scan('0207141000 - Frozen cuts').size).to eq(2)
   end
 
-  it 'keeps distinct clicks in first-click order through the generation cutoff' do
+  it 'lists offered codes in first-visit order through the cutoff' do
     results = %w[0207141000 0207141001 0207141002].map do |code|
       { 'commodity_code' => code, 'description' => "Cuts #{code}", 'confidence_label' => 'Good' }
     end
@@ -174,8 +175,8 @@ RSpec.describe SearchExport::Workbook do
       ['0207141001', Time.utc(2026, 9, 24, 2)],
       ['0207141002', generated_at + 1],
       ['9999999999', Time.utc(2026, 9, 24, 3)],
-    ].each do |code, clicked_at|
-      store_click(request_id: 'journey-1', commodity_code: code, clicked_at:)
+    ].each do |code, opened_at|
+      store_open(request_id: 'journey-1', commodity_code: code, opened_at:)
     end
 
     document = Nokogiri::XML(sheet_xml(workbook.bytes, 'xl/worksheets/sheet2.xml'))

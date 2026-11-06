@@ -4,6 +4,16 @@ locals {
     "data/taric",
     "data/cds",
   ]
+
+  # The identity user pool that holds the email distribution lists (dl-*
+  # Cognito groups), from the services that send those emails. The secrets
+  # are sensitive, and Terraform does not accept a sensitive value in
+  # for_each. A pool ID is an identifier (it is in the policy ARN), not a
+  # credential. sensitive() first, so nonsensitive() never gets a plain value.
+  distribution_list_user_pool_ids = nonsensitive(sensitive(toset(compact([
+    for secret_map in [local.worker_uk_secret_map, local.worker_xi_secret_map, local.backend_job_secret_map] :
+    trimspace(try(secret_map["COGNITO_USER_POOL_ID"], ""))
+  ]))))
 }
 
 data "aws_iam_policy_document" "task" {
@@ -33,7 +43,8 @@ data "aws_iam_policy_document" "task" {
       "logs:DescribeLogStreams",
       "logs:PutLogEvents",
       "logs:StartQuery",
-      "logs:GetQueryResults"
+      "logs:GetQueryResults",
+      "logs:StopQuery"
     ]
     resources = ["*"]
   }
@@ -58,6 +69,7 @@ data "aws_iam_policy_document" "task" {
     actions = [
       "s3:ListBucket",
       "s3:GetObject",
+      "s3:GetObjectTagging",
     ]
     # NOTE: READONLY access to production data files for replication
     resources = concat(
@@ -109,6 +121,22 @@ data "aws_iam_policy_document" "task" {
       "arn:aws:s3:::trade-tariff-database-backups-${local.account_id}",
       "arn:aws:s3:::trade-tariff-database-backups-${local.account_id}/*",
     ]
+  }
+
+  # Read the members of the email distribution lists. Added only when a
+  # sending service has COGNITO_USER_POOL_ID; without it the backend uses the
+  # old recipient env vars.
+  dynamic "statement" {
+    for_each = length(local.distribution_list_user_pool_ids) > 0 ? [1] : []
+
+    content {
+      effect  = "Allow"
+      actions = ["cognito-idp:ListUsersInGroup"]
+      resources = [
+        for pool_id in local.distribution_list_user_pool_ids :
+        "arn:aws:cognito-idp:${var.region}:${local.account_id}:userpool/${pool_id}"
+      ]
+    }
   }
 }
 

@@ -41,7 +41,7 @@ module SearchExport
       omitted = 0
       @source.journeys.each do |journey|
         if writable?(journey)
-          output.write(row_xml(written + 3, journey, @source.clicks.fetch(journey.request_id, [])))
+          output.write(row_xml(written + 3, journey, @source.opened_pages.fetch(journey.request_id, [])))
           written += 1
         else
           omitted += 1
@@ -107,10 +107,10 @@ module SearchExport
       xml.sub('</sheetData>', "#{cell}</sheetData>")
     end
 
-    def row_xml(number, journey, clicks)
+    def row_xml(number, journey, opened_pages)
       raise RangeError, 'The rows exceed the Excel worksheet format.' if number > 1_048_576
 
-      values = row_values(journey, clicks)
+      values = row_values(journey, opened_pages)
       lines = values.map { |column, value| wrapped_lines(column, value) }.max
       height = [15 * lines, 409].min
       cells = values.sort_by { |column, _value| [column.length, column] }
@@ -156,7 +156,7 @@ module SearchExport
       end
     end
 
-    def row_values(journey, clicks)
+    def row_values(journey, opened_pages)
       results = journey.results
       {
         'A' => journey.request_id,
@@ -166,7 +166,7 @@ module SearchExport
         'Z' => journey.end_page_type,
         'AA' => results.map { |result| result_line(result) }.join("\n"),
         'AB' => results.map { |result| result['confidence_label'] }.join("\n"),
-        'AC' => click_lines(results, clicks),
+        'AC' => opened_lines(results, opened_pages),
       }.merge(question_cells(journey.answers)).reject { |_column, value| value.nil? || value == '' }
     end
 
@@ -181,12 +181,12 @@ module SearchExport
       end
     end
 
-    def click_lines(results, clicks)
+    def opened_lines(results, opened_pages)
       offered = results.to_h { |result| [result['commodity_code'], result_line(result)] }
-      clicks.sort_by(&:clicked_at)
-            .uniq(&:commodity_code)
-            .filter_map { |click| offered[click.commodity_code] }
-            .join("\n")
+      opened_pages.sort_by(&:opened_at)
+                  .uniq(&:commodity_code)
+                  .filter_map { |page| offered[page.commodity_code] }
+                  .join("\n")
     end
 
     def cell_xml(reference, value)

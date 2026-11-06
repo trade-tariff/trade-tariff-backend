@@ -22,7 +22,7 @@ RSpec.describe MeasureType do
     subject(:excluded_measure_types) { described_class.excluded_measure_types }
 
     before do
-      allow(TradeTariffBackend).to receive(:service).and_return(service)
+      allow(TariffService).to receive(:current).and_return(service)
     end
 
     context 'when the service is the UK version' do
