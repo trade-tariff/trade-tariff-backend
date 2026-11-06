@@ -100,6 +100,21 @@ RSpec.describe SearchAnalytics::OutcomeRates, :truncation do
     expect(guided['coverage']).to include('complete' => true, 'fresh_days' => 1)
   end
 
+  it 'excludes a direct redirect to a tariff page from guided outcomes' do
+    store(date, 'frontend_events', [
+      frontend('one', 'initial_submitted', '2026-09-14T09:00:00Z', event: 'start'),
+      frontend('one', 'navigation', '2026-09-14T09:00:02Z'),
+      frontend('two', 'initial_submitted', '2026-09-14T09:00:00Z', event: 'start-two'),
+    ])
+    store(date, 'classic_outcomes', [])
+    refresh!
+
+    guided = rates.dig('outcome_rates', 'guided')
+    expect(guided['denominator']).to eq(1)
+    expect(guided['counts']).to include('abandonment' => 1)
+    expect(guided['counts']).not_to have_key('navigation')
+  end
+
   it 'uses the latest same-day question response and ignores browser submissions' do
     store(date, 'frontend_events', [
       frontend('one', 'page_visible', '2026-09-14T10:00:00Z', event: 'shown', question: 'material', destination: 'question'),

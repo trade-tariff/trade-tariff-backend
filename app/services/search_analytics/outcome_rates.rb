@@ -10,7 +10,7 @@ module SearchAnalytics
     PERCENTAGE_POINTS = 10_000
     LIMITATIONS = [
       'Classic rates count completed frontend-origin fuzzy searches from backend logs. They do not prove that a results page was visible. Exact matches are excluded. Empty means total result_count 0, not a commodity-only or heading-only count.',
-      'Guided rates use same-day initial_submitted request IDs. The class is the latest page_visible terminal destination or dont_know that UTC day. A server-rendered outcome is not visibility. There is no inactivity timeout and no cross-day join.',
+      'Guided rates use same-day initial_submitted request IDs. The class is the latest page_visible terminal destination or dont_know that UTC day. Journeys whose latest outcome is a navigation redirect to a tariff page are excluded. A server-rendered outcome is not visibility. There is no inactivity timeout and no cross-day join.',
       'Missing or failed collection is a coverage gap, not abandonment. Static error pages and redirects to /500, /404, /429, or an invalid date are not observed, so they are not counted as seen errors.',
       'No-JS "I don\'t know" is not a dont_know event. A no-JS answer that matches a rendered option counts as server_accepted. Browser answer_submitted events are not counted.',
       'A changed frontend_events or classic_outcomes definition does not reclassify stored history. Those days stay stale until recollection.',

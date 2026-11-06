@@ -37,6 +37,28 @@ RSpec.describe Api::Internal::SearchService do
     allow(Search::Instrumentation).to receive(:evaluation_trace_returned)
   end
 
+  describe '#q' do
+    {
+      'hs 8716109800' => '8716109800',
+      'HS 8708.50.20' => '87085020',
+      'HS:8419500090' => '8419500090',
+      'HS:940340' => '940340',
+      'HS:9403400090' => '9403400090',
+      'HS9504400000' => '9504400000',
+      'hS-9504.40.00.00' => '9504400000',
+      'HS 8716-109800' => '8716109800',
+      'HS' => 'HS',
+      'HS code 940340' => 'HS code 940340',
+      'HS 940340 furniture' => 'HS 940340 furniture',
+      'HSN940340' => 'HSN940340',
+      'hose' => 'hose',
+    }.each do |query, expected|
+      it "processes #{query.inspect}" do
+        expect(described_class.new(q: query).q).to eq(expected)
+      end
+    end
+  end
+
   describe '#call' do
     context 'when blank query' do
       it 'returns empty data with no failures' do
@@ -465,13 +487,12 @@ RSpec.describe Api::Internal::SearchService do
         expect(TradeTariffBackend.search_client).not_to have_received(:search)
       end
 
-      it 'keeps the declarable-only shortlist for implicit label matching' do
-        allow(TradeTariffBackend.search_client).to receive(:search).and_return('hits' => { 'hits' => [] })
-
+      it 'returns the non-declarable match for typed text' do
         result = described_class.new(q: 'livestock').call
 
-        expect(result[:data]).to eq([])
-        expect(TradeTariffBackend.search_client).to have_received(:search)
+        expect(result[:data].length).to eq(1)
+        expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('0101000000')
+        expect(TradeTariffBackend.search_client).not_to have_received(:search)
       end
     end
 
@@ -1237,14 +1258,61 @@ RSpec.describe Api::Internal::SearchService do
 
         allow(AdminConfiguration).to receive(:enabled?).and_call_original
         allow(AdminConfiguration).to receive(:enabled?).with('suggest_synonyms').and_return(true)
-        allow(TradeTariffBackend.search_client).to receive(:search)
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return({ 'hits' => { 'hits' => [] } })
       end
 
-      it 'returns the exact match without querying OpenSearch' do
-        result = described_class.new(q: 'rice').call
+      it 'returns the exact match when the trader selected the suggestion' do
+        result = described_class.new(q: 'rice', resource_id: heading.goods_nomenclature_sid).call
 
         expect(result[:data].length).to eq(1)
         expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('1006000000')
+        expect(TradeTariffBackend.search_client).not_to have_received(:search)
+      end
+
+      it 'falls through to retrieval for typed text' do
+        described_class.new(q: 'rice').call
+
+        expect(TradeTariffBackend.search_client).to have_received(:search)
+      end
+    end
+
+    context 'when typed text is a CAS or CUS number with chemical suggestions disabled' do
+      let!(:commodity) do
+        create(:commodity, :with_description,
+               goods_nomenclature_item_id: '2903190000',
+               description: 'saturated chlorinated derivatives')
+      end
+
+      before do
+        create(:search_suggestion, :full_chemical_cas,
+               goods_nomenclature: commodity,
+               value: '103-90-2',
+               declarable: true)
+        create(:search_suggestion, :full_chemical_cus,
+               goods_nomenclature: commodity,
+               id: '0021314-9',
+               value: '0021314-9',
+               declarable: true)
+
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('suggest_chemical_cas').and_return(false)
+        allow(AdminConfiguration).to receive(:enabled?).with('suggest_chemical_cus').and_return(false)
+        allow(TradeTariffBackend.search_client).to receive(:search)
+      end
+
+      it 'returns the exact match for a CAS number' do
+        result = described_class.new(q: 'cas 103-90-2').call
+
+        expect(result[:data].length).to eq(1)
+        expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('2903190000')
+        expect(TradeTariffBackend.search_client).not_to have_received(:search)
+      end
+
+      it 'returns the exact match for a CUS number' do
+        result = described_class.new(q: '0021314-9').call
+
+        expect(result[:data].length).to eq(1)
+        expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('2903190000')
         expect(TradeTariffBackend.search_client).not_to have_received(:search)
       end
     end
@@ -1274,7 +1342,7 @@ RSpec.describe Api::Internal::SearchService do
       end
     end
 
-    context 'when exact match suggestion is non-declarable' do
+    context 'when a typed search reference points to a non-declarable heading' do
       let!(:heading) do
         create(:heading, :with_description,
                goods_nomenclature_item_id: '0101000000',
@@ -1292,11 +1360,13 @@ RSpec.describe Api::Internal::SearchService do
         allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
       end
 
-      it 'falls through to OpenSearch instead of returning an exact match' do
+      it 'returns the heading as an exact match' do
         result = described_class.new(q: 'horse').call
 
-        expect(result).to eq(data: [], meta: { search_failures: [] })
-        expect(TradeTariffBackend.search_client).to have_received(:search)
+        expect(result[:data].length).to eq(1)
+        expect(result[:data][0][:type]).to eq(:heading)
+        expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('0101000000')
+        expect(TradeTariffBackend.search_client).not_to have_received(:search)
       end
     end
 

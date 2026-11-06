@@ -115,10 +115,17 @@ RSpec.describe 'Search action classification' do
       end
 
       unless type == 'classic'
-        it 'keeps disabled chemical suggestions as search' do
+        it 'classifies a CAS suggestion as navigation when chemical suggestions are disabled' do
           allow(AdminConfiguration).to receive(:enabled?).with('suggest_chemical_cas').and_return(false)
           create(:search_suggestion, :full_chemical_cas, goods_nomenclature: heading, value: '10310-21-1', declarable: true)
           search('cas 10310-21-1')
+          expect_action('navigation')
+        end
+
+        it 'keeps typed label suggestions as search' do
+          allow(AdminConfiguration).to receive(:enabled?).with('suggest_synonyms').and_return(true)
+          create(:search_suggestion, :synonym, goods_nomenclature: heading, value: 'nags', declarable: true)
+          search('nags')
           expect_action('search')
         end
 

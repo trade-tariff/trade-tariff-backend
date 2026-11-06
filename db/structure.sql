@@ -676,16 +676,16 @@ CREATE MATERIALIZED VIEW uk.search_analytics_guided_outcome_counts AS
             search_analytics_frontend_event_occurrences.reporting_date,
             search_analytics_frontend_event_occurrences.journey_key,
                 CASE
-                    WHEN (search_analytics_frontend_event_occurrences.outcome = 'dont_know'::text) THEN 'dont_know'::text
+                    WHEN (search_analytics_frontend_event_occurrences.outcome = ANY (ARRAY['dont_know'::text, 'navigation'::text])) THEN search_analytics_frontend_event_occurrences.outcome
                     WHEN (search_analytics_frontend_event_occurrences.destination = ANY (ARRAY['results'::text, 'no_results'::text, 'unknown_results'::text, 'blocking_guidance'::text])) THEN search_analytics_frontend_event_occurrences.destination
                     WHEN (search_analytics_frontend_event_occurrences.destination = ANY (ARRAY['input_error'::text, 'backend_error'::text])) THEN 'error'::text
                     ELSE NULL::text
                 END AS outcome
            FROM uk.search_analytics_frontend_event_occurrences
-          WHERE ((search_analytics_frontend_event_occurrences.outcome = 'dont_know'::text) OR ((search_analytics_frontend_event_occurrences.outcome = 'page_visible'::text) AND (search_analytics_frontend_event_occurrences.destination = ANY (ARRAY['results'::text, 'no_results'::text, 'unknown_results'::text, 'blocking_guidance'::text, 'input_error'::text, 'backend_error'::text]))))
+          WHERE ((search_analytics_frontend_event_occurrences.outcome = ANY (ARRAY['dont_know'::text, 'navigation'::text])) OR ((search_analytics_frontend_event_occurrences.outcome = 'page_visible'::text) AND (search_analytics_frontend_event_occurrences.destination = ANY (ARRAY['results'::text, 'no_results'::text, 'unknown_results'::text, 'blocking_guidance'::text, 'input_error'::text, 'backend_error'::text]))))
           ORDER BY search_analytics_frontend_event_occurrences.service, search_analytics_frontend_event_occurrences.reporting_date, search_analytics_frontend_event_occurrences.journey_key, search_analytics_frontend_event_occurrences.observed_at DESC,
                 CASE
-                    WHEN (search_analytics_frontend_event_occurrences.outcome = 'dont_know'::text) THEN 'dont_know'::text
+                    WHEN (search_analytics_frontend_event_occurrences.outcome = ANY (ARRAY['dont_know'::text, 'navigation'::text])) THEN search_analytics_frontend_event_occurrences.outcome
                     WHEN (search_analytics_frontend_event_occurrences.destination = ANY (ARRAY['results'::text, 'no_results'::text, 'unknown_results'::text, 'blocking_guidance'::text])) THEN search_analytics_frontend_event_occurrences.destination
                     WHEN (search_analytics_frontend_event_occurrences.destination = ANY (ARRAY['input_error'::text, 'backend_error'::text])) THEN 'error'::text
                     ELSE NULL::text
@@ -697,6 +697,7 @@ CREATE MATERIALIZED VIEW uk.search_analytics_guided_outcome_counts AS
     count(*) AS journeys
    FROM (starts
      LEFT JOIN terminals USING (service, reporting_date, journey_key))
+  WHERE (terminals.outcome IS DISTINCT FROM 'navigation'::text)
   GROUP BY starts.service, starts.reporting_date, COALESCE(terminals.outcome, 'abandonment'::text)
   WITH NO DATA;
 
@@ -15817,3 +15818,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20261015120000_create_eval
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261019120000_default_evaluation_gold_query_sets_atar_percentage.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261019130000_add_source_workbook_and_row_to_synthetic_atars.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20261029120000_add_oracle_text_to_evaluation_synthetic_input_set_items.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20261030145154_exclude_guided_search_navigation_from_outcomes.rb');
