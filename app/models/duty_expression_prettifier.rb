@@ -1,6 +1,8 @@
 module DutyExpressionPrettifier
+  NUMBER_FORMATTER = NumberFormatter.new.freeze
+
   def prettify(float)
-    TradeTariffBackend.number_formatter.number_with_precision(
+    NUMBER_FORMATTER.number_with_precision(
       float,
       minimum_decimal_points: 2,
       precision: 4,

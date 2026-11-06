@@ -8,7 +8,6 @@ RSpec.describe TradeTariffBackend::Clients do
     backend.instance_variable_set(:@opensearch_client, nil)
     backend.instance_variable_set(:@search_client, nil)
     backend.instance_variable_set(:@ai_client, nil)
-    backend.instance_variable_set(:@number_formatter, nil)
   end
 
   describe '.redis' do
@@ -71,17 +70,6 @@ RSpec.describe TradeTariffBackend::Clients do
         Search::SearchSuggestionsIndex,
         Search::GoodsNomenclatureIndex,
       )
-    end
-  end
-
-  describe '.number_formatter' do
-    it 'returns a NumberFormatter instance' do
-      expect(backend.number_formatter).to be_a(TradeTariffBackend::NumberFormatter)
-    end
-
-    it 'memoizes the instance' do
-      first = backend.number_formatter
-      expect(backend.number_formatter).to be(first)
     end
   end
 end

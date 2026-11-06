@@ -7,7 +7,7 @@ module Api
 
       def index
         render json: serialize
-      rescue PublicUsers::UnsupportedFilterServiceError, ArgumentError => e
+      rescue Api::User::SubscriptionServiceResolver::UnsupportedFilterError, ArgumentError => e
         render json: serialize_errors({ error: e.message }), status: :bad_request
       end
 
@@ -30,7 +30,7 @@ module Api
       end
 
       def filtered_targets
-        @filtered_targets ||= @subscription.filter.call(
+        @filtered_targets ||= Api::User::SubscriptionServiceResolver.filter_for(@subscription).call(
           filter_params[:active_commodities_type]&.to_sym,
           current_page,
           per_page,

@@ -3,9 +3,11 @@ module Api
     class AppliesController < AdminController
       def create
         apply = Apply.new
+        apply.whodunnit = TradeTariffRequest.whodunnit
 
         if apply.valid?
           apply.save
+          ApplyWorker.perform_async
           render json: Api::Admin::ApplySerializer.new(apply, { is_collection: false }).serializable_hash, status: :created, location: api_applies_url
         else
           render json: Api::Admin::ErrorSerializationService.new(apply).call, status: :unprocessable_content

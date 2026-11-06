@@ -185,7 +185,8 @@ RSpec.describe CdsSynchronizer, :truncation do
     it 'performs a rollback' do
       Sidekiq.testing!(:inline) do
         expect {
-          create(:rollback, date: rollback_date.beginning_of_day)
+          rollback = create(:rollback, date: rollback_date.beginning_of_day)
+          RollbackWorker.perform_async(rollback.date.to_formatted_s(:db), rollback.keep)
         }.to change(Measure, :count).from(2).to(1)
       end
     end
@@ -195,7 +196,8 @@ RSpec.describe CdsSynchronizer, :truncation do
       tariff_change_job.mark_changes_generated!
 
       Sidekiq.testing!(:inline) do
-        create(:rollback, date: rollback_date.beginning_of_day)
+        rollback = create(:rollback, date: rollback_date.beginning_of_day)
+        RollbackWorker.perform_async(rollback.date.to_formatted_s(:db), rollback.keep)
       end
 
       expect(tariff_change_job.reload).to be_changes_pending
