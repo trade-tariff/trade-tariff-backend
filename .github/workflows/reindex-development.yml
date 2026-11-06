@@ -1,0 +1,133 @@
+name: Reindex Development OpenSearch
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: reindex-development
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: eu-west-2
+  IAM_ROLE_ARN: arn:aws:iam::844815912454:role/GithubActions-ECS-Deployments-Role
+  CLUSTER: trade-tariff-cluster-development
+  TASK_FAMILY: backend-job-844815912454
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  reindex:
+    environment: development
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        service: [uk, xi]
+    env:
+      SERVICE: ${{ matrix.service }}
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ env.IAM_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Run reindex task with the worker search and queue configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          WORKER=$(aws ecs describe-services \
+            --cluster "$CLUSTER" \
+            --services "worker-$SERVICE" \
+            --output json)
+
+          if ! jq -e '.failures | length == 0' <<< "$WORKER" >/dev/null ||
+             ! jq -e '.services | length == 1' <<< "$WORKER" >/dev/null; then
+            echo "::error::Could not find worker-$SERVICE."
+            exit 1
+          fi
+
+          WORKER_DEFINITION=$(jq -er '.services[0].taskDefinition' <<< "$WORKER")
+          VPC=$(aws ec2 describe-vpcs \
+            --filters Name=tag:Name,Values=trade-tariff-development-vpc \
+            --output json | jq -er '.Vpcs | select(length == 1) | .[0].VpcId')
+
+          SECURITY_GROUP_IDS=$(aws ec2 describe-security-groups \
+            --filters "Name=vpc-id,Values=$VPC" \
+              Name=group-name,Values=trade-tariff-ecs-security-group-development,opensearch-client-development \
+            --output json | jq -ce '[.SecurityGroups[].GroupId] | select(length == 2)')
+
+          NETWORK=$(jq -ce --argjson groups "$SECURITY_GROUP_IDS" \
+            '.services[0].networkConfiguration.awsvpcConfiguration |
+             select(.subnets | length > 0) |
+             {awsvpcConfiguration: {subnets, securityGroups: $groups, assignPublicIp: "DISABLED"}}' \
+            <<< "$WORKER")
+
+          WORKER_ENV=$(aws ecs describe-task-definition \
+            --task-definition "$WORKER_DEFINITION" --output json |
+            jq -ce --arg name "worker-$SERVICE" \
+              '[.taskDefinition.containerDefinitions[] | select(.name == $name) | .environment[] |
+                select(.name == "ELASTICSEARCH_VPC_URL" or .name == "ELASTICSEARCH_URL" or
+                       .name == "REDIS_URL" or .name == "SIDEKIQ_REDIS_URL")]')
+
+          if ! jq -e '
+            any(.[]; .name == "ELASTICSEARCH_VPC_URL" and (.value | test("\\S"))) and
+            any(.[]; (.name == "SIDEKIQ_REDIS_URL" or .name == "REDIS_URL") and (.value | test("\\S")))
+          ' <<< "$WORKER_ENV" >/dev/null; then
+            echo "::error::The worker must have a VPC search URL and a Redis queue URL before reindexing."
+            exit 1
+          fi
+
+          # Empty overrides prevent stale job-task values taking precedence over the worker configuration.
+          OVERRIDES=$(jq -cn --arg service "$SERVICE" --argjson environment "$WORKER_ENV" '
+            {containerOverrides: [{
+              name: "backend-job",
+              command: ["/bin/sh", "-c", "exec bundle exec rake tariff:reindex"],
+              environment: (
+                {ELASTICSEARCH_URL: "", ELASTICSEARCH_VPC_URL: "", REDIS_URL: "", SIDEKIQ_REDIS_URL: ""} +
+                ($environment | map({key: .name, value: .value}) | from_entries) |
+                .SIDEKIQ_REDIS_URL = (if .SIDEKIQ_REDIS_URL == "" then .REDIS_URL else .SIDEKIQ_REDIS_URL end) |
+                .SERVICE = $service | to_entries | map({name: .key, value: .value})
+              )
+            }]}')
+
+          RESULT=$(aws ecs run-task \
+            --cluster "$CLUSTER" \
+            --launch-type FARGATE \
+            --network-configuration "$NETWORK" \
+            --task-definition "$TASK_FAMILY" \
+            --started-by github-reindex \
+            --count 1 \
+            --overrides "$OVERRIDES" \
+            --output json)
+
+          if ! jq -e '(.failures | length == 0) and (.tasks | length == 1)' <<< "$RESULT" >/dev/null; then
+            echo "::error::ECS could not start the reindex task."
+            jq '.failures' <<< "$RESULT"
+            exit 1
+          fi
+
+          TASK_ARN=$(jq -er '.tasks[0].taskArn' <<< "$RESULT")
+          echo "Reindex task for $SERVICE: $TASK_ARN"
+
+          if ! aws ecs wait tasks-stopped --cluster "$CLUSTER" --tasks "$TASK_ARN"; then
+            echo "::error::Timed out waiting for $TASK_ARN. Check the task before retrying; it may still be running."
+            exit 1
+          fi
+
+          TASK=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$TASK_ARN" --output json)
+          if ! jq -e '
+            (.failures | length == 0) and
+            ([.tasks[0].containers[] | select(.name == "backend-job")] |
+             length == 1 and .[0].exitCode == 0)
+          ' <<< "$TASK" >/dev/null; then
+            echo "::error::The reindex task failed. Check ECS and CloudWatch logs."
+            jq '{failures, tasks: [.tasks[] | {stoppedReason, containers: [.containers[] | {name, exitCode, reason}]}]}' <<< "$TASK"
+            exit 1
+          fi
+
+          echo "Reindex command finished for $SERVICE. Existing workers populate the indexes asynchronously."
+          echo "Check worker errors and document counts before declaring the rebuild complete."
