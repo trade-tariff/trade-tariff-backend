@@ -11,7 +11,6 @@ class CdsUpdateNotification < Sequel::Model
 
   def validate
     super
-    self.whodunnit ||= TradeTariffRequest.whodunnit
     must_have :filename
     must_have :whodunnit
 
@@ -22,10 +21,6 @@ private
 
   def must_have(attribute)
     errors.add(attribute, "Can't be blank") if send(attribute).blank?
-  end
-
-  def after_create
-    CdsUpdateNotificationWorker.perform_async(id)
   end
 
   def before_create

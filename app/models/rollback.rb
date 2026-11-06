@@ -8,7 +8,6 @@ class Rollback < Sequel::Model
 private
 
   def validate
-    self.whodunnit ||= TradeTariffRequest.whodunnit
     must_have :reason
     must_have :whodunnit
     must_have_correct_date
@@ -22,10 +21,6 @@ private
 
   def must_have(attribute)
     errors.add(attribute, "Can't be blank") if send(attribute).blank?
-  end
-
-  def after_create
-    RollbackWorker.perform_async(date.to_formatted_s(:db), keep)
   end
 
   def before_create

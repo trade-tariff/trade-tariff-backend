@@ -1,5 +1,7 @@
 RSpec.describe Api::Admin::CdsUpdateNotificationsController, :admin do
   describe 'POST to #create' do
+    before { allow(CdsUpdateNotificationWorker).to receive(:perform_async) }
+
     context 'when cds_update_notification is valid' do
       let(:cds_update) { create(:cds_update) }
 
@@ -9,6 +11,12 @@ RSpec.describe Api::Admin::CdsUpdateNotificationsController, :admin do
         }.to change(CdsUpdateNotification, :count).by(1)
         expect(response.status).to eq 201
         expect(response.location).to eq 'http://www.example.com/cds_update_notifications'
+      end
+
+      it 'enqueues the worker once with the saved notification id' do
+        post '/uk/admin/cds_update_notifications', params: { data: { type: :cds_update_notification, attributes: { filename: cds_update.filename } } }, headers: request_headers({ 'X-Whodunnit' => 'test-user-uid' }), as: :json
+
+        expect(CdsUpdateNotificationWorker).to have_received(:perform_async).with(CdsUpdateNotification.last.id).once
       end
     end
 
@@ -24,6 +32,12 @@ RSpec.describe Api::Admin::CdsUpdateNotificationsController, :admin do
 
         expect(response.status).to eq 422
         expect(response.body).to match_json_expression response_pattern
+      end
+
+      it 'does not enqueue the worker' do
+        post '/uk/admin/cds_update_notifications', params: { data: { type: :cds_update_notification, attributes: { name: nil } } }, headers: request_headers, as: :json
+
+        expect(CdsUpdateNotificationWorker).not_to have_received(:perform_async)
       end
     end
   end

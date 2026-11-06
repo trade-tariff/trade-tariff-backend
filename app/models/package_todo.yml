@@ -22,26 +22,11 @@
     - dependency
     files:
     - app/models/public_users/subscription.rb
-  "::ApplyWorker":
-    violations:
-    - dependency
-    files:
-    - app/models/apply.rb
-  "::CdsUpdateNotificationWorker":
-    violations:
-    - dependency
-    files:
-    - app/models/cds_update_notification.rb
   "::CompositeSearchTextBuilder":
     violations:
     - dependency
     files:
     - app/models/goods_nomenclature_self_text.rb
-  "::DownloadWorker":
-    violations:
-    - dependency
-    files:
-    - app/models/download.rb
   "::DutyExpressionFormatter":
     violations:
     - dependency
@@ -137,11 +122,6 @@
     - dependency
     files:
     - app/models/measure_condition.rb
-  "::RollbackWorker":
-    violations:
-    - dependency
-    files:
-    - app/models/rollback.rb
   "::SearchNegationService":
     violations:
     - dependency
@@ -177,12 +157,8 @@
     violations:
     - dependency
     files:
-    - app/models/apply.rb
-    - app/models/cds_update_notification.rb
-    - app/models/download.rb
     - app/models/measure/component_resolver.rb
     - app/models/measure_type.rb
-    - app/models/rollback.rb
   "::VersionDiffService":
     violations:
     - dependency
