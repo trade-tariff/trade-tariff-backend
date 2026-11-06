@@ -12,17 +12,11 @@ RSpec.describe Api::User::SubscriptionTargetsController do
           create(:subscription_target, user_subscriptions_uuid: subscription.uuid, target_id: '456', target_type: 'commodity'),
         ]
       end
-      let(:service_instance) { instance_double(Api::User::TargetsFilterService::MyCommoditiesTargetsFilterService) }
+      let(:filter_service) { instance_double(Api::User::TargetsFilterService::MyCommoditiesTargetsFilterService) }
 
       before do
-        allow(subscription.filter)
-          .to receive(:call)
-          .with(nil, 1, 10)
-          .and_return(service_instance)
-
-        allow(service_instance)
-          .to receive(:call)
-          .and_return([subscription_targets, 2])
+        allow(Api::User::SubscriptionServiceResolver).to receive(:filter_for).and_return(filter_service)
+        allow(filter_service).to receive(:call).with(nil, 1, 10).and_return([subscription_targets, 2])
 
         get "/uk/user/subscriptions/#{valid_subscription_id}/targets", params: { page: 1, per_page: 10 }, headers: request_headers
       end

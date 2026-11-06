@@ -16,10 +16,10 @@ module Api
       end
 
       def create_batch
-        @subscription.batcher.call(subscription_params[:targets], current_user)
+        Api::User::SubscriptionServiceResolver.batcher_for(@subscription).call(subscription_params[:targets], current_user)
         @subscription.refresh
         render json: serialize, status: :ok
-      rescue PublicUsers::UnsupportedBatcherServiceError, ArgumentError => e
+      rescue Api::User::SubscriptionServiceResolver::UnsupportedBatcherError, ArgumentError => e
         render json: serialize_errors({ error: e.message }), status: :bad_request
       end
 
