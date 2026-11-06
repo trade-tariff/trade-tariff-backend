@@ -127,23 +127,8 @@
     - dependency
     files:
     - app/models/cds_update_notification.rb
-  "::TimeMachine":
-    violations:
-    - dependency
-    files:
-    - app/models/goods_nomenclature.rb
-    - app/models/goods_nomenclature_label.rb
-    - app/models/goods_nomenclature_self_text.rb
-    - app/models/goods_nomenclatures/nested_set/ancestor_associations.rb
-    - app/models/goods_nomenclatures/nested_set/descendant_associations.rb
   "::TradeTariffBackend":
     violations:
     - dependency
     files:
     - app/models/measure/component_resolver.rb
-  "::TradeTariffRequest":
-    violations:
-    - dependency
-    files:
-    - app/models/measure/component_resolver.rb
-    - app/models/measure_type.rb
