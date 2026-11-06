@@ -127,12 +127,6 @@
     - dependency
     files:
     - app/models/measure_condition.rb
-  "::SearchNegationService":
-    violations:
-    - dependency
-    files:
-    - app/models/goods_nomenclature_description.rb
-    - app/models/search_reference.rb
   "::StopPressSubscriptionWorker":
     violations:
     - dependency
@@ -156,7 +150,6 @@
     violations:
     - dependency
     files:
-    - app/models/healthcheck.rb
     - app/models/measure/component_resolver.rb
   "::TradeTariffRequest":
     violations:
@@ -164,8 +157,3 @@
     files:
     - app/models/measure/component_resolver.rb
     - app/models/measure_type.rb
-  "::VersionDiffService":
-    violations:
-    - dependency
-    files:
-    - app/models/version.rb
