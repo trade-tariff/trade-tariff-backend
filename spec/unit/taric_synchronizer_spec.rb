@@ -175,7 +175,8 @@ RSpec.describe TaricSynchronizer, :truncation do
     it 'performs a rollback' do
       Sidekiq.testing!(:inline) do
         expect {
-          create(:rollback, date: 1.month.ago.beginning_of_day)
+          rollback = create(:rollback, date: 1.month.ago.beginning_of_day)
+          RollbackWorker.perform_async(rollback.date.to_formatted_s(:db), rollback.keep)
         }.to change(Measure, :count).from(1).to(0)
       end
     end
