@@ -15,6 +15,7 @@ This directory is the starting point for understanding the Trade Tariff Backend 
 
 - [Search dashboard definitions and coverage](search-dashboards.md)
 - [AI-assisted search failure and fallback scenarios](search-resilience.md)
+- [Local image-description demo](image-description-demo.md)
 - [Goods Nomenclature Nested Set](goods-nomenclature-nested-set.md)
 - [Caching within the Trade Tariff apps](caching.md)
 - [Windsor Framework - Green Lanes](green-lanes.md)
