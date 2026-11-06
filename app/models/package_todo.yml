@@ -102,11 +102,6 @@
     - dependency
     files:
     - app/models/admin_configuration.rb
-  "::ExternalUserDeletionWorker":
-    violations:
-    - dependency
-    files:
-    - app/models/public_users/user.rb
   "::GenerateRunLabelWorker":
     violations:
     - dependency

@@ -22,6 +22,6 @@ class GovukNotifierStatusCheckWorker
       slack_failure_statuses: SLACK_FAILURE_STATUSES,
     ).call
 
-    user.invalidate! if status == GovukNotifier::PERMANENT_FAILURE
+    PublicUsers::UserDeletionService.invalidate(user) if status == GovukNotifier::PERMANENT_FAILURE
   end
 end

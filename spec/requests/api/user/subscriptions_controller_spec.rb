@@ -117,7 +117,7 @@ RSpec.describe Api::User::SubscriptionsController do
     context 'when a valid ID is provided' do
       before do
         allow(PublicUsers::Subscription).to receive(:find).with(uuid: valid_id).and_return(subscription)
-        allow(subscription).to receive(:unsubscribe)
+        allow(PublicUsers::UserDeletionService).to receive(:unsubscribe)
         delete "/uk/user/subscriptions/#{valid_id}", headers: request_headers, as: :json
       end
 
@@ -125,8 +125,8 @@ RSpec.describe Api::User::SubscriptionsController do
         expect(response).to have_http_status(:ok)
       end
 
-      it 'calls unsubscribe on the subscription' do
-        expect(subscription).to have_received(:unsubscribe)
+      it 'unsubscribes through the user deletion service' do
+        expect(PublicUsers::UserDeletionService).to have_received(:unsubscribe).with(subscription)
       end
     end
 

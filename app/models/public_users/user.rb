@@ -107,14 +107,14 @@ module PublicUsers
     end
 
     def soft_delete!
-      return if deleted
-      return if subscriptions_dataset.where(active: true).any?
+      return false if deleted
+      return false if subscriptions_dataset.where(active: true).any?
 
       update(deleted: true)
 
       PublicUsers::ActionLog.create(user_id: id, action: PublicUsers::ActionLog::DELETED)
 
-      ExternalUserDeletionWorker.perform_async(id)
+      true
     end
 
   private

@@ -178,6 +178,11 @@ RSpec.describe PublicUsers::User do
     end
 
     describe '#soft_delete!' do
+      it 'returns true when it deletes the user and false when it does not', :aggregate_failures do
+        expect(user.soft_delete!).to be true
+        expect(user.soft_delete!).to be false
+      end
+
       context 'when user has an active stop press subscription' do
         before do
           user.add_subscription(subscription_type_id: Subscriptions::Type.stop_press.id, active: true)
@@ -204,8 +209,9 @@ RSpec.describe PublicUsers::User do
           expect(user.action_logs.last.action).to eq PublicUsers::ActionLog::DELETED
         end
 
-        it 'schedules deletion worker' do
-          expect(ExternalUserDeletionWorker).to have_received(:perform_async)
+        it 'returns true and leaves starting the worker to the caller', :aggregate_failures do
+          expect(user.refresh.deleted).to be true
+          expect(ExternalUserDeletionWorker).not_to have_received(:perform_async)
         end
       end
 
@@ -223,8 +229,9 @@ RSpec.describe PublicUsers::User do
           expect(user.action_logs.last.action).to eq PublicUsers::ActionLog::DELETED
         end
 
-        it 'schedules deletion worker' do
-          expect(ExternalUserDeletionWorker).to have_received(:perform_async)
+        it 'returns true and leaves starting the worker to the caller', :aggregate_failures do
+          expect(user.refresh.deleted).to be true
+          expect(ExternalUserDeletionWorker).not_to have_received(:perform_async)
         end
       end
     end
@@ -258,7 +265,7 @@ RSpec.describe PublicUsers::User do
           PublicUsers::ActionLog::DELETED,
         )
         expect(user.refresh.deleted).to be(true)
-        expect(ExternalUserDeletionWorker).to have_received(:perform_async).with(user.id)
+        expect(ExternalUserDeletionWorker).not_to have_received(:perform_async)
       end
     end
   end

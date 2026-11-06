@@ -10,7 +10,7 @@ module Api
 
       # subscriptions are deleted without a user being authenticated
       def destroy
-        @subscription.unsubscribe
+        PublicUsers::UserDeletionService.unsubscribe(@subscription)
 
         render json: { message: 'Unsubscribe successful' }, status: :ok
       end
