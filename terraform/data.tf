@@ -19,6 +19,13 @@ data "aws_security_group" "this" {
   name = "trade-tariff-ecs-security-group-${var.environment}"
 }
 
+data "aws_security_group" "opensearch_client" {
+  count = var.enable_private_search_access ? 1 : 0
+
+  name   = "opensearch-client-${var.environment}"
+  vpc_id = data.aws_vpc.vpc.id
+}
+
 data "aws_lb_target_group" "backend_uk_https" {
   name = "backend-uk-https"
 }

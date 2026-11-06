@@ -77,6 +77,7 @@ Terraform to deploy the service into AWS.
 | [aws_secretsmanager_secret_version.backend_xi_api_configuration](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret_version) | data source |
 | [aws_secretsmanager_secret_version.backend_xi_worker_configuration](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret_version) | data source |
 | [aws_secretsmanager_secret_version.ecs_tls_certificate](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret_version) | data source |
+| [aws_security_group.opensearch_client](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/security_group) | data source |
 | [aws_secretsmanager_secret_version.generated](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret_version) | data source |
 | [aws_security_group.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/security_group) | data source |
 | [aws_sns_topic.slack_observability_topic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/sns_topic) | data source |
@@ -95,6 +96,7 @@ Terraform to deploy the service into AWS.
 | <a name="input_docker_tag"></a> [docker\_tag](#input\_docker\_tag) | Image tag to use. | `string` | n/a | yes |
 | <a name="input_enable_alarms"></a> [enable\_alarms](#input\_enable\_alarms) | Whether to enable CloudWatch alarms for the service. | `bool` | `false` | no |
 | <a name="input_enable_observability_alerts"></a> [enable\_observability\_alerts](#input\_enable\_observability\_alerts) | n/a | `bool` | `false` | no |
+| <a name="input_enable_private_search_access"></a> [enable\_private\_search\_access](#input\_enable\_private\_search\_access) | Attach the platform search-client security group after it exists in this environment. This does not change the search URL. | `bool` | `false` | no |
 | <a name="input_environment"></a> [environment](#input\_environment) | Deployment environment. | `string` | n/a | yes |
 | <a name="input_generated_parameters"></a> [generated\_parameters](#input\_generated\_parameters) | UAT only. For each service, environment variables mapped to the SSM parameter that has the value. The common stack creates these parameters on each start. They replace the values in the configuration secret. | `map(map(string))` | `{}` | no |
 | <a name="input_generated_secrets"></a> [generated\_secrets](#input\_generated\_secrets) | UAT only. For each service (backend-uk, backend-xi, worker-uk, worker-xi, backend-job), environment variables mapped to the Secrets Manager secret that has the value. The common stack creates these secrets on each start. They replace the values in the configuration secret. | `map(map(string))` | `{}` | no |

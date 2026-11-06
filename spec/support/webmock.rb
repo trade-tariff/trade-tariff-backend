@@ -1,8 +1,8 @@
 def webmock_setup_defaults
   allowed = []
 
-  if ENV.key?('ELASTICSEARCH_URL')
-    url = URI.parse(ENV['ELASTICSEARCH_URL'])
+  if ENV['ELASTICSEARCH_VPC_URL'].present? || ENV.key?('ELASTICSEARCH_URL')
+    url = URI.parse(TradeTariffBackend.opensearch_host)
     allowed << url.host
     allowed.uniq!
   end

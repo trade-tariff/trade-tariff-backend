@@ -1,4 +1,9 @@
 locals {
+  search_client_security_groups = concat(
+    [data.aws_security_group.this.id],
+    data.aws_security_group.opensearch_client[*].id
+  )
+
   # Cost allocation tags. Activate them in the Billing console so Cost Explorer
   # can group costs by component. The module copies them to each Fargate task.
   cost_allocation_tags = {

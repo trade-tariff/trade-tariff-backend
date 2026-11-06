@@ -2,7 +2,7 @@ module TradeTariffBackend
   module Config
     module Opensearch
       def opensearch_host
-        ENV.fetch('ELASTICSEARCH_URL', 'http://host.docker.internal:9200')
+        ENV['ELASTICSEARCH_VPC_URL'].presence || ENV.fetch('ELASTICSEARCH_URL', 'http://host.docker.internal:9200')
       end
 
       def opensearch_debug

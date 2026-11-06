@@ -217,6 +217,8 @@ RSpec.describe TradeTariffBackend::Config do
   end
 
   describe 'OpenSearch config' do
+    before { ENV.delete('ELASTICSEARCH_VPC_URL') }
+
     describe '.opensearch_host' do
       it 'defaults to docker internal address' do
         ENV.delete('ELASTICSEARCH_URL')
@@ -226,6 +228,36 @@ RSpec.describe TradeTariffBackend::Config do
       it 'returns configured URL' do
         ENV['ELASTICSEARCH_URL'] = 'http://opensearch:9200'
         expect(config.opensearch_host).to eq('http://opensearch:9200')
+      end
+
+      it 'prefers the VPC URL when both URLs are configured' do
+        ENV['ELASTICSEARCH_URL'] = 'http://opensearch:9200'
+        ENV['ELASTICSEARCH_VPC_URL'] = 'https://private-search.example.test'
+
+        expect(config.opensearch_host).to eq('https://private-search.example.test')
+      end
+
+      it 'uses the VPC URL without a legacy URL' do
+        ENV.delete('ELASTICSEARCH_URL')
+        ENV['ELASTICSEARCH_VPC_URL'] = 'https://private-search.example.test'
+
+        expect(config.opensearch_host).to eq('https://private-search.example.test')
+      end
+
+      ['', '   '].each do |blank_url|
+        it "falls back to the legacy URL when the VPC URL is #{blank_url.inspect}" do
+          ENV['ELASTICSEARCH_URL'] = 'http://opensearch:9200'
+          ENV['ELASTICSEARCH_VPC_URL'] = blank_url
+
+          expect(config.opensearch_host).to eq('http://opensearch:9200')
+        end
+
+        it "falls back to the local default when the VPC URL is #{blank_url.inspect} and the legacy URL is absent" do
+          ENV.delete('ELASTICSEARCH_URL')
+          ENV['ELASTICSEARCH_VPC_URL'] = blank_url
+
+          expect(config.opensearch_host).to eq('http://host.docker.internal:9200')
+        end
       end
     end
 
@@ -242,6 +274,17 @@ RSpec.describe TradeTariffBackend::Config do
     end
 
     describe '.opensearch_configuration' do
+      it 'uses the preferred VPC URL in the client configuration' do
+        ENV['ELASTICSEARCH_URL'] = 'http://search:9200'
+        ENV['ELASTICSEARCH_VPC_URL'] = 'https://private-search.example.test'
+        ENV.delete('OPENSEARCH_DEBUG')
+
+        expect(config.opensearch_configuration).to eq(
+          host: 'https://private-search.example.test',
+          log: false,
+        )
+      end
+
       it 'returns a hash with host and log keys' do
         ENV['ELASTICSEARCH_URL'] = 'http://search:9200'
         ENV.delete('OPENSEARCH_DEBUG')
