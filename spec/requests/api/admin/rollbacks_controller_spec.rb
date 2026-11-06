@@ -5,6 +5,8 @@ RSpec.describe Api::Admin::RollbacksController, :admin do
       create :measure, operation_date: Time.zone.yesterday.to_date
     end
 
+    before { allow(RollbackWorker).to receive(:perform_async) }
+
     context 'when rollback is valid' do
       before { record }
 
@@ -14,6 +16,13 @@ RSpec.describe Api::Admin::RollbacksController, :admin do
         }.to change(Rollback, :count).by(1)
         expect(response.status).to eq 201
         expect(response.location).to eq 'http://www.example.com/rollbacks'
+      end
+
+      it 'enqueues the worker once with the formatted date and keep value' do
+        post '/uk/admin/rollbacks', params: { data: { type: :rollback, attributes: rollback_attributes } }, headers: request_headers({ 'X-Whodunnit' => 'test-user-uid' }), as: :json
+
+        saved = Rollback.last
+        expect(RollbackWorker).to have_received(:perform_async).with(saved.date.to_formatted_s(:db), saved.keep).once
       end
     end
 
@@ -29,6 +38,12 @@ RSpec.describe Api::Admin::RollbacksController, :admin do
 
         expect(response.status).to eq 422
         expect(response.body).to match_json_expression response_pattern
+      end
+
+      it 'does not enqueue the worker' do
+        post '/uk/admin/rollbacks', params: { data: { type: :rollback, attributes: { date: '', keep: '' } } }, headers: request_headers, as: :json
+
+        expect(RollbackWorker).not_to have_received(:perform_async)
       end
     end
   end

@@ -3,9 +3,11 @@ module Api
     class CdsUpdateNotificationsController < AdminController
       def create
         notification = CdsUpdateNotification.new(cds_update_notification_params[:attributes])
+        notification.whodunnit = TradeTariffRequest.whodunnit
 
         if notification.valid?
           notification.save
+          CdsUpdateNotificationWorker.perform_async(notification.id)
           render json: Api::Admin::CdsUpdateNotificationSerializer.new(notification, { is_collection: false }).serializable_hash, status: :created, location: api_cds_update_notifications_url
         else
           render json: Api::Admin::ErrorSerializationService.new(notification).call, status: :unprocessable_content
