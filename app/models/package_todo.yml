@@ -12,16 +12,6 @@
     - dependency
     files:
     - app/models/goods_nomenclature_self_text.rb
-  "::Api::User::BatcherService::MyCommoditiesBatcherService":
-    violations:
-    - dependency
-    files:
-    - app/models/public_users/subscription.rb
-  "::Api::User::TargetsFilterService::MyCommoditiesTargetsFilterService":
-    violations:
-    - dependency
-    files:
-    - app/models/public_users/subscription.rb
   "::CompositeSearchTextBuilder":
     violations:
     - dependency
