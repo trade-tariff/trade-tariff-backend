@@ -1,4 +1,4 @@
-RSpec.describe TradeTariffBackend::NumberFormatter do
+RSpec.describe NumberFormatter do
   let(:number_formatter) { described_class.new }
 
   describe '#number_with_precision' do

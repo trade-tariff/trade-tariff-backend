@@ -17,11 +17,6 @@
     - dependency
     files:
     - app/models/goods_nomenclature_self_text.rb
-  "::DutyExpressionFormatter":
-    violations:
-    - dependency
-    files:
-    - app/models/concerns/duty_expression_formattable.rb
   "::EmbeddingService":
     violations:
     - dependency
@@ -112,11 +107,6 @@
     - dependency
     files:
     - app/models/goods_nomenclature_self_text.rb
-  "::RequirementDutyExpressionFormatter":
-    violations:
-    - dependency
-    files:
-    - app/models/measure_condition.rb
   "::StopPressSubscriptionWorker":
     violations:
     - dependency
