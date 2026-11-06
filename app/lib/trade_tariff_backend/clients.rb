@@ -36,9 +36,5 @@ module TradeTariffBackend
     def ai_client
       @ai_client ||= OpenaiClient.new
     end
-
-    def number_formatter
-      @number_formatter ||= NumberFormatter.new
-    end
   end
 end
