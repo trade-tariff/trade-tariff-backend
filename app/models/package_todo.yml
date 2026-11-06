@@ -158,26 +158,6 @@
     - dependency
     files:
     - app/models/news/item.rb
-  "::TariffChangesService::BaseChanges::CREATION":
-    violations:
-    - dependency
-    files:
-    - app/models/tariff_change.rb
-  "::TariffChangesService::BaseChanges::DELETION":
-    violations:
-    - dependency
-    files:
-    - app/models/tariff_change.rb
-  "::TariffChangesService::BaseChanges::ENDING":
-    violations:
-    - dependency
-    files:
-    - app/models/tariff_change.rb
-  "::TariffChangesService::BaseChanges::UPDATE":
-    violations:
-    - dependency
-    files:
-    - app/models/tariff_change.rb
   "::TariffSynchronizer::CdsUpdate":
     violations:
     - dependency

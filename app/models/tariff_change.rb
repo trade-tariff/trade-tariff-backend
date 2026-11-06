@@ -1,4 +1,9 @@
 class TariffChange < Sequel::Model
+  CREATION = 'creation'.freeze
+  ENDING = 'ending'.freeze
+  UPDATE = 'update'.freeze
+  DELETION = 'deletion'.freeze
+
   END_DATE_REMOVED_DISPLAY = 'end date removed'.freeze
 
   plugin :auto_validations, not_null: :presence
@@ -124,19 +129,19 @@ class TariffChange < Sequel::Model
   end
 
   def end_date_removed?
-    action == TariffChangesService::BaseChanges::ENDING &&
+    action == ENDING &&
       validity_end_date.nil?
   end
 
   def description
     case action
-    when TariffChangesService::BaseChanges::CREATION
+    when CREATION
       "#{type} will begin"
-    when TariffChangesService::BaseChanges::ENDING
+    when ENDING
       "#{type} will end"
-    when TariffChangesService::BaseChanges::UPDATE
+    when UPDATE
       "#{type} will be updated"
-    when TariffChangesService::BaseChanges::DELETION
+    when DELETION
       "#{type} will be deleted"
     end
   end
@@ -146,6 +151,6 @@ class TariffChange < Sequel::Model
   def date_of_effect_visible
     return if end_date_removed?
 
-    action == TariffChangesService::BaseChanges::ENDING ? date_of_effect + 1.day : date_of_effect
+    action == ENDING ? date_of_effect + 1.day : date_of_effect
   end
 end

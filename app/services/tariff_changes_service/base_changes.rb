@@ -1,9 +1,9 @@
 class TariffChangesService
   class BaseChanges
-    CREATION = 'creation'.freeze
-    ENDING = 'ending'.freeze
-    UPDATE = 'update'.freeze
-    DELETION = 'deletion'.freeze
+    CREATION = TariffChange::CREATION
+    ENDING = TariffChange::ENDING
+    UPDATE = TariffChange::UPDATE
+    DELETION = TariffChange::DELETION
 
     attr_accessor :record, :changes, :change, :date
 
