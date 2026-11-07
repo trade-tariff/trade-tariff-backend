@@ -1,7 +1,23 @@
 module Api
   module Internal
     class ImageDescriptionsController < InternalController
-      before_action :no_store
+      rescue_from ImageDescription::InvalidUpload do |exception|
+        render_error(exception.message, status: :unprocessable_content)
+      end
+
+      rescue_from ImageDescription::TooLarge do |exception|
+        render_error(exception.message, status: :content_too_large)
+      end
+
+      rescue_from ImageDescription::UnsupportedFormat do |exception|
+        render_error(exception.message, status: :unsupported_media_type)
+      end
+
+      rescue_from ImageDescription::Busy do
+        render_error('Image description is busy. Wait a moment and try again.', status: :service_unavailable)
+      end
+
+      rescue_from RedisClient::Error, with: :unavailable
 
       def create
         job = ImageDescription.create(params[:image], request_id: TradeTariffRequest.request_id)
@@ -10,17 +26,9 @@ module Api
           return unavailable
         end
         render json: { id: job.id, status: 'queued' }, status: :accepted
-      rescue ImageDescription::TooLarge => e
-        render json: { error: e.message }, status: :content_too_large
-      rescue ImageDescription::UnsupportedFormat => e
-        render json: { error: e.message }, status: :unsupported_media_type
-      rescue ImageDescription::InvalidUpload => e
-        render json: { error: e.message }, status: :unprocessable_content
-      rescue ImageDescription::Busy
-        render json: { error: 'Image description is busy. Wait a moment and try again.' }, status: :service_unavailable
       rescue RedisClient::Error
         job&.cleanup
-        unavailable
+        raise
       end
 
       def show
@@ -30,14 +38,17 @@ module Api
         return head :not_found unless payload
 
         render json: payload.slice('id', 'status', 'description', 'uncertainties', 'error')
-      rescue RedisClient::Error
-        unavailable
       end
 
     private
 
       def unavailable
-        render json: { error: 'Image description is temporarily unavailable. Try again or type a description.' }, status: :service_unavailable
+        render_error('Image description is temporarily unavailable. Try again or type a description.', status: :service_unavailable)
+      end
+
+      def render_error(message, status:)
+        serializer = TradeTariffBackend.error_serializer(request)
+        render json: serializer.serialized_errors({ error: message }), status: status
       end
     end
   end

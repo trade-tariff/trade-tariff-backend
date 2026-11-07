@@ -7,6 +7,7 @@ RSpec.describe 'Internal image descriptions', :internal do
 
   before do
     allow(ImageDescription).to receive(:root).and_return(directory)
+    allow(Rails.configuration.action_controller).to receive(:perform_caching).and_return(true)
   end
 
   after do
@@ -46,6 +47,7 @@ RSpec.describe 'Internal image descriptions', :internal do
     post path, params: { image: 'http://169.254.169.254/latest/meta-data/' }
 
     expect(response).to have_http_status(:unprocessable_content)
+    expect(response.parsed_body).to eq('errors' => [{ 'detail' => 'Choose an image file.' }])
     expect(ImageDescriptionWorker.jobs).to be_empty
   end
 
@@ -54,6 +56,7 @@ RSpec.describe 'Internal image descriptions', :internal do
     post path, params: { image: file }
 
     expect(response).to have_http_status(:unsupported_media_type)
+    expect(response.parsed_body).to eq('errors' => [{ 'detail' => 'Choose a JPEG, PNG, WebP, GIF, HEIC, HEIF, AVIF or TIFF image.' }])
   end
 
   it 'rejects oversized images' do
@@ -61,6 +64,7 @@ RSpec.describe 'Internal image descriptions', :internal do
     post path, params: { image: upload }
 
     expect(response).to have_http_status(:content_too_large)
+    expect(response.parsed_body).to eq('errors' => [{ 'detail' => 'Choose an image smaller than 15 MB.' }])
   end
 
   it 'bounds staged work' do
@@ -69,6 +73,7 @@ RSpec.describe 'Internal image descriptions', :internal do
     post path, params: { image: upload }
 
     expect(response).to have_http_status(:service_unavailable)
+    expect(response.parsed_body).to eq('errors' => [{ 'detail' => 'Image description is busy. Wait a moment and try again.' }])
     expect(ImageDescriptionWorker.jobs.size).to eq(1)
   end
 
@@ -77,6 +82,32 @@ RSpec.describe 'Internal image descriptions', :internal do
     post path, params: { image: upload }
 
     expect(response).to have_http_status(:service_unavailable)
+    expect(response.parsed_body).to eq('errors' => [{ 'detail' => 'Image description is temporarily unavailable. Try again or type a description.' }])
+    expect(ImageDescription.root.children.select(&:directory?)).to be_empty
+  end
+
+  it 'serializes Redis failures for uploads and polling' do
+    allow(Sidekiq).to receive(:redis).and_raise(RedisClient::ConnectionError, 'private connection details')
+
+    post path, params: { image: upload }
+
+    expect(response).to have_http_status(:service_unavailable)
+    expect(response.parsed_body).to eq('errors' => [{ 'detail' => 'Image description is temporarily unavailable. Try again or type a description.' }])
+    expect(ImageDescription.root.children.select(&:directory?)).to be_empty
+
+    get "#{path}/#{SecureRandom.uuid}"
+
+    expect(response).to have_http_status(:service_unavailable)
+    expect(response.parsed_body).to eq('errors' => [{ 'detail' => 'Image description is temporarily unavailable. Try again or type a description.' }])
+  end
+
+  it 'cleans staged images when enqueueing raises a Redis error' do
+    allow(ImageDescriptionWorker).to receive(:perform_async).and_raise(RedisClient::ConnectionError, 'private connection details')
+
+    post path, params: { image: upload }
+
+    expect(response).to have_http_status(:service_unavailable)
+    expect(response.parsed_body).to eq('errors' => [{ 'detail' => 'Image description is temporarily unavailable. Try again or type a description.' }])
     expect(ImageDescription.root.children.select(&:directory?)).to be_empty
   end
 
