@@ -1,7 +1,7 @@
 module Api
   module Internal
     class ImageDescriptionsController < InternalController
-      before_action :local_demo_only
+      before_action :no_store
 
       def create
         job = ImageDescription.create(params[:image], request_id: TradeTariffRequest.request_id)
@@ -35,11 +35,6 @@ module Api
       end
 
     private
-
-      def local_demo_only
-        response.headers['Cache-Control'] = 'no-store'
-        head :not_found unless ImageDescription.enabled? && request.local?
-      end
 
       def unavailable
         render json: { error: 'Image description is temporarily unavailable. Try again or type a description.' }, status: :service_unavailable

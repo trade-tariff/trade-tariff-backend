@@ -7,8 +7,6 @@ RSpec.describe 'Internal image descriptions', :internal do
 
   before do
     allow(ImageDescription).to receive(:root).and_return(directory)
-    allow(ENV).to receive(:[]).and_call_original
-    allow(ENV).to receive(:[]).with('IMAGE_DESCRIPTIONS_ENABLED').and_return('true')
   end
 
   after do
@@ -99,23 +97,32 @@ RSpec.describe 'Internal image descriptions', :internal do
     expect(response).to have_http_status(:not_found)
   end
 
-  it 'requires explicit enablement' do
+  it 'accepts uploads without a backend feature flag' do
+    allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with('IMAGE_DESCRIPTIONS_ENABLED').and_return(nil)
     post path, params: { image: upload }
 
-    expect(response).to have_http_status(:not_found)
+    expect(response).to have_http_status(:accepted)
   end
 
-  it 'cannot be enabled in production' do
+  it 'accepts uploads in production' do
     allow(Rails).to receive(:env).and_return(ActiveSupport::EnvironmentInquirer.new('production'))
     post path, params: { image: upload }
 
-    expect(response).to have_http_status(:not_found)
+    expect(response).to have_http_status(:accepted)
   end
 
-  it 'rejects nonlocal requests' do
-    post path, params: { image: upload }, headers: { 'REMOTE_ADDR' => '203.0.113.1' }
+  it 'accepts nonlocal internal uploads and polling' do
+    headers = { 'REMOTE_ADDR' => '203.0.113.1', 'User-Agent' => 'TradeTariffFrontend/test' }
+    post path, params: { image: upload }, headers: headers
 
-    expect(response).to have_http_status(:not_found)
+    expect(response).to have_http_status(:accepted)
+    id = response.parsed_body.fetch('id')
+
+    get "#{path}/#{id}", headers: headers
+
+    expect(response).to have_http_status(:ok)
+    expect(response.parsed_body).to include('id' => id, 'status' => 'queued')
+    expect(response.headers['Cache-Control']).to eq('no-store')
   end
 end

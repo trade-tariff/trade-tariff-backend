@@ -19,10 +19,6 @@ class ImageDescription
 
   attr_reader :id
 
-  def self.enabled?
-    (Rails.env.development? || Rails.env.test?) && ENV['IMAGE_DESCRIPTIONS_ENABLED'] == 'true'
-  end
-
   def self.root
     Rails.root.join('tmp/image_descriptions', TradeTariffBackend.service)
   end

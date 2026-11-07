@@ -4,8 +4,6 @@ class ImageDescriptionWorker
   sidekiq_options queue: :image_descriptions, retry: false
 
   def perform(id)
-    return unless ImageDescription.enabled?
-
     job = ImageDescription.new(id)
     payload = job.claim
     return unless payload

@@ -1,8 +1,7 @@
 require 'timeout'
 
 module ImageDescriptions
-  # Development-only Linux/Nix decoder. No credentials, home directory or network
-  # are visible to the native image parsers. Production needs its own worker image.
+  # Keep credentials, home directory and network out of the native image parsers.
   class Normalise
     InvalidImage = Class.new(StandardError)
     Unavailable = Class.new(StandardError)
