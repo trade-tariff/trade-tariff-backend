@@ -8,6 +8,7 @@ InternalApi.routes.draw do
       get 'search' => 'search#search'
       get 'search_suggestions' => 'search#suggestions'
       resources :queued_searches, only: %i[create show]
+      resources :image_descriptions, only: %i[create show]
 
       namespace :enquiry_form do
         resources :submissions, only: %i[create]

@@ -1,0 +1,7 @@
+# Local demonstration only. Do not register tariff sync or reporting schedules.
+:concurrency: 2
+:queues:
+  - image_descriptions
+  - within_1_minute
+:scheduler:
+  :enabled: false
